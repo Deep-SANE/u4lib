@@ -1,0 +1,28 @@
+# files with extensions in all directories:
+
+*.a
+*.aux
+*.bbl
+*.blg
+*.docx
+*.exe
+*.fdb_latexmk
+*.fls
+*.log
+*.mk 
+*.o
+*.out
+*.pdf
+*.xlsx
+
+# '.DS_Store' file in all directories:
+
+.DS_Store
+
+# system-local configuration file in root directory:
+
+./config.mk
+
+# all built executable binary files:
+
+bin/
