@@ -1,5 +1,0 @@
-Here are some cases for testing that you requested. 
-Time elapsed is measured on Macbook Air M1.
-
-Program U4U3U2U1xU4U3U2U1.cpp
-	
