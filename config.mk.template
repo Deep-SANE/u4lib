@@ -3,12 +3,14 @@
 # set if needed:
 #EIGEN_DIR=
 #WIGXJPF_DIR=
+#U3LIB_DIR=
 
 CXX = g++
 
 # include (if needed):
 INC += -I$(EIGEN_DIR)
 INC += -I$(WIGXJPF_DIR)/inc
+INC += -I$(U3LIB_DIR)/include
 
 CXXFLAGS += -std=c++17
 CXXFLAGS += $(INC)
