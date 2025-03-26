@@ -90,154 +90,94 @@ namespace u4
         std::vector<int>& bra_zeta, std::vector<int>& ket_zeta)
   {
 
-    int ss = bra.SS - ket.SS;
-    int tt = bra.TT - ket.TT;
-
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> RME(bra.zeta,
                                                               ket.zeta);
+    RME.setZero();
+
+    // getting the tensor components of U
+    int ss = bra.SS - ket.SS;
+    int tt = bra.TT - ket.TT;
 
     // running through the multiplicity labels
     for (int i = 1; i <= bra.zeta; i++)
       bra_zeta.push_back(i);
+
     for (int j = 1; j <= ket.zeta; j++)
       ket_zeta.push_back(j);
-    for (int i = 0; i < RME.rows(); i++)
-      for (int j = 0; j < RME.cols(); j++)
-        RME(i, j) = 0.0;
 
     // compute non-zero RME's
     if (ss == 2 && tt == 2)
     {
-
       // Implementation here is based on Eq. (72) in F. Pan et al, Eur. Phys. J.
       // Plus 138, 662 (2023) Note that my convention for reduced matrix
       // elements follows a more standard convention, which involves an extra
       // factor of sqrt((2S'+1)(2T'+1))
 
       // Expanding in canonical basis
-      std::vector<u4::gelfand> bra_canobasis = u4::canonicalbasis(bra);
-      std::vector<u4::gelfand> ket_canobasis = u4::canonicalbasis(ket);
-
-      // Building the projection matrix
-      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> bra_STproj =
-          STprojection(bra, bra_canobasis);
-      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> ket_STproj =
-          STprojection(ket, ket_canobasis);
-      // and solving its null space
+      std::vector<u4::gelfand> bra_gArr = u4::gelfandBasis(bra.toprow);
+      std::vector<int> bra_indices;
       Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> bra_coeffs =
-          phys_to_cano(bra, bra_STproj);
+        u4::phys_to_cano(bra, bra.SS, bra.TT, bra_indices, bra_gArr);
+
+      std::vector<u4::gelfand> ket_gArr = u4::gelfandBasis(ket.toprow);
+      std::vector<int> ket_indices;
       Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> ket_coeffs =
-          phys_to_cano(ket, ket_STproj);
+        u4::phys_to_cano(ket, ket.SS, ket.TT, ket_indices, ket_gArr);
 
       double c = std::sqrt((bra.SS + 1.0) * (bra.TT + 1.0));
 
       // running through the gelfand states
-      for (int k = 0; k < ket_canobasis.size(); k++)
+      for (int k = 0; k < ket_indices.size(); k++)
       {
-        for (int b = 0; b < bra_canobasis.size(); b++)
+        for (int b = 0; b < bra_indices.size(); b++)
         {
-
-          if (bra_canobasis[b].n13 == (ket_canobasis[k].n13 + 1) &&
-              bra_canobasis[b].n23 == ket_canobasis[k].n23 &&
-              bra_canobasis[b].n33 == ket_canobasis[k].n33 &&
-              bra_canobasis[b].n12 == (ket_canobasis[k].n12 + 1) &&
-              bra_canobasis[b].n22 == ket_canobasis[k].n22 &&
-              bra_canobasis[b].n11 == (ket_canobasis[k].n11 + 1))
+          if (u4::E14_13_12(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
-            {
               for (int j = 0; j < ket.zeta; j++)
-              {
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_canobasis[k].e14_13_12();
-              }
-            }
+                             ket_gArr[ket_indices[k]].e14_13_12();
           }
-          else if (bra_canobasis[b].n13 == (ket_canobasis[k].n13 + 1) &&
-                   bra_canobasis[b].n23 == ket_canobasis[k].n23 &&
-                   bra_canobasis[b].n33 == ket_canobasis[k].n33 &&
-                   bra_canobasis[b].n12 == ket_canobasis[k].n12 &&
-                   bra_canobasis[b].n22 == (ket_canobasis[k].n22 + 1) &&
-                   bra_canobasis[b].n11 == (ket_canobasis[k].n11 + 1))
+          else if (u4::E14_13_22(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
-            {
               for (int j = 0; j < ket.zeta; j++)
-              {
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_canobasis[k].e14_13_22();
-              }
-            }
+                             ket_gArr[ket_indices[k]].e14_13_22();
           }
-          else if (bra_canobasis[b].n13 == ket_canobasis[k].n13 &&
-                   bra_canobasis[b].n23 == (ket_canobasis[k].n23 + 1) &&
-                   bra_canobasis[b].n33 == ket_canobasis[k].n33 &&
-                   bra_canobasis[b].n12 == (ket_canobasis[k].n12 + 1) &&
-                   bra_canobasis[b].n22 == ket_canobasis[k].n22 &&
-                   bra_canobasis[b].n11 == (ket_canobasis[k].n11 + 1))
+          else if (u4::E14_23_12(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
-            {
               for (int j = 0; j < ket.zeta; j++)
-              {
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_canobasis[k].e14_23_12();
-              }
-            }
+                             ket_gArr[ket_indices[k]].e14_23_12();
           }
-          else if (bra_canobasis[b].n13 == ket_canobasis[k].n13 &&
-                   bra_canobasis[b].n23 == (ket_canobasis[k].n23 + 1) &&
-                   bra_canobasis[b].n33 == ket_canobasis[k].n33 &&
-                   bra_canobasis[b].n12 == ket_canobasis[k].n12 &&
-                   bra_canobasis[b].n22 == (ket_canobasis[k].n22 + 1) &&
-                   bra_canobasis[b].n11 == (ket_canobasis[k].n11 + 1))
+          else if (u4::E14_23_22(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
-            {
               for (int j = 0; j < ket.zeta; j++)
-              {
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_canobasis[k].e14_23_22();
-              }
-            }
+                             ket_gArr[ket_indices[k]].e14_23_22();
           }
-          else if (bra_canobasis[b].n13 == ket_canobasis[k].n13 &&
-                   bra_canobasis[b].n23 == ket_canobasis[k].n23 &&
-                   bra_canobasis[b].n33 == (ket_canobasis[k].n33 + 1) &&
-                   bra_canobasis[b].n12 == (ket_canobasis[k].n12 + 1) &&
-                   bra_canobasis[b].n22 == ket_canobasis[k].n22 &&
-                   bra_canobasis[b].n11 == (ket_canobasis[k].n11 + 1))
+          else if (u4::E14_33_12(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
-            {
               for (int j = 0; j < ket.zeta; j++)
-              {
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_canobasis[k].e14_33_12();
-              }
-            }
+                             ket_gArr[ket_indices[k]].e14_33_12();
           }
-          else if (bra_canobasis[b].n13 == ket_canobasis[k].n13 &&
-                   bra_canobasis[b].n23 == ket_canobasis[k].n23 &&
-                   bra_canobasis[b].n33 == (ket_canobasis[k].n33 + 1) &&
-                   bra_canobasis[b].n12 == ket_canobasis[k].n12 &&
-                   bra_canobasis[b].n22 == (ket_canobasis[k].n22 + 1) &&
-                   bra_canobasis[b].n11 == (ket_canobasis[k].n11 + 1))
+          else if (u4::E14_33_22(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
-            {
               for (int j = 0; j < ket.zeta; j++)
-              {
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_canobasis[k].e14_33_22();
-              }
-            }
+                             ket_gArr[ket_indices[k]].e14_33_22();
           }
         }
       }
@@ -245,174 +185,96 @@ namespace u4
 
     else if (ss == 2 && tt == 0)
     {
-
       // Implementation here is based on Eq. (73) in F. Pan et al, Eur. Phys. J.
       // Plus 138, 662 (2023) Note that my convention for reduced matrix
       // elements follows a more standard convention, which involves an extra
       // factor of sqrt((2S'+1)(2T'+1))
 
       // Expanding in canonical basis
-      std::vector<u4::gelfand> bra_canobasis = u4::canonicalbasis(bra);
-      std::vector<u4::gelfand> ket_canobasis = u4::canonicalbasis(ket);
-
-      // Building the projection matrix
-      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> bra_STproj =
-          STprojection(bra, bra_canobasis);
-      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> ket_STproj =
-          STprojection(ket, ket_canobasis);
-      // and solving its null space
+      std::vector<u4::gelfand> bra_gArr = u4::gelfandBasis(bra.toprow);
+      std::vector<int> bra_indices;
       Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> bra_coeffs =
-          phys_to_cano(bra, bra_STproj);
+        u4::phys_to_cano(bra, bra.SS, bra.TT, bra_indices, bra_gArr);
+
+      std::vector<u4::gelfand> ket_gArr = u4::gelfandBasis(ket.toprow);
+      std::vector<int> ket_indices;
       Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> ket_coeffs =
-          phys_to_cano(ket, ket_STproj);
+        u4::phys_to_cano(ket, ket.SS, ket.TT, ket_indices, ket_gArr);
 
       double c = std::sqrt((bra.SS + 1.0) * (bra.TT + 1.0) *
                            (ket.TT / 2.0 + 1.0) / ket.TT);
 
       // running through the gelfand states
-      for (int k = 0; k < ket_canobasis.size(); k++)
+      for (int k = 0; k < ket_indices.size(); k++)
       {
-        for (int b = 0; b < bra_canobasis.size(); b++)
+        for (int b = 0; b < bra_indices.size(); b++)
         {
-
           // E24
-          if (bra_canobasis[b].n13 == (ket_canobasis[k].n13 + 1) &&
-              bra_canobasis[b].n23 == ket_canobasis[k].n23 &&
-              bra_canobasis[b].n33 == ket_canobasis[k].n33 &&
-              bra_canobasis[b].n12 == (ket_canobasis[k].n12 + 1) &&
-              bra_canobasis[b].n22 == ket_canobasis[k].n22 &&
-              bra_canobasis[b].n11 == ket_canobasis[k].n11)
+          if (u4::E24_13_12(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
-            {
               for (int j = 0; j < ket.zeta; j++)
-              {
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_canobasis[k].e24_13_12();
-              }
-            }
+                             ket_gArr[ket_indices[k]].e24_13_12();
           }
-          else if (bra_canobasis[b].n13 == (ket_canobasis[k].n13 + 1) &&
-                   bra_canobasis[b].n23 == ket_canobasis[k].n23 &&
-                   bra_canobasis[b].n33 == ket_canobasis[k].n33 &&
-                   bra_canobasis[b].n12 == ket_canobasis[k].n12 &&
-                   bra_canobasis[b].n22 == (ket_canobasis[k].n22 + 1) &&
-                   bra_canobasis[b].n11 == ket_canobasis[k].n11)
+          else if (u4::E24_13_22(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
-            {
               for (int j = 0; j < ket.zeta; j++)
-              {
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_canobasis[k].e24_13_22();
-              }
-            }
+                             ket_gArr[ket_indices[k]].e24_13_22();
           }
-          else if (bra_canobasis[b].n13 == ket_canobasis[k].n13 &&
-                   bra_canobasis[b].n23 == (ket_canobasis[k].n23 + 1) &&
-                   bra_canobasis[b].n33 == ket_canobasis[k].n33 &&
-                   bra_canobasis[b].n12 == (ket_canobasis[k].n12 + 1) &&
-                   bra_canobasis[b].n22 == ket_canobasis[k].n22 &&
-                   bra_canobasis[b].n11 == ket_canobasis[k].n11)
+          else if (u4::E24_23_12(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
-            {
               for (int j = 0; j < ket.zeta; j++)
-              {
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_canobasis[k].e24_23_12();
-              }
-            }
+                             ket_gArr[ket_indices[k]].e24_23_12();
           }
-          else if (bra_canobasis[b].n13 == ket_canobasis[k].n13 &&
-                   bra_canobasis[b].n23 == (ket_canobasis[k].n23 + 1) &&
-                   bra_canobasis[b].n33 == ket_canobasis[k].n33 &&
-                   bra_canobasis[b].n12 == ket_canobasis[k].n12 &&
-                   bra_canobasis[b].n22 == (ket_canobasis[k].n22 + 1) &&
-                   bra_canobasis[b].n11 == ket_canobasis[k].n11)
+          else if (u4::E24_23_22(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
-            {
               for (int j = 0; j < ket.zeta; j++)
-              {
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_canobasis[k].e24_23_22();
-              }
-            }
+                             ket_gArr[ket_indices[k]].e24_23_22();
           }
-          else if (bra_canobasis[b].n13 == ket_canobasis[k].n13 &&
-                   bra_canobasis[b].n23 == ket_canobasis[k].n23 &&
-                   bra_canobasis[b].n33 == (ket_canobasis[k].n33 + 1) &&
-                   bra_canobasis[b].n12 == (ket_canobasis[k].n12 + 1) &&
-                   bra_canobasis[b].n22 == ket_canobasis[k].n22 &&
-                   bra_canobasis[b].n11 == ket_canobasis[k].n11)
+          else if (u4::E24_33_12(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
-            {
               for (int j = 0; j < ket.zeta; j++)
-              {
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_canobasis[k].e24_33_12();
-              }
-            }
+                             ket_gArr[ket_indices[k]].e24_33_12();
           }
-          else if (bra_canobasis[b].n13 == ket_canobasis[k].n13 &&
-                   bra_canobasis[b].n23 == ket_canobasis[k].n23 &&
-                   bra_canobasis[b].n33 == (ket_canobasis[k].n33 + 1) &&
-                   bra_canobasis[b].n12 == ket_canobasis[k].n12 &&
-                   bra_canobasis[b].n22 == (ket_canobasis[k].n22 + 1) &&
-                   bra_canobasis[b].n11 == ket_canobasis[k].n11)
+          else if (u4::E24_33_22(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
-            {
               for (int j = 0; j < ket.zeta; j++)
-              {
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_canobasis[k].e24_33_22();
-              }
-            }
+                             ket_gArr[ket_indices[k]].e24_33_22();
           }
 
           //-E13
-          else if (bra_canobasis[b].n13 == ket_canobasis[k].n13 &&
-                   bra_canobasis[b].n23 == ket_canobasis[k].n23 &&
-                   bra_canobasis[b].n33 == ket_canobasis[k].n33 &&
-                   bra_canobasis[b].n12 == (ket_canobasis[k].n12 + 1) &&
-                   bra_canobasis[b].n22 == ket_canobasis[k].n22 &&
-                   bra_canobasis[b].n11 == (ket_canobasis[k].n11 + 1))
+          else if (u4::E13_12(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
-            {
               for (int j = 0; j < ket.zeta; j++)
-              {
                 RME(i, j) -= c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_canobasis[k].e13_12();
-              }
-            }
+                             ket_gArr[ket_indices[k]].e13_12();
           }
-          else if (bra_canobasis[b].n13 == ket_canobasis[k].n13 &&
-                   bra_canobasis[b].n23 == ket_canobasis[k].n23 &&
-                   bra_canobasis[b].n33 == ket_canobasis[k].n33 &&
-                   bra_canobasis[b].n12 == ket_canobasis[k].n12 &&
-                   bra_canobasis[b].n22 == (ket_canobasis[k].n22 + 1) &&
-                   bra_canobasis[b].n11 == (ket_canobasis[k].n11 + 1))
+          else if (u4::E13_22(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
-            {
               for (int j = 0; j < ket.zeta; j++)
-              {
                 RME(i, j) -= c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_canobasis[k].e13_22();
-              }
-            }
+                             ket_gArr[ket_indices[k]].e13_22();
           }
         }
       }
@@ -427,101 +289,71 @@ namespace u4
       // factor of sqrt((2S'+1)(2T'+1))
 
       // Expanding in canonical basis
-      std::vector<u4::gelfand> ket_canobasis = u4::canonicalbasis(ket);
-
-      // Building the projection matrix
-      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> ket_STproj =
-          STprojection(ket, ket_canobasis);
-      // and solving its null space
+      std::vector<u4::gelfand> ket_gArr = u4::gelfandBasis(ket.toprow);
+      std::vector<int> ket_indices;
       Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> ket_coeffs =
-          phys_to_cano(ket, ket_STproj);
+        u4::phys_to_cano(ket, ket.SS, ket.TT, ket_indices, ket_gArr);
 
       double c =
           std::sqrt((bra.SS + 1.0) * (bra.TT + 1.0) * (ket.SS / 2.0 + 1.0) *
-                    (ket.TT / 2.0 + 1.0) / ket.SS / ket.TT) /
-          2.0;
+                    (ket.TT / 2.0 + 1.0) / ket.SS / ket.TT) / 2.0;
 
       // running through the gelfand states
-      for (int k = 0; k < ket_canobasis.size(); k++)
+      for (int k = 0; k < ket_indices.size(); k++)
       {
         // running through the multiplicity labels
         for (int i = 0; i < ket.zeta; i++)
-        {
           for (int j = 0; j < ket.zeta; j++)
-          {
             RME(i, j) += c * ket_coeffs(k, i) * ket_coeffs(k, j) *
-                         (ket_canobasis[k].e11() - ket_canobasis[k].e22() -
-                          ket_canobasis[k].e33() + ket_canobasis[k].e44());
-          }
-        }
+                         (ket_gArr[ket_indices[k]].e11() - 
+                          ket_gArr[ket_indices[k]].e22() -
+                          ket_gArr[ket_indices[k]].e33() + 
+                          ket_gArr[ket_indices[k]].e44());
       }
     }
 
     else if (ss == -2 && tt == 2)
     {
-
       // Implementation here is based on Eq. (75) in F. Pan et al, Eur. Phys. J.
       // Plus 138, 662 (2023) Note that my convention for reduced matrix
       // elements follows a more standard convention, which involves an extra
       // factor of sqrt((2S'+1)(2T'+1))
 
       // Expanding in canonical basis
-      std::vector<u4::gelfand> bra_canobasis = u4::canonicalbasis(bra);
-      std::vector<u4::gelfand> ket_canobasis = u4::canonicalbasis(ket);
-
-      // Building the projection matrix
-      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> bra_STproj =
-          STprojection(bra, bra_canobasis);
-      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> ket_STproj =
-          STprojection(ket, ket_canobasis);
-      // and solving its null space
+      std::vector<u4::gelfand> bra_gArr = u4::gelfandBasis(bra.toprow);
+      std::vector<int> bra_indices;
       Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> bra_coeffs =
-          phys_to_cano(bra, bra_STproj);
+        u4::phys_to_cano(bra, bra.SS, bra.TT, bra_indices, bra_gArr);
+
+      std::vector<u4::gelfand> ket_gArr = u4::gelfandBasis(ket.toprow);
+      std::vector<int> ket_indices;
       Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> ket_coeffs =
-          phys_to_cano(ket, ket_STproj);
+        u4::phys_to_cano(ket, ket.SS, ket.TT, ket_indices, ket_gArr);
 
       double c = -std::sqrt((bra.SS + 1.0) * (bra.TT + 1.0) * (ket.SS + 1.0) /
                             (ket.SS - 1.0));
 
       // running through the gelfand states
-      for (int k = 0; k < ket_canobasis.size(); k++)
+      for (int k = 0; k < ket_indices.size(); k++)
       {
-        for (int b = 0; b < bra_canobasis.size(); b++)
+        for (int b = 0; b < bra_indices.size(); b++)
         {
           // E32
-          if (bra_canobasis[b].n13 == ket_canobasis[k].n13 &&
-              bra_canobasis[b].n23 == ket_canobasis[k].n23 &&
-              bra_canobasis[b].n33 == ket_canobasis[k].n33 &&
-              bra_canobasis[b].n12 == (ket_canobasis[k].n12 - 1) &&
-              bra_canobasis[b].n22 == ket_canobasis[k].n22 &&
-              bra_canobasis[b].n11 == ket_canobasis[k].n11)
+          if (u4::E23_12(bra_gArr[bra_indices[b]],ket_gArr[ket_indices[k]]))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
-            {
               for (int j = 0; j < ket.zeta; j++)
-              {
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_canobasis[k].e32_12();
-              }
-            }
+                             ket_gArr[ket_indices[k]].e32_12();
           }
-          else if (bra_canobasis[b].n13 == ket_canobasis[k].n13 &&
-                   bra_canobasis[b].n23 == ket_canobasis[k].n23 &&
-                   bra_canobasis[b].n33 == ket_canobasis[k].n33 &&
-                   bra_canobasis[b].n12 == ket_canobasis[k].n12 &&
-                   bra_canobasis[b].n22 == (ket_canobasis[k].n22 - 1) &&
-                   bra_canobasis[b].n11 == ket_canobasis[k].n11)
+          else if (u4::E23_22(bra_gArr[bra_indices[b]],ket_gArr[ket_indices[k]]))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
-            {
               for (int j = 0; j < ket.zeta; j++)
-              {
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_canobasis[k].e32_22();
-              }
-            }
+                             ket_gArr[ket_indices[k]].e32_22();
           }
         }
       }
