@@ -1,12 +1,12 @@
-// protection against multiple header file inclusion
-#ifndef INVERSESOLVER_H
-#define INVERSESOLVER_H
+#ifndef U4LIB_UTILS_INVERSESOLVER_H
+#define U4LIB_UTILS_INVERSESOLVER_H
 
 #include <cmath>
-#include <Eigen/Dense>
-#include <Eigen/Sparse>
 #include <iostream>
 #include <vector>
+
+#include <Eigen/Dense>
+#include <Eigen/Sparse>
 
 #include "basics.h"
 

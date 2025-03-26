@@ -1,12 +1,12 @@
-// protection against multiple header file inclusion
-#ifndef BASICS_H
-#define BASICS_H
+#ifndef U4LIB_UTILS_BASICS_H
+#define U4LIB_UTILS_BASICS_H
 
 #include <cmath>
-#include <Eigen/Dense>
-#include <Eigen/Sparse>
 #include <iostream>
 #include <vector>
+
+#include <Eigen/Dense>
+#include <Eigen/Sparse>
 
 // Determine sparsity of a matrix
 float sparisity(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& mat)

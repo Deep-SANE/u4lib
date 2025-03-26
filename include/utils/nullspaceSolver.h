@@ -1,12 +1,12 @@
-// protection against multiple header file inclusion
-#ifndef NULLSPACESOLVER_H
-#define NULLSPACESOLVER_H
+#ifndef U4LIB_UTILS_NULLSPACESOLVER_H
+#define U4LIB_UTILS_NULLSPACESOLVER_H
 
 #include <cmath>
-#include <Eigen/Dense>
-#include <Eigen/Sparse>
 #include <iostream>
 #include <vector>
+
+#include <Eigen/Dense>
+#include <Eigen/Sparse>
 
 #include "basics.h"
 
@@ -16,7 +16,6 @@
 double error(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& mat,
              Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& nullspace)
 {
-
   if (mat.size() <= 1)
     return 0.0;
 
@@ -43,17 +42,14 @@ back by multiplying the permutation matrix P with the null space matrix.
 Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>
 null_space(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& mat)
 {
-
   if (mat.size() <= 1)
   {
     Eigen::Matrix<double, 1, 1> one;
     one(0, 0) = 1;
     return one;
   }
-
   else
   {
-
     // Create a matrix to store the null space
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> nullSpace;
 
@@ -62,7 +58,6 @@ null_space(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& mat)
     // Sparse matrix solver
     if (sparisity(mat) >= 0.7)
     {
-
       // Convert Matrix to SparseMatrix
       Eigen::SparseMatrix<double> spar_mat = mat.sparseView();
       spar_mat.makeCompressed();
@@ -89,10 +84,8 @@ null_space(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& mat)
 
       nullSpace = P * nullSpace;
     }
-
     else
     {
-
       Eigen::ColPivHouseholderQR<
           Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>>
           qr;
@@ -132,6 +125,63 @@ null_space(Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& mat)
 
       for (j = 0; j < ornorNullSpace.rows(); j++)
         if (abs(ornorNullSpace(j, i)) <= 1e-15)
+          ornorNullSpace(j, i) = 0.0;
+    }
+
+    return ornorNullSpace;
+  }
+}
+
+Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>
+null_space(const Eigen::SparseMatrix<double>& mat)
+{
+  if (mat.size() <= 1)
+  {
+    Eigen::Matrix<double, 1, 1> one;
+    one(0, 0) = 1;
+    return one;
+  }
+  else
+  {
+    // Create a matrix to store the null space
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> nullSpace;
+
+    // Create a SparseQR decomposition of the projection matrix
+    Eigen::SparseQR<Eigen::SparseMatrix<double>, Eigen::COLAMDOrdering<int>> qr;
+
+    // Compute the qR decomposition of the projection matrix
+    qr.setPivotThreshold(1e-6);
+    qr.compute(mat);
+
+    // Get the upper triangular matrix and resize it to square
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> R(qr.matrixR());
+    R.conservativeResize(mat.cols(), mat.cols());
+
+    // Get the nullity -- dimension of the nullspace
+    int nullity = mat.cols() - qr.rank();
+
+    nullSpace = backwardSubstitution(R, nullity);
+
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> P(
+        qr.colsPermutation());
+
+    nullSpace = P * nullSpace;
+
+    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> ornorNullSpace =
+        gramSchmidt(nullSpace);
+
+    // Sign convention
+    for (int i = 0; i < ornorNullSpace.cols(); i++)
+    {
+      int j;
+      for (j = 0; j < ornorNullSpace.rows(); j++)
+        if (std::fabs(ornorNullSpace(j, i)) > 1e-15)
+          break;
+      if (ornorNullSpace(j, i) < 0)
+        ornorNullSpace.col(i) = -ornorNullSpace.col(i);
+
+      for (j = 0; j < ornorNullSpace.rows(); j++)
+        if (std::fabs(ornorNullSpace(j, i)) <= 1e-15)
           ornorNullSpace(j, i) = 0.0;
     }
 
