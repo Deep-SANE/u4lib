@@ -1,6 +1,7 @@
 #ifndef U4LIB_GELFAND_GELFAND_H
 #define U4LIB_GELFAND_GELFAND_H
 
+#include <cassert>
 #include <cmath>
 #include <ostream>
 
@@ -23,13 +24,13 @@ namespace u4
     class gelfand : Rep
     {
     public:
-      using Rep::n14, Rep::n24, Rep::n34, Rep::n44, Rep::n13, 
-            Rep::n23, Rep::n33, Rep::n12, Rep::n22, Rep::n11;
+      using Rep::n14, Rep::n24, Rep::n34, Rep::n44, Rep::n13, Rep::n23,
+          Rep::n33, Rep::n12, Rep::n22, Rep::n11;
 
       gelfand() = default;
 
-      gelfand(int n14, int n24, int n34, int n44, int n13, 
-              int n23, int n33, int n12, int n22, int n11)
+      gelfand(int n14, int n24, int n34, int n44, int n13, int n23, int n33,
+              int n12, int n22, int n11)
           : Rep(n14, n24, n34, n44, n13, n23, n33, n12, n22, n11)
       { }
 
@@ -102,12 +103,18 @@ namespace u4
       double e12() const
       {
         int n = (n12() - n11()) * (n11() - n22() + 1);
+
+        assert(n >= 0);
+
         return std::sqrt(static_cast<double>(n));
       }
 
       double e21() const
       {
         int n = (n12() - n11() + 1) * (n11() - n22());
+
+        assert(n >= 0);
+
         return std::sqrt(static_cast<double>(n));
       }
 
@@ -118,7 +125,12 @@ namespace u4
 
         int den = (n12() - n22() + 2) * (n12() - n22() + 1);
 
+        assert(den != 0);
+
         double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return std::sqrt(d);
       }
 
@@ -129,7 +141,12 @@ namespace u4
 
         int den = (n12() - n22() + 1) * (n12() - n22());
 
+        assert(den != 0);
+
         double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0);
+
         return std::sqrt(d);
       }
 
@@ -140,7 +157,12 @@ namespace u4
 
         int den = (n12() - n22() + 1) * (n12() - n22());
 
+        assert(den != 0);
+
         double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0);
+
         return std::sqrt(d);
       }
 
@@ -151,7 +173,12 @@ namespace u4
 
         int den = (n12() - n22() + 2) * (n12() - n22() + 1);
 
+        assert(den != 0);
+
         double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return std::sqrt(d);
       }
 
@@ -162,7 +189,12 @@ namespace u4
 
         int den = (n12() - n22() + 2) * (n12() - n22() + 1);
 
+        assert(den != 0);
+
         double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return std::sqrt(d);
       }
 
@@ -173,7 +205,12 @@ namespace u4
 
         int den = (n12() - n22() + 1) * (n12() - n22());
 
+        assert(den != 0);
+
         double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return -std::sqrt(d);
       }
 
@@ -184,7 +221,12 @@ namespace u4
 
         int den = (n12() - n22() + 1) * (n12() - n22());
 
+        assert(den != 0);
+
         double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return std::sqrt(d);
       }
 
@@ -195,22 +237,33 @@ namespace u4
 
         int den = (n12() - n22() + 2) * (n12() - n22() + 1);
 
+        assert(den != 0);
+
         double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return -std::sqrt(d);
       }
 
       double e34_13()
       {
         int num = (n14() - n13()) * (n13() - n24() + 1) * (n13() - n34() + 2) *
-                  (n13() - n44() + 3) * (n13() - n12() + 1) * (n13() - n22() + 2);
+                  (n13() - n44() + 3) * (n13() - n12() + 1) *
+                  (n13() - n22() + 2);
 
-        int den = (n13() - n23() + 2) * (n13() - n23() + 1) * (n13() - n33() + 3) 
-                  * (n13() - n33() + 2);
-        
+        int den = (n13() - n23() + 2) * (n13() - n23() + 1) *
+                  (n13() - n33() + 3) * (n13() - n33() + 2);
+
+        assert(den != 0);
+
         double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return std::sqrt(d);
       }
-    
+
       double e34_23()
       {
         int num = (n14() - n23() + 1) * (n24() - n23()) * (n23() - n34() + 1) *
@@ -219,7 +272,12 @@ namespace u4
         int den = (n13() - n23() + 1) * (n13() - n23()) * (n23() - n33() + 2) *
                   (n23() - n33() + 1);
 
-        double d = static_cast<double>(num) / static_cast<double>(den);                 
+        assert(den != 0);
+
+        double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return std::sqrt(d);
       }
 
@@ -228,13 +286,18 @@ namespace u4
         int num = (n14() - n33() + 2) * (n24() - n33() + 1) * (n34() - n33()) *
                   (n33() - n44() + 1) * (n12() - n33() + 1) * (n22() - n33());
 
-        int den = (n13() - n33() + 2) * (n13() - n33() + 1) * (n23() - n33() + 1) 
-                  * (n23() - n33());
+        int den = (n13() - n33() + 2) * (n13() - n33() + 1) *
+                  (n23() - n33() + 1) * (n23() - n33());
 
-        double d = static_cast<double>(num) / static_cast<double>(den); 
+        assert(den != 0);
+
+        double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return std::sqrt(d);
       }
-    
+
       double e43_13()
       {
         int num = (n14() - n13() + 1) * (n13() - n24()) * (n13() - n34() + 1) *
@@ -243,7 +306,12 @@ namespace u4
         int den = (n13() - n23() + 1) * (n13() - n23()) * (n13() - n33() + 2) *
                   (n13() - n33() + 1);
 
-        double d = static_cast<double>(num) / static_cast<double>(den); 
+        assert(den != 0);
+
+        double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return std::sqrt(d);
       }
 
@@ -252,35 +320,60 @@ namespace u4
         int num = (n14() - n23() + 2) * (n24() - n23() + 1) * (n23() - n34()) *
                   (n23() - n44() + 1) * (n12() - n23() + 1) * (n23() - n22());
 
-        int den = (n13() - n23() + 2) * (n13() - n23() + 1) * (n23() - n33() + 1) 
-                  * (n23() - n33());
+        int den = (n13() - n23() + 2) * (n13() - n23() + 1) *
+                  (n23() - n33() + 1) * (n23() - n33());
 
-        double d = static_cast<double>(num) / static_cast<double>(den);                            
+        assert(den != 0);
+
+        double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return std::sqrt(d);
       }
 
       double e43_33()
       {
-        int num = (n14() - n33() + 3) * (n24() - n33() + 2) * (n34() - n33() + 1) 
-                  * (n33() - n44()) * (n12() - n33() + 2) * (n22() - n33() + 1);
+        int num = (n14() - n33() + 3) * (n24() - n33() + 2) *
+                  (n34() - n33() + 1) * (n33() - n44()) * (n12() - n33() + 2) *
+                  (n22() - n33() + 1);
 
-        int den = (n13() - n33() + 3) * (n13() - n33() + 2) * (n23() - n33() + 2) 
-                  * (n23() - n33() + 1);    
+        int den = (n13() - n33() + 3) * (n13() - n33() + 2) *
+                  (n23() - n33() + 2) * (n23() - n33() + 1);
 
-        double d = static_cast<double>(num) / static_cast<double>(den);                           
-        return std::sqrt(d);
-      }
-    
-      double e24_13_12()
-      {
-        int num = (n14() - n13()) * (n13() - n24() + 1) * (n13() - n34() + 2) *
-                  (n13() - n44() + 3) * (n12() - n23() + 1) * (n12() - n33() + 2) 
-                  * (n13() - n22() + 2) * (n12() - n11() + 1);
-
-        int den = (n13() - n23() + 2) * (n13() - n23() + 1) * (n13() - n33() + 3) * 
-                  (n13() - n33() + 2) * (n12() - n22() + 2) * (n12() - n22() + 1);
+        assert(den != 0);
 
         double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
+        return std::sqrt(d);
+      }
+
+      double e24_13_12()
+      {
+        long num = ((long)n14() - n13()) * (n13() - n24() + 1) *
+                   (n13() - n34() + 2) * (n13() - n44() + 3) *
+                   (n12() - n23() + 1) * (n12() - n33() + 2) *
+                   (n13() - n22() + 2) * (n12() - n11() + 1);
+
+        long den = (n13() - n23() + 2) * (n13() - n23() + 1) *
+                   (n13() - n33() + 3) * (n13() - n33() + 2) *
+                   (n12() - n22() + 2) * (n12() - n22() + 1);
+
+        assert(den != 0);
+
+        double d = static_cast<double>(num) / static_cast<double>(den);
+
+        if (((int)(num) < 0) || ((int)(den) < 0))
+        {
+          std::cerr << num << std::endl;
+          std::cerr << den << std::endl;
+          std::cerr << *this << std::endl;
+        }
+
+        assert(d >= 0.0);
+
         return std::sqrt(d);
       }
 
@@ -290,10 +383,16 @@ namespace u4
                   (n13() - n44() + 3) * (n23() - n22()) * (n22() - n33() + 1) *
                   (n13() - n12() + 1) * (n11() - n22());
 
-        int den = (n13() - n23() + 2) * (n13() - n23() + 1) * (n13() - n33() + 3) 
-                  * (n13() - n33() + 2) * (n12() - n22() + 1) * (n12() - n22());
+        int den = (n13() - n23() + 2) * (n13() - n23() + 1) *
+                  (n13() - n33() + 3) * (n13() - n33() + 2) *
+                  (n12() - n22() + 1) * (n12() - n22());
+
+        assert(den != 0);
 
         double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return std::sqrt(d);
       }
 
@@ -304,20 +403,28 @@ namespace u4
                   (n23() - n22() + 1) * (n12() - n11() + 1);
 
         int den = (n13() - n23() + 1) * (n13() - n23()) * (n23() - n33() + 2) *
-                  (n23() - n33() + 1) * (n12() - n22() + 2) * (n12() - n22() + 1);
+                  (n23() - n33() + 1) * (n12() - n22() + 2) *
+                  (n12() - n22() + 1);
+
+        assert(den != 0);
 
         double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return -std::sqrt(d);
       }
 
       double e24_23_22()
       {
         int num = (n14() - n23() + 1) * (n24() - n23()) * (n23() - n34() + 1) *
-                  (n23() - n44() + 2) * (n13() - n22() + 1) * (n22() - n33() + 1) 
-                  * (n12() - n23()) * (n11() - n22());
+                  (n23() - n44() + 2) * (n13() - n22() + 1) *
+                  (n22() - n33() + 1) * (n12() - n23()) * (n11() - n22());
 
         int den = (n13() - n23() + 1) * (n13() - n23()) * (n23() - n33() + 2) *
                   (n23() - n33() + 1) * (n12() - n22() + 1) * (n12() - n22());
+
+        assert(den != 0);
 
         double d = static_cast<double>(num) / static_cast<double>(den);
         return std::sqrt(d);
@@ -329,10 +436,14 @@ namespace u4
                   (n33() - n44() + 1) * (n13() - n12()) * (n12() - n23() + 1) *
                   (n22() - n33()) * (n12() - n11() + 1);
 
-        int den = (n13() - n33() + 2) * (n13() - n33() + 1) * (n23() - n33() + 1) 
-                  * (n23() - n33()) * (n12() - n22() + 2) * (n12() - n22() + 1);
-      
-        double d = static_cast<double>(num) / static_cast<double>(den);                  
+        int den = (n13() - n33() + 2) * (n13() - n33() + 1) *
+                  (n23() - n33() + 1) * (n23() - n33()) * (n12() - n22() + 2) *
+                  (n12() - n22() + 1);
+
+        double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return -std::sqrt(d);
       }
 
@@ -342,23 +453,34 @@ namespace u4
                   (n33() - n44() + 1) * (n13() - n22() + 1) * (n23() - n22()) *
                   (n12() - n33() + 1) * (n11() - n22());
 
-        int den = (n13() - n33() + 2) * (n13() - n33() + 1) * (n23() - n33() + 1)  
-                  * (n23() - n33()) * (n12() - n22() + 1) * (n12() - n22());
+        int den = (n13() - n33() + 2) * (n13() - n33() + 1) *
+                  (n23() - n33() + 1) * (n23() - n33()) * (n12() - n22() + 1) *
+                  (n12() - n22());
 
-        double d = static_cast<double>(num) / static_cast<double>(den);                                     
+        assert(den != 0);
+
+        double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return -std::sqrt(d);
       }
-    
+
       double e42_13_12()
       {
         int num = (n14() - n13() + 1) * (n13() - n24()) * (n13() - n34() + 1) *
                   (n13() - n44() + 2) * (n12() - n23()) * (n12() - n33() + 1) *
                   (n13() - n22() + 1) * (n12() - n11());
 
-        int den = (n13() - n23() + 1) * (n13() - n23()) * (n13() - n33() + 2) * 
+        int den = (n13() - n23() + 1) * (n13() - n23()) * (n13() - n33() + 2) *
                   (n13() - n33() + 1) * (n12() - n22() + 1) * (n12() - n22());
 
+        assert(den != 0);
+
         double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return std::sqrt(d);
       }
 
@@ -368,23 +490,35 @@ namespace u4
                   (n13() - n44() + 2) * (n23() - n22() + 1) * (n22() - n33()) *
                   (n13() - n12()) * (n11() - n22() + 1);
 
-        int den = (n13() - n23() + 1) * (n13() - n23()) * (n13() - n33() + 2) * 
-                  (n13() - n33() + 1) * (n12() - n22() + 2) * (n12() - n22() + 1);
+        int den = (n13() - n23() + 1) * (n13() - n23()) * (n13() - n33() + 2) *
+                  (n13() - n33() + 1) * (n12() - n22() + 2) *
+                  (n12() - n22() + 1);
 
-        double d = static_cast<double>(num) / static_cast<double>(den);                                  
+        assert(den != 0);
+
+        double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return std::sqrt(d);
       }
 
       double e42_23_12()
       {
         int num = (n14() - n23() + 2) * (n24() - n23() + 1) * (n23() - n34()) *
-                  (n23() - n44() + 1) * (n13() - n12() + 1) * (n12() - n33() + 1) 
-                  * (n23() - n22()) * (n12() - n11());
-      
-        int den = (n13() - n23() + 2) * (n13() - n23() + 1) * (n23() - n33() + 1) 
-                  * (n23() - n33()) * (n12() - n22() + 1) * (n12() - n22());
+                  (n23() - n44() + 1) * (n13() - n12() + 1) *
+                  (n12() - n33() + 1) * (n23() - n22()) * (n12() - n11());
+
+        int den = (n13() - n23() + 2) * (n13() - n23() + 1) *
+                  (n23() - n33() + 1) * (n23() - n33()) * (n12() - n22() + 1) *
+                  (n12() - n22());
+
+        assert(den != 0);
 
         double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return -std::sqrt(d);
       }
 
@@ -394,49 +528,75 @@ namespace u4
                   (n23() - n44() + 1) * (n13() - n22() + 2) * (n22() - n33()) *
                   (n12() - n23() + 1) * (n11() - n22() + 1);
 
-        int den = (n13() - n23() + 2) * (n13() - n23() + 1) * (n23() - n33() + 1) 
-                  * (n23() - n33()) * (n12() - n22() + 2) * (n12() - n22() + 1);
+        int den = (n13() - n23() + 2) * (n13() - n23() + 1) *
+                  (n23() - n33() + 1) * (n23() - n33()) * (n12() - n22() + 2) *
+                  (n12() - n22() + 1);
 
-        double d = static_cast<double>(num) / static_cast<double>(den);              
+        assert(den != 0);
+
+        double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return std::sqrt(d);
       }
 
       double e42_33_12()
       {
-        int num = (n14() - n33() + 3) * (n24() - n33() + 2) * (n34() - n33() + 1) 
-                  * (n33() - n44()) * (n13() - n12() + 1) * (n12() - n23()) * 
-                  (n22() - n33() + 1) * (n12() - n11());
+        int num = (n14() - n33() + 3) * (n24() - n33() + 2) *
+                  (n34() - n33() + 1) * (n33() - n44()) * (n13() - n12() + 1) *
+                  (n12() - n23()) * (n22() - n33() + 1) * (n12() - n11());
 
-        int den = (n13() - n33() + 3) * (n13() - n33() + 2) * (n23() - n33() + 2) 
-                  * (n23() - n33() + 1) * (n12() - n22() + 1) * (n12() - n22());
+        int den = (n13() - n33() + 3) * (n13() - n33() + 2) *
+                  (n23() - n33() + 2) * (n23() - n33() + 1) *
+                  (n12() - n22() + 1) * (n12() - n22());
 
-        double d = static_cast<double>(num) / static_cast<double>(den);                   
+        assert(den != 0);
+
+        double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return -std::sqrt(d);
       }
 
       double e42_33_22()
       {
-        int num = (n14() - n33() + 3) * (n24() - n33() + 2) * (n34() - n33() + 1) *
-                  (n33() - n44()) * (n13() - n22() + 2) * (n23() - n22() + 1) *
-                  (n12() - n33() + 2) * (n11() - n22() + 1);
+        int num = (n14() - n33() + 3) * (n24() - n33() + 2) *
+                  (n34() - n33() + 1) * (n33() - n44()) * (n13() - n22() + 2) *
+                  (n23() - n22() + 1) * (n12() - n33() + 2) *
+                  (n11() - n22() + 1);
 
-        int den = (n13() - n33() + 3) * (n13() - n33() + 2) * (n23() - n33() + 2) * 
-                  (n23() - n33() + 1) * (n12() - n22() + 2) * (n12() - n22() + 1);
+        int den = (n13() - n33() + 3) * (n13() - n33() + 2) *
+                  (n23() - n33() + 2) * (n23() - n33() + 1) *
+                  (n12() - n22() + 2) * (n12() - n22() + 1);
 
-        double d = static_cast<double>(num) / static_cast<double>(den);      
+        assert(den != 0);
+
+        double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return -std::sqrt(d);
       }
-    
+
       double e14_13_12()
       {
         int num = (n14() - n13()) * (n13() - n24() + 1) * (n13() - n34() + 2) *
-                  (n13() - n44() + 3) * (n12() - n23() + 1) * (n12() - n33() + 2) 
-                  * (n13() - n22() + 2) * (n11() - n22() + 1);
+                  (n13() - n44() + 3) * (n12() - n23() + 1) *
+                  (n12() - n33() + 2) * (n13() - n22() + 2) *
+                  (n11() - n22() + 1);
 
-        int den = (n13() - n23() + 2) * (n13() - n23() + 1) * (n13() - n33() + 3) 
-                  * (n13() - n33() + 2) * (n12() - n22() + 2) * (n12() - n22() + 1);
+        int den = (n13() - n23() + 2) * (n13() - n23() + 1) *
+                  (n13() - n33() + 3) * (n13() - n33() + 2) *
+                  (n12() - n22() + 2) * (n12() - n22() + 1);
 
-        double d = static_cast<double>(num) / static_cast<double>(den);    
+        assert(den != 0);
+
+        double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return std::sqrt(d);
       }
 
@@ -446,10 +606,16 @@ namespace u4
                   (n13() - n44() + 3) * (n23() - n22()) * (n22() - n33() + 1) *
                   (n13() - n12() + 1) * (n12() - n11());
 
-        int den = (n13() - n23() + 2) * (n13() - n23() + 1) * (n13() - n33() + 3) 
-                  * (n13() - n33() + 2) * (n12() - n22() + 1) * (n12() - n22());
+        int den = (n13() - n23() + 2) * (n13() - n23() + 1) *
+                  (n13() - n33() + 3) * (n13() - n33() + 2) *
+                  (n12() - n22() + 1) * (n12() - n22());
 
-        double d = static_cast<double>(num) / static_cast<double>(den); 
+        assert(den != 0);
+
+        double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return -std::sqrt(d);
       }
 
@@ -460,22 +626,33 @@ namespace u4
                   (n23() - n22() + 1) * (n11() - n22() + 1);
 
         int den = (n13() - n23() + 1) * (n13() - n23()) * (n23() - n33() + 2) *
-                  (n23() - n33() + 1) * (n12() - n22() + 2) * (n12() - n22() + 1);
+                  (n23() - n33() + 1) * (n12() - n22() + 2) *
+                  (n12() - n22() + 1);
+
+        assert(den != 0);
 
         double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return -std::sqrt(d);
       }
 
       double e14_23_22()
       {
         int num = (n14() - n23() + 1) * (n24() - n23()) * (n23() - n34() + 1) *
-                  (n23() - n44() + 2) * (n13() - n22() + 1) * (n22() - n33() + 1) 
-                  * (n12() - n23()) * (n12() - n11());
+                  (n23() - n44() + 2) * (n13() - n22() + 1) *
+                  (n22() - n33() + 1) * (n12() - n23()) * (n12() - n11());
 
         int den = (n13() - n23() + 1) * (n13() - n23()) * (n23() - n33() + 2) *
                   (n23() - n33() + 1) * (n12() - n22() + 1) * (n12() - n22());
 
+        assert(den != 0);
+
         double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return -std::sqrt(d);
       }
 
@@ -485,10 +662,16 @@ namespace u4
                   (n33() - n44() + 1) * (n13() - n12()) * (n12() - n23() + 1) *
                   (n22() - n33()) * (n11() - n22() + 1);
 
-        int den = (n13() - n33() + 2) * (n13() - n33() + 1) * (n23() - n33() + 1) 
-                  * (n23() - n33()) * (n12() - n22() + 2) * (n12() - n22() + 1);
+        int den = (n13() - n33() + 2) * (n13() - n33() + 1) *
+                  (n23() - n33() + 1) * (n23() - n33()) * (n12() - n22() + 2) *
+                  (n12() - n22() + 1);
+
+        assert(den != 0);
 
         double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return -std::sqrt(d);
       }
 
@@ -498,23 +681,34 @@ namespace u4
                   (n33() - n44() + 1) * (n13() - n22() + 1) * (n23() - n22()) *
                   (n12() - n33() + 1) * (n12() - n11());
 
-        int den = (n13() - n33() + 2) * (n13() - n33() + 1) * (n23() - n33() + 1) 
-                  * (n23() - n33()) * (n12() - n22() + 1) * (n12() - n22());
+        int den = (n13() - n33() + 2) * (n13() - n33() + 1) *
+                  (n23() - n33() + 1) * (n23() - n33()) * (n12() - n22() + 1) *
+                  (n12() - n22());
 
-        double d = static_cast<double>(num) / static_cast<double>(den);                                  
+        assert(den != 0);
+
+        double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return std::sqrt(d);
       }
-    
+
       double e41_13_12()
       {
         int num = (n14() - n13() + 1) * (n13() - n24()) * (n13() - n34() + 1) *
                   (n13() - n44() + 2) * (n12() - n23()) * (n12() - n33() + 1) *
                   (n13() - n22() + 1) * (n11() - n22());
 
-        int den = (n13() - n23() + 1) * (n13() - n23()) * (n13() - n33() + 2) * 
+        int den = (n13() - n23() + 1) * (n13() - n23()) * (n13() - n33() + 2) *
                   (n13() - n33() + 1) * (n12() - n22() + 1) * (n12() - n22());
 
+        assert(den != 0);
+
         double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return std::sqrt(d);
       }
 
@@ -524,23 +718,35 @@ namespace u4
                   (n13() - n44() + 2) * (n23() - n22() + 1) * (n22() - n33()) *
                   (n13() - n12()) * (n12() - n11() + 1);
 
-        int den = (n13() - n23() + 1) * (n13() - n23()) * (n13() - n33() + 2) * 
-                  (n13() - n33() + 1) * (n12() - n22() + 2) * (n12() - n22() + 1);
-      
+        int den = (n13() - n23() + 1) * (n13() - n23()) * (n13() - n33() + 2) *
+                  (n13() - n33() + 1) * (n12() - n22() + 2) *
+                  (n12() - n22() + 1);
+
+        assert(den != 0);
+
         double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return -std::sqrt(d);
       }
 
       double e41_23_12()
       {
         int num = (n14() - n23() + 2) * (n24() - n23() + 1) * (n23() - n34()) *
-                  (n23() - n44() + 1) * (n13() - n12() + 1) * (n12() - n33() + 1) 
-                  * (n23() - n22()) * (n11() - n22());
+                  (n23() - n44() + 1) * (n13() - n12() + 1) *
+                  (n12() - n33() + 1) * (n23() - n22()) * (n11() - n22());
 
-        int den = (n13() - n23() + 2) * (n13() - n23() + 1) * (n23() - n33() + 1) 
-                  * (n23() - n33()) * (n12() - n22() + 1) * (n12() - n22());
+        int den = (n13() - n23() + 2) * (n13() - n23() + 1) *
+                  (n23() - n33() + 1) * (n23() - n33()) * (n12() - n22() + 1) *
+                  (n12() - n22());
+
+        assert(den != 0);
 
         double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return -std::sqrt(d);
       }
 
@@ -550,36 +756,55 @@ namespace u4
                   (n23() - n44() + 1) * (n13() - n22() + 2) * (n22() - n33()) *
                   (n12() - n23() + 1) * (n12() - n11() + 1);
 
-        int den = (n13() - n23() + 2) * (n13() - n23() + 1) * (n23() - n33() + 1) 
-                  * (n23() - n33()) * (n12() - n22() + 2) * (n12() - n22() + 1);
+        int den = (n13() - n23() + 2) * (n13() - n23() + 1) *
+                  (n23() - n33() + 1) * (n23() - n33()) * (n12() - n22() + 2) *
+                  (n12() - n22() + 1);
 
-        double d = static_cast<double>(num) / static_cast<double>(den);                 
+        assert(den != 0);
+
+        double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return -std::sqrt(d);
       }
 
       double e41_33_12()
       {
-        int num = (n14() - n33() + 3) * (n24() - n33() + 2) * (n34() - n33() + 1) 
-                  * (n33() - n44()) * (n13() - n12() + 1) * (n12() - n23()) * 
-                  (n22() - n33() + 1) * (n11() - n22());
+        int num = (n14() - n33() + 3) * (n24() - n33() + 2) *
+                  (n34() - n33() + 1) * (n33() - n44()) * (n13() - n12() + 1) *
+                  (n12() - n23()) * (n22() - n33() + 1) * (n11() - n22());
 
-        int den = (n13() - n33() + 3) * (n13() - n33() + 2) * (n23() - n33() + 2) 
-                  * (n23() - n33() + 1) * (n12() - n22() + 1) * (n12() - n22());
+        int den = (n13() - n33() + 3) * (n13() - n33() + 2) *
+                  (n23() - n33() + 2) * (n23() - n33() + 1) *
+                  (n12() - n22() + 1) * (n12() - n22());
 
-        double d = static_cast<double>(num) / static_cast<double>(den);  
+        assert(den != 0);
+
+        double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return -std::sqrt(d);
       }
 
       double e41_33_22()
       {
-        int num = (n14() - n33() + 3) * (n24() - n33() + 2) * (n34() - n33() + 1) 
-                  * (n33() - n44()) * (n13() - n22() + 2) * (n23() - n22() + 1) *
-                  (n12() - n33() + 2) * (n12() - n11() + 1);
+        int num = (n14() - n33() + 3) * (n24() - n33() + 2) *
+                  (n34() - n33() + 1) * (n33() - n44()) * (n13() - n22() + 2) *
+                  (n23() - n22() + 1) * (n12() - n33() + 2) *
+                  (n12() - n11() + 1);
 
-        int den = (n13() - n33() + 3) * (n13() - n33() + 2) * (n23() - n33() + 2) 
-                  * (n23() - n33() + 1) * (n12() - n22() + 2) * (n12() - n22() + 1);
+        int den = (n13() - n33() + 3) * (n13() - n33() + 2) *
+                  (n23() - n33() + 2) * (n23() - n33() + 1) *
+                  (n12() - n22() + 2) * (n12() - n22() + 1);
 
-        double d = static_cast<double>(num) / static_cast<double>(den); 
+        assert(den != 0);
+
+        double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
         return std::sqrt(d);
       }
     };
@@ -588,8 +813,8 @@ namespace u4
     template <typename Rep>
     inline std::ostream& operator<<(std::ostream& s, const gelfand<Rep>& g)
     {
-      return s << g.n14() << "," << g.n24() << "," << g.n34() << "," << g.n44() 
-               << ";" << g.n13() << "," << g.n23() << "," << g.n33() << ";" 
+      return s << g.n14() << "," << g.n24() << "," << g.n34() << "," << g.n44()
+               << ";" << g.n13() << "," << g.n23() << "," << g.n33() << ";"
                << g.n12() << "," << g.n22() << ";" << g.n11();
     }
 
