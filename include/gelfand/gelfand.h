@@ -105,255 +105,173 @@ namespace u4
 
       double e12() const
       {
-        int n = (n12() - n11()) * (n11() - n22() + 1);
+        auto num = prod_diff<I>({n12(), n11(), 0}, {n11(), n22(), 1});
+        decltype(num) den = 1;
 
-        assert(n >= 0);
-
-        return std::sqrt(static_cast<double>(n));
+        return sqrt_num_den(num, den);
       }
 
       double e21() const
       {
-        int n = (n12() - n11() + 1) * (n11() - n22());
+        auto num = prod_diff<I>({n12(), n11(), 1}, {n11(), n22(), 0});
+        decltype(num) den = 1;
 
-        assert(n >= 0);
-
-        return std::sqrt(static_cast<double>(n));
+        return sqrt_num_den(num, den);
       }
 
       double e23_12() const
       {
-        int num = (n13() - n12()) * (n12() - n23() + 1) * (n12() - n33() + 2) *
-                  (n12() - n11() + 1);
+        auto num = prod_diff<I>({n13(), n12(), 0}, {n12(), n23(), 1},
+                                {n12(), n33(), 2}, {n12(), n11(), 1});
 
-        int den = (n12() - n22() + 2) * (n12() - n22() + 1);
+        auto den = prod_diff<I>({n12(), n22(), 2}, {n12(), n22(), 1});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return std::sqrt(d);
+        return sqrt_num_den(num, den);
       }
 
       double e23_22() const
       {
-        int num = (n13() - n22() + 1) * (n23() - n22()) * (n22() - n33() + 1) *
-                  (n11() - n22());
+        auto num = prod_diff<I>({n13(), n22(), 1}, {n23(), n22(), 0},
+                                {n22(), n33(), 1}, {n11(), n22(), 0});
 
-        int den = (n12() - n22() + 1) * (n12() - n22());
+        auto den = prod_diff<I>({n12(), n22(), 1}, {n12(), n22(), 0});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0);
-
-        return std::sqrt(d);
+        return sqrt_num_den(num, den);
       }
 
       double e32_12() const
       {
-        int num = (n13() - n12() + 1) * (n12() - n23()) * (n12() - n33() + 1) *
-                  (n12() - n11());
+        auto num = prod_diff<I>({n13(), n12(), 1}, {n12(), n23(), 0},
+                                {n12(), n33(), 1}, {n12(), n11(), 0});
 
-        int den = (n12() - n22() + 1) * (n12() - n22());
+        auto den = prod_diff<I>({n12(), n22(), 1}, {n12(), n22(), 0});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0);
-
-        return std::sqrt(d);
+        return sqrt_num_den(num, den);
       }
 
       double e32_22() const
       {
-        int num = (n13() - n22() + 2) * (n23() - n22() + 1) * (n22() - n33()) *
-                  (n11() - n22() + 1);
+        auto num = prod_diff<I>({n13(), n22(), 2}, {n23(), n22(), 1},
+                                {n22(), n33(), 0}, {n11(), n22(), 1});
 
-        int den = (n12() - n22() + 2) * (n12() - n22() + 1);
+        auto den = prod_diff<I>({n12(), n22(), 2}, {n12(), n22(), 1});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return std::sqrt(d);
+        return sqrt_num_den(num, den);
       }
 
       double e13_12() const
       {
-        int num = (n13() - n12()) * (n12() - n23() + 1) * (n12() - n33() + 2) *
-                  (n11() - n22() + 1);
+        auto num = prod_diff<I>({n13(), n12(), 0}, {n12(), n23(), 1},
+                                {n12(), n33(), 2}, {n11(), n22(), 1});
 
-        int den = (n12() - n22() + 2) * (n12() - n22() + 1);
+        auto den = prod_diff<I>({n12(), n22(), 2}, {n12(), n22(), 1});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return std::sqrt(d);
+        return sqrt_num_den(num, den);
       }
 
       double e13_22() const
       {
-        int num = (n13() - n22() + 1) * (n23() - n22()) * (n22() - n33() + 1) *
-                  (n12() - n11());
+        auto num = prod_diff<I>({n13(), n22(), 1}, {n23(), n22(), 0},
+                                {n22(), n33(), 1}, {n12(), n11(), 0});
 
-        int den = (n12() - n22() + 1) * (n12() - n22());
+        auto den = prod_diff<I>({n12(), n22(), 1}, {n12(), n22(), 0});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return -std::sqrt(d);
+        return -sqrt_num_den(num, den);
       }
 
       double e31_12() const
       {
-        int num = (n13() - n12() + 1) * (n12() - n23()) * (n12() - n33() + 1) *
-                  (n11() - n22());
+        auto num = prod_diff<I>({n13(), n12(), 1}, {n12(), n23(), 0},
+                                {n12(), n33(), 1}, {n11(), n22(), 0});
 
-        int den = (n12() - n22() + 1) * (n12() - n22());
+        auto den = prod_diff<I>({n12(), n22(), 1}, {n12(), n22(), 0});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return std::sqrt(d);
+        return sqrt_num_den(num, den);
       }
 
       double e31_22() const
       {
-        int num = (n13() - n22() + 2) * (n23() - n22() + 1) * (n22() - n33()) *
-                  (n12() - n11() + 1);
+        auto num = prod_diff<I>({n13(), n22(), 2}, {n23(), n22(), 1},
+                                {n22(), n33(), 0}, {n12(), n11(), 1});
 
-        int den = (n12() - n22() + 2) * (n12() - n22() + 1);
+        auto den = prod_diff<I>({n12(), n22(), 2}, {n12(), n22(), 1});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return -std::sqrt(d);
+        return -sqrt_num_den(num, den);
       }
 
-      double e34_13()
+      double e34_13() const
       {
-        int num = (n14() - n13()) * (n13() - n24() + 1) * (n13() - n34() + 2) *
-                  (n13() - n44() + 3) * (n13() - n12() + 1) *
-                  (n13() - n22() + 2);
+        auto num = prod_diff<I>({n14(), n13(), 0}, {n13(), n24(), 1},
+                                {n13(), n34(), 2}, {n13(), n44(), 3},
+                                {n13(), n12(), 1}, {n13(), n22(), 2});
 
-        int den = (n13() - n23() + 2) * (n13() - n23() + 1) *
-                  (n13() - n33() + 3) * (n13() - n33() + 2);
+        auto den = prod_diff<I>({n13(), n23(), 2}, {n13(), n23(), 1},
+                                {n13(), n33(), 3}, {n13(), n33(), 2});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return std::sqrt(d);
+        return sqrt_num_den(num, den);
       }
 
-      double e34_23()
+      double e34_23() const
       {
-        int num = (n14() - n23() + 1) * (n24() - n23()) * (n23() - n34() + 1) *
-                  (n23() - n44() + 2) * (n12() - n23()) * (n23() - n22() + 1);
+        auto num = prod_diff<I>({n14(), n23(), 1}, {n24(), n23(), 0},
+                                {n23(), n34(), 1}, {n23(), n44(), 2},
+                                {n12(), n23(), 0}, {n23(), n22(), 1});
 
-        int den = (n13() - n23() + 1) * (n13() - n23()) * (n23() - n33() + 2) *
-                  (n23() - n33() + 1);
+        auto den = prod_diff<I>({n13(), n23(), 1}, {n13(), n23(), 0},
+                                {n23(), n33(), 2}, {n23(), n33(), 1});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return std::sqrt(d);
+        return sqrt_num_den(num, den);
       }
 
-      double e34_33()
+      double e34_33() const
       {
-        int num = (n14() - n33() + 2) * (n24() - n33() + 1) * (n34() - n33()) *
-                  (n33() - n44() + 1) * (n12() - n33() + 1) * (n22() - n33());
+        auto num = prod_diff<I>({n14(), n33(), 2}, {n24(), n33(), 1},
+                                {n34(), n33(), 0}, {n33(), n44(), 1},
+                                {n12(), n33(), 1}, {n22(), n33(), 0});
 
-        int den = (n13() - n33() + 2) * (n13() - n33() + 1) *
-                  (n23() - n33() + 1) * (n23() - n33());
+        auto den = prod_diff<I>({n13(), n33(), 2}, {n13(), n33(), 1},
+                                {n23(), n33(), 1}, {n23(), n33(), 0});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return std::sqrt(d);
+        return sqrt_num_den(num, den);
       }
 
-      double e43_13()
+      double e43_13() const
       {
-        int num = (n14() - n13() + 1) * (n13() - n24()) * (n13() - n34() + 1) *
-                  (n13() - n44() + 2) * (n13() - n12()) * (n13() - n22() + 1);
+        auto num = prod_diff<I>({n14(), n13(), 1}, {n13(), n24(), 0},
+                                {n13(), n34(), 1}, {n13(), n44(), 2},
+                                {n13(), n12(), 0}, {n13(), n22(), 1});
 
-        int den = (n13() - n23() + 1) * (n13() - n23()) * (n13() - n33() + 2) *
-                  (n13() - n33() + 1);
+        auto den = prod_diff<I>({n13(), n23(), 1}, {n13(), n23(), 0},
+                                {n13(), n33(), 2}, {n13(), n33(), 1});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return std::sqrt(d);
+        return sqrt_num_den(num, den);
       }
 
-      double e43_23()
+      double e43_23() const
       {
-        int num = (n14() - n23() + 2) * (n24() - n23() + 1) * (n23() - n34()) *
-                  (n23() - n44() + 1) * (n12() - n23() + 1) * (n23() - n22());
+        auto num = prod_diff<I>({n14(), n23(), 2}, {n24(), n23(), 1},
+                                {n23(), n34(), 0}, {n23(), n44(), 1},
+                                {n12(), n23(), 1}, {n23(), n22(), 0});
 
-        int den = (n13() - n23() + 2) * (n13() - n23() + 1) *
-                  (n23() - n33() + 1) * (n23() - n33());
+        auto den = prod_diff<I>({n13(), n23(), 2}, {n13(), n23(), 1},
+                                {n23(), n33(), 1}, {n23(), n33(), 0});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return std::sqrt(d);
+        return sqrt_num_den(num, den);
       }
 
-      double e43_33()
+      double e43_33() const
       {
-        int num = (n14() - n33() + 3) * (n24() - n33() + 2) *
-                  (n34() - n33() + 1) * (n33() - n44()) * (n12() - n33() + 2) *
-                  (n22() - n33() + 1);
+        auto num = prod_diff<I>({n14(), n33(), 3}, {n24(), n33(), 2},
+                                {n34(), n33(), 1}, {n33(), n44(), 0},
+                                {n12(), n33(), 2}, {n22(), n33(), 1});
 
-        int den = (n13() - n33() + 3) * (n13() - n33() + 2) *
-                  (n23() - n33() + 2) * (n23() - n33() + 1);
+        auto den = prod_diff<I>({n13(), n33(), 3}, {n13(), n33(), 2},
+                                {n23(), n33(), 2}, {n23(), n33(), 1});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return std::sqrt(d);
+        return sqrt_num_den(num, den);
       }
 
-      double e24_13_12()
+      double e24_13_12() const
       {
         auto num = prod_diff<I>({n14(), n13(), 0}, {n13(), n24(), 1},
                                 {n13(), n34(), 2}, {n13(), n44(), 3},
@@ -367,441 +285,326 @@ namespace u4
         return sqrt_num_den(num, den);
       }
 
-      double e24_13_22()
+      double e24_13_22() const
       {
-        int num = (n14() - n13()) * (n13() - n24() + 1) * (n13() - n34() + 2) *
-                  (n13() - n44() + 3) * (n23() - n22()) * (n22() - n33() + 1) *
-                  (n13() - n12() + 1) * (n11() - n22());
+        auto num = prod_diff<I>({n14(), n13(), 0}, {n13(), n24(), 1},
+                                {n13(), n34(), 2}, {n13(), n44(), 3},
+                                {n23(), n22(), 0}, {n22(), n33(), 1},
+                                {n13(), n12(), 1}, {n11(), n22(), 0});
 
-        int den = (n13() - n23() + 2) * (n13() - n23() + 1) *
-                  (n13() - n33() + 3) * (n13() - n33() + 2) *
-                  (n12() - n22() + 1) * (n12() - n22());
+        auto den = prod_diff<I>({n13(), n23(), 2}, {n13(), n23(), 1},
+                                {n13(), n33(), 3}, {n13(), n33(), 2},
+                                {n12(), n22(), 1}, {n12(), n22(), 0});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return std::sqrt(d);
+        return sqrt_num_den(num, den);
       }
 
-      double e24_23_12()
+      double e24_23_12() const
       {
-        int num = (n14() - n23() + 1) * (n24() - n23()) * (n23() - n34() + 1) *
-                  (n23() - n44() + 2) * (n13() - n12()) * (n12() - n33() + 2) *
-                  (n23() - n22() + 1) * (n12() - n11() + 1);
+        auto num = prod_diff<I>({n14(), n23(), 1}, {n24(), n23(), 0},
+                                {n23(), n34(), 1}, {n23(), n44(), 2},
+                                {n13(), n12(), 0}, {n12(), n33(), 2},
+                                {n23(), n22(), 1}, {n12(), n11(), 1});
 
-        int den = (n13() - n23() + 1) * (n13() - n23()) * (n23() - n33() + 2) *
-                  (n23() - n33() + 1) * (n12() - n22() + 2) *
-                  (n12() - n22() + 1);
-
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return -std::sqrt(d);
+        auto den = prod_diff<I>({n13(), n23(), 1}, {n13(), n23(), 0},
+                                {n23(), n33(), 2}, {n23(), n33(), 1},
+                                {n12(), n22(), 2}, {n12(), n22(), 1});
+        
+        return -sqrt_num_den(num, den);
       }
 
-      double e24_23_22()
+      double e24_23_22() const
       {
-        int num = (n14() - n23() + 1) * (n24() - n23()) * (n23() - n34() + 1) *
-                  (n23() - n44() + 2) * (n13() - n22() + 1) *
-                  (n22() - n33() + 1) * (n12() - n23()) * (n11() - n22());
+        auto num = prod_diff<I>({n14(), n23(), 1}, {n24(), n23(), 0},
+                                {n23(), n34(), 1}, {n23(), n44(), 2},
+                                {n13(), n22(), 1}, {n22(), n33(), 1},
+                                {n12(), n23(), 0}, {n11(), n22(), 0});
 
-        int den = (n13() - n23() + 1) * (n13() - n23()) * (n23() - n33() + 2) *
-                  (n23() - n33() + 1) * (n12() - n22() + 1) * (n12() - n22());
+        auto den = prod_diff<I>({n13(), n23(), 1}, {n13(), n23(), 0},
+                                {n23(), n33(), 2}, {n23(), n33(), 1},
+                                {n12(), n22(), 1}, {n12(), n22(), 0});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-        return std::sqrt(d);
+        return sqrt_num_den(num, den);
       }
 
-      double e24_33_12()
+      double e24_33_12() const
       {
-        int num = (n14() - n33() + 2) * (n24() - n33() + 1) * (n34() - n33()) *
-                  (n33() - n44() + 1) * (n13() - n12()) * (n12() - n23() + 1) *
-                  (n22() - n33()) * (n12() - n11() + 1);
+        auto num = prod_diff<I>({n14(), n33(), 2}, {n24(), n33(), 1},
+                                {n34(), n33(), 0}, {n33(), n44(), 1},
+                                {n13(), n12(), 0}, {n12(), n23(), 1},
+                                {n22(), n33(), 0}, {n12(), n11(), 1});
 
-        int den = (n13() - n33() + 2) * (n13() - n33() + 1) *
-                  (n23() - n33() + 1) * (n23() - n33()) * (n12() - n22() + 2) *
-                  (n12() - n22() + 1);
+        auto den = prod_diff<I>({n13(), n33(), 2}, {n13(), n33(), 1},
+                                {n23(), n33(), 1}, {n23(), n33(), 0},
+                                {n12(), n22(), 2}, {n12(), n22(), 1});
 
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return -std::sqrt(d);
+        return -sqrt_num_den(num, den);
       }
 
-      double e24_33_22()
+      double e24_33_22() const
       {
-        int num = (n14() - n33() + 2) * (n24() - n33() + 1) * (n34() - n33()) *
-                  (n33() - n44() + 1) * (n13() - n22() + 1) * (n23() - n22()) *
-                  (n12() - n33() + 1) * (n11() - n22());
+        auto num = prod_diff<I>({n14(), n33(), 2}, {n24(), n33(), 1},
+                                {n34(), n33(), 0}, {n33(), n44(), 1},
+                                {n13(), n22(), 1}, {n23(), n22(), 0},
+                                {n12(), n33(), 1}, {n11(), n22(), 0});
 
-        int den = (n13() - n33() + 2) * (n13() - n33() + 1) *
-                  (n23() - n33() + 1) * (n23() - n33()) * (n12() - n22() + 1) *
-                  (n12() - n22());
+        auto den = prod_diff<I>({n13(), n33(), 2}, {n13(), n33(), 1},
+                                {n23(), n33(), 1}, {n23(), n33(), 0},
+                                {n12(), n22(), 1}, {n12(), n22(), 0});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return -std::sqrt(d);
+        return -sqrt_num_den(num, den);
       }
 
-      double e42_13_12()
+      double e42_13_12() const
       {
-        int num = (n14() - n13() + 1) * (n13() - n24()) * (n13() - n34() + 1) *
-                  (n13() - n44() + 2) * (n12() - n23()) * (n12() - n33() + 1) *
-                  (n13() - n22() + 1) * (n12() - n11());
+        auto num = prod_diff<I>({n14(), n13(), 1}, {n13(), n24(), 0},
+                                {n13(), n34(), 1}, {n13(), n44(), 2},
+                                {n12(), n23(), 0}, {n12(), n33(), 1},
+                                {n13(), n22(), 1}, {n12(), n11(), 0});
 
-        int den = (n13() - n23() + 1) * (n13() - n23()) * (n13() - n33() + 2) *
-                  (n13() - n33() + 1) * (n12() - n22() + 1) * (n12() - n22());
+        auto den = prod_diff<I>({n13(), n23(), 1}, {n13(), n23(), 0},
+                                {n13(), n33(), 2}, {n13(), n33(), 1},
+                                {n12(), n22(), 1}, {n12(), n22(), 0});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return std::sqrt(d);
+        return sqrt_num_den(num, den);
       }
 
-      double e42_13_22()
+      double e42_13_22() const
       {
-        int num = (n14() - n13() + 1) * (n13() - n24()) * (n13() - n34() + 1) *
-                  (n13() - n44() + 2) * (n23() - n22() + 1) * (n22() - n33()) *
-                  (n13() - n12()) * (n11() - n22() + 1);
+        auto num = prod_diff<I>({n14(), n13(), 1}, {n13(), n24(), 0},
+                                {n13(), n34(), 1}, {n13(), n44(), 2},
+                                {n23(), n22(), 1}, {n22(), n33(), 0},
+                                {n13(), n12(), 0}, {n11(), n22(), 1});
 
-        int den = (n13() - n23() + 1) * (n13() - n23()) * (n13() - n33() + 2) *
-                  (n13() - n33() + 1) * (n12() - n22() + 2) *
-                  (n12() - n22() + 1);
+        auto den = prod_diff<I>({n13(), n23(), 1}, {n13(), n23(), 0},
+                                {n13(), n33(), 2}, {n13(), n33(), 1},
+                                {n12(), n22(), 2}, {n12(), n22(), 1});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return std::sqrt(d);
+        return sqrt_num_den(num, den);
       }
 
-      double e42_23_12()
+      double e42_23_12() const
       {
-        int num = (n14() - n23() + 2) * (n24() - n23() + 1) * (n23() - n34()) *
-                  (n23() - n44() + 1) * (n13() - n12() + 1) *
-                  (n12() - n33() + 1) * (n23() - n22()) * (n12() - n11());
+        auto num = prod_diff<I>({n14(), n23(), 2}, {n24(), n23(), 1},
+                                {n23(), n34(), 0}, {n23(), n44(), 1},
+                                {n13(), n12(), 1}, {n12(), n33(), 1},
+                                {n23(), n22(), 0}, {n12(), n11(), 0});
 
-        int den = (n13() - n23() + 2) * (n13() - n23() + 1) *
-                  (n23() - n33() + 1) * (n23() - n33()) * (n12() - n22() + 1) *
-                  (n12() - n22());
+        auto den = prod_diff<I>({n13(), n23(), 2}, {n13(), n23(), 1},
+                                {n23(), n33(), 1}, {n23(), n33(), 0},
+                                {n12(), n22(), 1}, {n12(), n22(), 0});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return -std::sqrt(d);
+        return -sqrt_num_den(num, den);
       }
 
-      double e42_23_22()
+      double e42_23_22() const
       {
-        int num = (n14() - n23() + 2) * (n24() - n23() + 1) * (n23() - n34()) *
-                  (n23() - n44() + 1) * (n13() - n22() + 2) * (n22() - n33()) *
-                  (n12() - n23() + 1) * (n11() - n22() + 1);
+        auto num = prod_diff<I>({n14(), n23(), 2}, {n24(), n23(), 1},
+                                {n23(), n34(), 0}, {n23(), n44(), 1},
+                                {n13(), n22(), 2}, {n22(), n33(), 0},
+                                {n12(), n23(), 1}, {n11(), n22(), 1});
 
-        int den = (n13() - n23() + 2) * (n13() - n23() + 1) *
-                  (n23() - n33() + 1) * (n23() - n33()) * (n12() - n22() + 2) *
-                  (n12() - n22() + 1);
+        auto den = prod_diff<I>({n13(), n23(), 2}, {n13(), n23(), 1},
+                                {n23(), n33(), 1}, {n23(), n33(), 0},
+                                {n12(), n22(), 2}, {n12(), n22(), 1});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return std::sqrt(d);
+        return sqrt_num_den(num, den);
       }
 
-      double e42_33_12()
+      double e42_33_12() const
       {
-        int num = (n14() - n33() + 3) * (n24() - n33() + 2) *
-                  (n34() - n33() + 1) * (n33() - n44()) * (n13() - n12() + 1) *
-                  (n12() - n23()) * (n22() - n33() + 1) * (n12() - n11());
+        auto num = prod_diff<I>({n14(), n33(), 3}, {n24(), n33(), 2},
+                                {n34(), n33(), 1}, {n33(), n44(), 0},
+                                {n13(), n12(), 1}, {n12(), n23(), 0},
+                                {n22(), n33(), 1}, {n12(), n11(), 0});
 
-        int den = (n13() - n33() + 3) * (n13() - n33() + 2) *
-                  (n23() - n33() + 2) * (n23() - n33() + 1) *
-                  (n12() - n22() + 1) * (n12() - n22());
+        auto den = prod_diff<I>({n13(), n33(), 3}, {n13(), n33(), 2},
+                                {n23(), n33(), 2}, {n23(), n33(), 1},
+                                {n12(), n22(), 1}, {n12(), n22(), 0});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return -std::sqrt(d);
+        return -sqrt_num_den(num, den);
       }
 
-      double e42_33_22()
+      double e42_33_22() const
       {
-        int num = (n14() - n33() + 3) * (n24() - n33() + 2) *
-                  (n34() - n33() + 1) * (n33() - n44()) * (n13() - n22() + 2) *
-                  (n23() - n22() + 1) * (n12() - n33() + 2) *
-                  (n11() - n22() + 1);
+        auto num = prod_diff<I>({n14(), n33(), 3}, {n24(), n33(), 2},
+                                {n34(), n33(), 1}, {n33(), n44(), 0},
+                                {n13(), n22(), 2}, {n23(), n22(), 1},
+                                {n12(), n33(), 2}, {n11(), n22(), 1});
 
-        int den = (n13() - n33() + 3) * (n13() - n33() + 2) *
-                  (n23() - n33() + 2) * (n23() - n33() + 1) *
-                  (n12() - n22() + 2) * (n12() - n22() + 1);
+        auto den = prod_diff<I>({n13(), n33(), 3}, {n13(), n33(), 2},
+                                {n23(), n33(), 2}, {n23(), n33(), 1},
+                                {n12(), n22(), 2}, {n12(), n22(), 1});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return -std::sqrt(d);
+        return -sqrt_num_den(num, den);
       }
 
-      double e14_13_12()
+      double e14_13_12() const
       {
-        int num = (n14() - n13()) * (n13() - n24() + 1) * (n13() - n34() + 2) *
-                  (n13() - n44() + 3) * (n12() - n23() + 1) *
-                  (n12() - n33() + 2) * (n13() - n22() + 2) *
-                  (n11() - n22() + 1);
+        auto num = prod_diff<I>({n14(), n13(), 0}, {n13(), n24(), 1},
+                                {n13(), n34(), 2}, {n13(), n44(), 3},
+                                {n12(), n23(), 1}, {n12(), n33(), 2},
+                                {n13(), n22(), 2}, {n11(), n22(), 1});
 
-        int den = (n13() - n23() + 2) * (n13() - n23() + 1) *
-                  (n13() - n33() + 3) * (n13() - n33() + 2) *
-                  (n12() - n22() + 2) * (n12() - n22() + 1);
+        auto den = prod_diff<I>({n13(), n23(), 2}, {n13(), n23(), 1},
+                                {n13(), n33(), 3}, {n13(), n33(), 2},
+                                {n12(), n22(), 2}, {n12(), n22(), 1});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return std::sqrt(d);
+        return sqrt_num_den(num, den);
       }
 
-      double e14_13_22()
+      double e14_13_22() const
       {
-        int num = (n14() - n13()) * (n13() - n24() + 1) * (n13() - n34() + 2) *
-                  (n13() - n44() + 3) * (n23() - n22()) * (n22() - n33() + 1) *
-                  (n13() - n12() + 1) * (n12() - n11());
+        auto num = prod_diff<I>({n14(), n13(), 0}, {n13(), n24(), 1},
+                                {n13(), n34(), 2}, {n13(), n44(), 3},
+                                {n23(), n22(), 0}, {n22(), n33(), 1},
+                                {n13(), n12(), 1}, {n12(), n11(), 0});
 
-        int den = (n13() - n23() + 2) * (n13() - n23() + 1) *
-                  (n13() - n33() + 3) * (n13() - n33() + 2) *
-                  (n12() - n22() + 1) * (n12() - n22());
+        auto den = prod_diff<I>({n13(), n23(), 2}, {n13(), n23(), 1},
+                                {n13(), n33(), 3}, {n13(), n33(), 2},
+                                {n12(), n22(), 1}, {n12(), n22(), 0});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return -std::sqrt(d);
+        return -sqrt_num_den(num, den);
       }
 
-      double e14_23_12()
+      double e14_23_12() const
       {
-        int num = (n14() - n23() + 1) * (n24() - n23()) * (n23() - n34() + 1) *
-                  (n23() - n44() + 2) * (n13() - n12()) * (n12() - n33() + 2) *
-                  (n23() - n22() + 1) * (n11() - n22() + 1);
+        auto num = prod_diff<I>({n14(), n23(), 1}, {n24(), n23(), 0},
+                                {n23(), n34(), 1}, {n23(), n44(), 2},
+                                {n13(), n12(), 0}, {n12(), n33(), 2},
+                                {n23(), n22(), 1}, {n11(), n22(), 1});
 
-        int den = (n13() - n23() + 1) * (n13() - n23()) * (n23() - n33() + 2) *
-                  (n23() - n33() + 1) * (n12() - n22() + 2) *
-                  (n12() - n22() + 1);
+        auto den = prod_diff<I>({n13(), n23(), 1}, {n13(), n23(), 0},
+                                {n23(), n33(), 2}, {n23(), n33(), 1},
+                                {n12(), n22(), 2}, {n12(), n22(), 1});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return -std::sqrt(d);
+        return -sqrt_num_den(num, den);
       }
 
-      double e14_23_22()
+      double e14_23_22() const
       {
-        int num = (n14() - n23() + 1) * (n24() - n23()) * (n23() - n34() + 1) *
-                  (n23() - n44() + 2) * (n13() - n22() + 1) *
-                  (n22() - n33() + 1) * (n12() - n23()) * (n12() - n11());
+        auto num = prod_diff<I>({n14(), n23(), 1}, {n24(), n23(), 0},
+                                {n23(), n34(), 1}, {n23(), n44(), 2},
+                                {n13(), n22(), 1}, {n22(), n33(), 1},
+                                {n12(), n23(), 0}, {n12(), n11(), 0});
 
-        int den = (n13() - n23() + 1) * (n13() - n23()) * (n23() - n33() + 2) *
-                  (n23() - n33() + 1) * (n12() - n22() + 1) * (n12() - n22());
+        auto den = prod_diff<I>({n13(), n23(), 1}, {n13(), n23(), 0},
+                                {n23(), n33(), 2}, {n23(), n33(), 1},
+                                {n12(), n22(), 1}, {n12(), n22(), 0});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return -std::sqrt(d);
+        return -sqrt_num_den(num, den);
       }
 
-      double e14_33_12()
+      double e14_33_12() const
       {
-        int num = (n14() - n33() + 2) * (n24() - n33() + 1) * (n34() - n33()) *
-                  (n33() - n44() + 1) * (n13() - n12()) * (n12() - n23() + 1) *
-                  (n22() - n33()) * (n11() - n22() + 1);
+        auto num = prod_diff<I>({n14(), n33(), 2}, {n24(), n33(), 1},
+                                {n34(), n33(), 0}, {n33(), n44(), 1},
+                                {n13(), n12(), 0}, {n12(), n23(), 1},
+                                {n22(), n33(), 0}, {n11(), n22(), 1});
 
-        int den = (n13() - n33() + 2) * (n13() - n33() + 1) *
-                  (n23() - n33() + 1) * (n23() - n33()) * (n12() - n22() + 2) *
-                  (n12() - n22() + 1);
+        auto den = prod_diff<I>({n13(), n33(), 2}, {n13(), n33(), 1},
+                                {n23(), n33(), 1}, {n23(), n33(), 0},
+                                {n12(), n22(), 2}, {n12(), n22(), 1});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return -std::sqrt(d);
+        return -sqrt_num_den(num, den);
       }
 
-      double e14_33_22()
+      double e14_33_22() const 
       {
-        int num = (n14() - n33() + 2) * (n24() - n33() + 1) * (n34() - n33()) *
-                  (n33() - n44() + 1) * (n13() - n22() + 1) * (n23() - n22()) *
-                  (n12() - n33() + 1) * (n12() - n11());
+        auto num = prod_diff<I>({n14(), n33(), 2}, {n24(), n33(), 1},
+                                {n34(), n33(), 0}, {n33(), n44(), 1},
+                                {n13(), n22(), 1}, {n23(), n22(), 0},
+                                {n12(), n33(), 1}, {n12(), n11(), 0});
 
-        int den = (n13() - n33() + 2) * (n13() - n33() + 1) *
-                  (n23() - n33() + 1) * (n23() - n33()) * (n12() - n22() + 1) *
-                  (n12() - n22());
+        auto den = prod_diff<I>({n13(), n33(), 2}, {n13(), n33(), 1},
+                                {n23(), n33(), 1}, {n23(), n33(), 0},
+                                {n12(), n22(), 1}, {n12(), n22(), 0});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return std::sqrt(d);
+        return sqrt_num_den(num, den);
       }
 
-      double e41_13_12()
+      double e41_13_12() const
       {
-        int num = (n14() - n13() + 1) * (n13() - n24()) * (n13() - n34() + 1) *
-                  (n13() - n44() + 2) * (n12() - n23()) * (n12() - n33() + 1) *
-                  (n13() - n22() + 1) * (n11() - n22());
+        auto num = prod_diff<I>({n14(), n13(), 1}, {n13(), n24(), 0},
+                                {n13(), n34(), 1}, {n13(), n44(), 2},
+                                {n12(), n23(), 0}, {n12(), n33(), 1},
+                                {n13(), n22(), 1}, {n11(), n22(), 0});
 
-        int den = (n13() - n23() + 1) * (n13() - n23()) * (n13() - n33() + 2) *
-                  (n13() - n33() + 1) * (n12() - n22() + 1) * (n12() - n22());
+        auto den = prod_diff<I>({n13(), n23(), 1}, {n13(), n23(), 0},
+                                {n13(), n33(), 2}, {n13(), n33(), 1},
+                                {n12(), n22(), 1}, {n12(), n22(), 0});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return std::sqrt(d);
+        return sqrt_num_den(num, den);
       }
 
-      double e41_13_22()
+      double e41_13_22() const
       {
-        int num = (n14() - n13() + 1) * (n13() - n24()) * (n13() - n34() + 1) *
-                  (n13() - n44() + 2) * (n23() - n22() + 1) * (n22() - n33()) *
-                  (n13() - n12()) * (n12() - n11() + 1);
+        auto num = prod_diff<I>({n14(), n13(), 1}, {n13(), n24(), 0},
+                                {n13(), n34(), 1}, {n13(), n44(), 2},
+                                {n23(), n22(), 1}, {n22(), n33(), 0},
+                                {n13(), n12(), 0}, {n12(), n11(), 1});
 
-        int den = (n13() - n23() + 1) * (n13() - n23()) * (n13() - n33() + 2) *
-                  (n13() - n33() + 1) * (n12() - n22() + 2) *
-                  (n12() - n22() + 1);
+        auto den = prod_diff<I>({n13(), n23(), 1}, {n13(), n23(), 0},
+                                {n13(), n33(), 2}, {n13(), n33(), 1},
+                                {n12(), n22(), 2}, {n12(), n22(), 1});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return -std::sqrt(d);
+        return -sqrt_num_den(num, den);
       }
 
-      double e41_23_12()
+      double e41_23_12() const
       {
-        int num = (n14() - n23() + 2) * (n24() - n23() + 1) * (n23() - n34()) *
-                  (n23() - n44() + 1) * (n13() - n12() + 1) *
-                  (n12() - n33() + 1) * (n23() - n22()) * (n11() - n22());
+        auto num = prod_diff<I>({n14(), n23(), 2}, {n24(), n23(), 1},
+                                {n23(), n34(), 0}, {n23(), n44(), 1},
+                                {n13(), n12(), 1}, {n12(), n33(), 1},
+                                {n23(), n22(), 0}, {n11(), n22(), 0});
 
-        int den = (n13() - n23() + 2) * (n13() - n23() + 1) *
-                  (n23() - n33() + 1) * (n23() - n33()) * (n12() - n22() + 1) *
-                  (n12() - n22());
+        auto den = prod_diff<I>({n13(), n23(), 2}, {n13(), n23(), 1},
+                                {n23(), n33(), 1}, {n23(), n33(), 0},
+                                {n12(), n22(), 1}, {n12(), n22(), 0});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return -std::sqrt(d);
+        return -sqrt_num_den(num, den);
       }
 
-      double e41_23_22()
+      double e41_23_22() const
       {
-        int num = (n14() - n23() + 2) * (n24() - n23() + 1) * (n23() - n34()) *
-                  (n23() - n44() + 1) * (n13() - n22() + 2) * (n22() - n33()) *
-                  (n12() - n23() + 1) * (n12() - n11() + 1);
+        auto num = prod_diff<I>({n14(), n23(), 2}, {n24(), n23(), 1},
+                                {n23(), n34(), 0}, {n23(), n44(), 1},
+                                {n13(), n22(), 2}, {n22(), n33(), 0},
+                                {n12(), n23(), 1}, {n12(), n11(), 1});
 
-        int den = (n13() - n23() + 2) * (n13() - n23() + 1) *
-                  (n23() - n33() + 1) * (n23() - n33()) * (n12() - n22() + 2) *
-                  (n12() - n22() + 1);
+        auto den = prod_diff<I>({n13(), n23(), 2}, {n13(), n23(), 1},
+                                {n23(), n33(), 1}, {n23(), n33(), 0},
+                                {n12(), n22(), 2}, {n12(), n22(), 1});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return -std::sqrt(d);
+        return -sqrt_num_den(num, den);
       }
 
-      double e41_33_12()
+      double e41_33_12() const
       {
         auto num = prod_diff<I>({n14(), n33(), 3}, {n24(), n33(), 2},
                                 {n34(), n33(), 1}, {n33(), n44(), 0},
                                 {n13(), n12(), 1}, {n12(), n23(), 0},
                                 {n22(), n33(), 1}, {n11(), n22(), 0});
-        /*
-        int num = (n14() - n33() + 3) * (n24() - n33() + 2) *
-                  (n34() - n33() + 1) * (n33() - n44()) * (n13() - n12() + 1) *
-                  (n12() - n23()) * (n22() - n33() + 1) * (n11() - n22());
-        */
 
-        int den = (n13() - n33() + 3) * (n13() - n33() + 2) *
-                  (n23() - n33() + 2) * (n23() - n33() + 1) *
-                  (n12() - n22() + 1) * (n12() - n22());
+        auto den = prod_diff<I>({n13(), n33(), 3}, {n13(), n33(), 2},
+                                {n23(), n33(), 2}, {n23(), n33(), 1},
+                                {n12(), n22(), 1}, {n12(), n22(), 0});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return -std::sqrt(d);
+        return -sqrt_num_den(num, den);
       }
 
-      double e41_33_22()
+      double e41_33_22() const
       {
-        int num = (n14() - n33() + 3) * (n24() - n33() + 2) *
-                  (n34() - n33() + 1) * (n33() - n44()) * (n13() - n22() + 2) *
-                  (n23() - n22() + 1) * (n12() - n33() + 2) *
-                  (n12() - n11() + 1);
+        auto num = prod_diff<I>({n14(), n33(), 3}, {n24(), n33(), 2},
+                                {n34(), n33(), 1}, {n33(), n44(), 0},
+                                {n13(), n22(), 2}, {n23(), n22(), 1},
+                                {n12(), n33(), 2}, {n12(), n11(), 1});
 
-        int den = (n13() - n33() + 3) * (n13() - n33() + 2) *
-                  (n23() - n33() + 2) * (n23() - n33() + 1) *
-                  (n12() - n22() + 2) * (n12() - n22() + 1);
+        auto den = prod_diff<I>({n13(), n33(), 3}, {n13(), n33(), 2},
+                                {n23(), n33(), 2}, {n23(), n33(), 1},
+                                {n12(), n22(), 2}, {n12(), n22(), 1});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        assert(d >= 0.0);
-
-        return std::sqrt(d);
+        return sqrt_num_den(num, den);
       }
 
     private:
