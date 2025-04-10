@@ -2,8 +2,11 @@
 #define U4LIB_GELFAND_GELFAND_H
 
 #include <cassert>
+#include <cstdint>
 #include <cmath>
+#include <limits>
 #include <ostream>
+#include <tuple>
 
 #include "int_rep.h"
 
@@ -352,29 +355,16 @@ namespace u4
 
       double e24_13_12()
       {
-        long num = ((long)n14() - n13()) * (n13() - n24() + 1) *
-                   (n13() - n34() + 2) * (n13() - n44() + 3) *
-                   (n12() - n23() + 1) * (n12() - n33() + 2) *
-                   (n13() - n22() + 2) * (n12() - n11() + 1);
+        auto num = prod_diff<I>({n14(), n13(), 0}, {n13(), n24(), 1},
+                                {n13(), n34(), 2}, {n13(), n44(), 3},
+                                {n12(), n23(), 1}, {n12(), n33(), 2},
+                                {n13(), n22(), 2}, {n12(), n11(), 1});
 
-        long den = (n13() - n23() + 2) * (n13() - n23() + 1) *
-                   (n13() - n33() + 3) * (n13() - n33() + 2) *
-                   (n12() - n22() + 2) * (n12() - n22() + 1);
+        auto den = prod_diff<I>({n13(), n23(), 2}, {n13(), n23(), 1},
+                                {n13(), n33(), 3}, {n13(), n33(), 2},
+                                {n12(), n22(), 2}, {n12(), n22(), 1});
 
-        assert(den != 0);
-
-        double d = static_cast<double>(num) / static_cast<double>(den);
-
-        if (((int)(num) < 0) || ((int)(den) < 0))
-        {
-          std::cerr << num << std::endl;
-          std::cerr << den << std::endl;
-          std::cerr << *this << std::endl;
-        }
-
-        assert(d >= 0.0);
-
-        return std::sqrt(d);
+        return sqrt_num_den(num, den);
       }
 
       double e24_13_22()
@@ -771,9 +761,15 @@ namespace u4
 
       double e41_33_12()
       {
+        auto num = prod_diff<I>({n14(), n33(), 3}, {n24(), n33(), 2},
+                                {n34(), n33(), 1}, {n33(), n44(), 0},
+                                {n13(), n12(), 1}, {n12(), n23(), 0},
+                                {n22(), n33(), 1}, {n11(), n22(), 0});
+        /*
         int num = (n14() - n33() + 3) * (n24() - n33() + 2) *
                   (n34() - n33() + 1) * (n33() - n44()) * (n13() - n12() + 1) *
                   (n12() - n23()) * (n22() - n33() + 1) * (n11() - n22());
+        */
 
         int den = (n13() - n33() + 3) * (n13() - n33() + 2) *
                   (n23() - n33() + 2) * (n23() - n33() + 1) *
@@ -800,6 +796,126 @@ namespace u4
                   (n12() - n22() + 2) * (n12() - n22() + 1);
 
         assert(den != 0);
+
+        double d = static_cast<double>(num) / static_cast<double>(den);
+
+        assert(d >= 0.0);
+
+        return std::sqrt(d);
+      }
+
+    private:
+      using I = std::intmax_t;
+
+      template <typename T>
+      static T safe_diff(T larger, T smaller, T increment = 0)
+      {
+        assert(larger >= smaller);
+        assert(increment >= 0);
+        assert(larger - smaller + increment >= 0); // redundant
+
+        return larger - smaller + increment;
+      }
+
+      template <typename T>
+      static T safe_prod(T a, T b)
+      {
+        assert(a >= 0);
+        assert(b >= 0);
+
+        // overflow check:
+        assert((a == 0) || (b == 0) || (a <= std::numeric_limits<T>::max() / b));
+
+        return a * b;
+      }
+
+      template <typename T>
+      static T prod_diff(const std::tuple<T, T, T>& a,
+                         const std::tuple<T, T, T>& b)
+      {
+        T diff_a = safe_diff(std::get<0>(a), std::get<1>(a), std::get<2>(a));
+        T diff_b = safe_diff(std::get<0>(b), std::get<1>(b), std::get<2>(b));
+
+        return safe_prod(diff_a, diff_b);
+      }
+
+      template <typename T>
+      static T prod_diff(const std::tuple<T, T, T>& a,
+                         const std::tuple<T, T, T>& b,
+                         const std::tuple<T, T, T>& c)
+      {
+        T diff_a = safe_diff(std::get<0>(a), std::get<1>(a), std::get<2>(a));
+        T prod_bc = prod_diff(b, c);
+
+        return safe_prod(diff_a, prod_bc);
+      }
+
+      template <typename T>
+      static T
+      prod_diff(const std::tuple<T, T, T>& a, const std::tuple<T, T, T>& b,
+                const std::tuple<T, T, T>& c, const std::tuple<T, T, T>& d)
+      {
+        T diff_a = safe_diff(std::get<0>(a), std::get<1>(a), std::get<2>(a));
+        T prod_bcd = prod_diff(b, c, d);
+
+        return safe_prod(diff_a, prod_bcd);
+      }
+
+      template <typename T>
+      static T
+      prod_diff(const std::tuple<T, T, T>& a, const std::tuple<T, T, T>& b,
+                const std::tuple<T, T, T>& c, const std::tuple<T, T, T>& d,
+                const std::tuple<T, T, T>& e)
+      {
+        T diff_a = safe_diff(std::get<0>(a), std::get<1>(a), std::get<2>(a));
+        T prod_bcde = prod_diff(b, c, d, e);
+
+        return safe_prod(diff_a, prod_bcde);
+      }
+
+      template <typename T>
+      static T
+      prod_diff(const std::tuple<T, T, T>& a, const std::tuple<T, T, T>& b,
+                const std::tuple<T, T, T>& c, const std::tuple<T, T, T>& d,
+                const std::tuple<T, T, T>& e, const std::tuple<T, T, T>& f)
+      {
+        T diff_a = safe_diff(std::get<0>(a), std::get<1>(a), std::get<2>(a));
+        T prod_bcdef = prod_diff(b, c, d, e, f);
+
+        return safe_prod(diff_a, prod_bcdef);
+      }
+
+      template <typename T>
+      static T
+      prod_diff(const std::tuple<T, T, T>& a, const std::tuple<T, T, T>& b,
+                const std::tuple<T, T, T>& c, const std::tuple<T, T, T>& d,
+                const std::tuple<T, T, T>& e, const std::tuple<T, T, T>& f,
+                const std::tuple<T, T, T>& g)
+      {
+        T diff_a = safe_diff(std::get<0>(a), std::get<1>(a), std::get<2>(a));
+        T prod_bcdefg = prod_diff(b, c, d, e, f, g);
+
+        return safe_prod(diff_a, prod_bcdefg);
+      }
+
+      template <typename T>
+      static T
+      prod_diff(const std::tuple<T, T, T>& a, const std::tuple<T, T, T>& b,
+                const std::tuple<T, T, T>& c, const std::tuple<T, T, T>& d,
+                const std::tuple<T, T, T>& e, const std::tuple<T, T, T>& f,
+                const std::tuple<T, T, T>& g, const std::tuple<T, T, T>& h)
+      {
+        T diff_a = safe_diff(std::get<0>(a), std::get<1>(a), std::get<2>(a));
+        T prod_bcdefgh = prod_diff(b, c, d, e, f, g, h);
+
+        return safe_prod(diff_a, prod_bcdefgh);
+      }
+
+      template <typename T>
+      static double sqrt_num_den(T num, T den)
+      {
+        assert(num >= 0);
+        assert(den > 0);
 
         double d = static_cast<double>(num) / static_cast<double>(den);
 
