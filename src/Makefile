@@ -1,5 +1,7 @@
 include ../config.mk
 
+U34UTILS_DIR:=../$(U34UTILS_DIR)
+
 BIN = ../bin
 
 SRCS = $(wildcard *.cpp)

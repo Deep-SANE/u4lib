@@ -2,12 +2,15 @@
 #define U4LIB_U4U3U2XU4U3U2_H
 
 #include <algorithm>
+#include <array>
 #include <cassert>
 #include <cmath>
 #include <cstddef>
+#include <functional>
 #include <limits>
 #include <tuple>
 #include <utility>
+#include <unordered_map>
 #include <vector>
 
 #ifdef U4LIB_TIME_LOG
@@ -42,203 +45,84 @@ extern "C"
 
 namespace u4
 {
-/*  
   class WigU4U3_coeffs
   {
     u4::irrep u4a_, u4b_, u4c_;
 
     std::size_t etamax_;
 
-    std::size_t D1_, D2_, D3_, D4_;
+    using key_type = std::array<int, 9>;
 
-    struct Record
+    struct hasher
     {
-      int p1, q1;
-      int kmin, kmax;
-      std::size_t first_row;
+      static void hash_combine(std::size_t& seed, int value)
+      {
+        seed ^=
+            std::hash<int>{}(value) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+      }
+
+      std::size_t operator()(const key_type& key) const
+      {
+        std::size_t seed = 0;
+
+        hash_combine(seed, key[0]);
+        hash_combine(seed, key[1]);
+        hash_combine(seed, key[2]);
+        hash_combine(seed, key[3]);
+        hash_combine(seed, key[4]);
+        hash_combine(seed, key[5]);
+        hash_combine(seed, key[6]);
+        hash_combine(seed, key[7]);
+        hash_combine(seed, key[8]);
+
+        return seed;
+      }
     };
 
-    std::vector<Record> records_;
-
-    std::vector<int> computed_;
+    std::unordered_map<key_type, std::size_t, hasher> map_;
 
     Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>
         coeffs_;
 
-    std::size_t record_index(int pa, int qa, int pb, int qb) const
-    {
-      assert(pa >= 0);
-      assert(pa <= u3a_.lam());
-
-      assert(qa >= 0);
-      assert(qa <= u3a_.mu());
-
-      assert(pb >= 0);
-      assert(pb <= u3b_.lam());
-
-      assert(qb >= 0);
-      assert(qb <= u3b_.mu());
-
-      std::size_t index = ((pa * D2_ + qa) * D3_ + pb) * D4_ + qb;
-
-      assert(index < records_.size());
-
-      return index;
-    }
-
-    const auto& record(int pa, int qa, int pb, int qb) const
-    {
-      return records_[record_index(pa, qa, pb, qb)];
-    }
-
-    auto& record(int pa, int qa, int pb, int qb)
-    {
-      return records_[record_index(pa, qa, pb, qb)];
-    }
-
   public:
-    struct Accessor
+    WigU4U3_coeffs(const u4::irrep& u4a, const u4::irrep& u4b,
+                   const u4::irrep& u4c, int etamax)
+        : u4a_(u4a), u4b_(u4b), u4c_(u4c), etamax_(etamax)
     {
-      bool allowed;
-      bool computed;
-      std::size_t row;
-    };
+      assert(etamax > 0);
 
-    WigU3U2_coeffs(const u3::irrep& u3a, const u3::irrep& u3b,
-                   const u3::irrep& u3c, int rhomax)
-        : u3a_(u3a), u3b_(u3b), u3c_(u3c), rhomax_(rhomax)
+      coeffs_.resize(0, etamax);
+    }
+
+    // std::pair<bool, decltype(coeffs_.block(0, 0, 0, 0))>
+    auto access(const u3::irrep& u3a, const u3::irrep& u3b,
+                const u3::irrep& u3c)
     {
+      auto rhomax = u3::Rho(u3a, u3b, u3c);
+
       assert(rhomax > 0);
 
-      D1_ = u3a.lam() + 1;
-      D2_ = u3a.mu() + 1;
-      D3_ = u3b.lam() + 1;
-      D4_ = u3b.mu() + 1;
+      key_type key = {u3a.n13(), u3a.n23(), u3a.n33(), u3b.n13(), u3b.n23(),
+                      u3b.n33(), u3c.n13(), u3c.n23(), u3c.n33()};
 
-      records_.resize(D1_ * D2_ * D3_ * D4_);
+      std::size_t first_row;
 
-      int temp = 2 * (u3c.n13() - 2 * u3c.n23() + u3c.n33());
+      auto [iter, inserted] = map_.try_emplace(key);
+      if (inserted)
+      {
+        first_row = coeffs_.rows();
+        coeffs_.conservativeResize(coeffs_.rows() + rhomax, Eigen::NoChange);
+        iter->second = first_row;
+      }
+      else
+        first_row = iter->second;
 
-      std::size_t row = 0;
+      assert(first_row + rhomax <= coeffs_.rows());
 
-      for (int pa = 0; pa <= u3a.lam(); pa++)
-        for (int qa = 0; qa <= u3a.mu(); qa++)
-        {
-          u3::gelfand gA(u3a.n13(), u3a.n23(), u3a.n33(), u3a.n23() + pa,
-                         u3a.n23() - qa, u3a.n23() - qa);
-
-          for (int pb = 0; pb <= u3b.lam(); pb++)
-            for (int qb = 0; qb <= u3b.mu(); qb++)
-            {
-              u3::gelfand gB(u3b.n13(), u3b.n23(), u3b.n33(), u3b.n23() + pb,
-                             u3b.n23() - qb, u3b.n23() - qb);
-
-              int Q = temp - gA.epsilon() - gB.epsilon();
-              assert(Q % 3 == 0);
-              int R = Q / 3;
-
-              int p1 = (R >= 0) ? R : 0;
-              int q1 = (R >= 0) ? 0 : -R;
-
-              // epsilon-selection rule:
-              int ub1 = std::min(u3c.lam() - p1, u3c.mu() - q1);
-
-              // Lambda-selection rule:
-              int absR = std::abs(R);
-              int lb2 = std::abs(gA.Lambdax2() - gB.Lambdax2()) - absR;
-              int ub2 = gA.Lambdax2() + gB.Lambdax2() - absR;
-
-              // combine selection rules:
-              int kmin = (std::max(0, lb2) + 1) / 2;
-              int kmax = std::min(2 * ub1, ub2) / 2;
-
-              record(pa, qa, pb, qb) = {p1, q1, kmin, kmax, row};
-
-              if (kmax >= kmin)
-                row += kmax - kmin + 1;
-            }
-        }
-
-      coeffs_.resize(row, rhomax);
-      coeffs_.setZero();
-
-      computed_.resize(row, 0);
+      return std::pair(inserted, coeffs_.block(first_row, 0, rhomax, etamax_));
     }
-
-    void normalize()
-    {
-      u3a_.normalize();
-      u3b_.normalize();
-      u3c_.normalize();
-    }
-
-    Accessor access(int n12a, int n22a, int n12b, int n22b, int n12c,
-                    int n22c) const
-    {
-      int pa = n12a - u3a_.n23();
-      int qa = u3a_.n23() - n22a;
-      int pb = n12b - u3b_.n23();
-      int qb = u3b_.n23() - n22b;
-
-      const auto& rec = record(pa, qa, pb, qb);
-
-      if (rec.kmax < rec.kmin)
-        return {false, false, 0};
-
-      int k1 = n12c - u3c_.n23() - rec.p1;
-      int k2 = u3c_.n23() - n22c - rec.q1;
-
-      if (k1 != k2)
-        return {false, false, 0};
-
-      if ((k1 < rec.kmin) || (k1 > rec.kmax))
-        return {false, false, 0};
-
-      assert(rec.first_row + k1 < coeffs_.rows());
-
-      std::size_t row = rec.first_row + k1 - rec.kmin;
-
-      return {true, computed_[row] == rhomax_, row};
-    }
-
-    double get(const Accessor& acc, int rho) const
-    {
-      assert(acc.allowed == true);
-      assert(acc.computed == true);
-
-      return coeffs_(acc.row, rho);
-    }
-
-    void set(const Accessor& acc, int rho, double value)
-    {
-      assert(acc.allowed == true);
-
-      coeffs_(acc.row, rho) = value;
-
-      computed_[acc.row]++;
-    }
-
-    auto get_row(const Accessor& acc) const
-    {
-      assert(acc.allowed == true);
-      assert(acc.computed == true);
-
-      return coeffs_.row(acc.row);
-    }
-
-    template <typename T>
-    void set_row(const Accessor& acc, T&& values)
-    {
-      assert(acc.allowed == true);
-
-      coeffs_.row(acc.row) = std::forward<T>(values);
-
-      computed_[acc.row] = rhomax_;
-    }
-
-    std::size_t size() const { return coeffs_.rows(); }
   };
-*/
+
   // expansion of a coupled gelfand basis state (u4c) in terms of those
   // uncoupled ones based on the weight selection rule; hence, this expansion is
   // the same for those other coupled states that have the same weight with the
