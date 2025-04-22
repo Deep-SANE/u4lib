@@ -105,21 +105,17 @@ namespace u4
       key_type key = {u3a.n13(), u3a.n23(), u3a.n33(), u3b.n13(), u3b.n23(),
                       u3b.n33(), u3c.n13(), u3c.n23(), u3c.n33()};
 
-      std::size_t first_row;
-
       auto [iter, inserted] = map_.try_emplace(key);
       if (inserted)
       {
-        first_row = coeffs_.rows();
+        iter->second = coeffs_.rows();
         coeffs_.conservativeResize(coeffs_.rows() + rhomax, Eigen::NoChange);
-        iter->second = first_row;
       }
-      else
-        first_row = iter->second;
 
-      assert(first_row + rhomax <= coeffs_.rows());
+      assert(iter->second + rhomax <= coeffs_.rows());
 
-      return std::pair(inserted, coeffs_.block(first_row, 0, rhomax, etamax_));
+      return std::pair(inserted,
+                       coeffs_.block(iter->second, 0, rhomax, etamax_));
     }
   };
 
