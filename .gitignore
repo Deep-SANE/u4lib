@@ -9,10 +9,10 @@
 *.fdb_latexmk
 *.fls
 *.log
-*.mk 
 *.o
 *.out
 *.pdf
+*.swp
 *.xlsx
 
 # '.DS_Store' file in all directories:
@@ -21,8 +21,12 @@
 
 # system-local configuration file in root directory:
 
-./config.mk
+config.local.mk
 
 # all built executable binary files:
 
 bin/
+
+# GDB history file:
+
+.gdb_history

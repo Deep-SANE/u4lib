@@ -1,3 +1,7 @@
+include config.mk
+
+export 
+
 .PHONY: all
 all: 
 	$(MAKE) -C src
