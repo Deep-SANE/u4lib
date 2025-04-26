@@ -2,7 +2,7 @@
 #include <fstream>
 #include <iomanip>
 #include <iostream>
-#include <sstream>
+#include <sstream> 
 #include <string>
 #include <vector>
 
@@ -103,7 +103,7 @@ int main(int argc, char* argv[])
                     for (int r = 0; r < coeffs_.rows(); r++)
                       std::cout << "rho = " << r+1 << " --> \t" << coeffs_.row(r) << std::endl;
             } 
- 
+  
   //std::cout << "Reduced coefficients count: " << coeffs.size() << std::endl;
 
   // Calculate the duration
