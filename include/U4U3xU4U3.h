@@ -429,8 +429,9 @@ namespace u4
   inline void HighestWeightReducedCoeffs(const std::vector<u4::gelfand>& gArr1,
                                          const std::vector<u4::gelfand>& gArr2,
                                          const std::vector<u4::gelfand>& gArr3,
-                                         int etamax, u34utils::SO3_CGC& cgcs, 
-                                         u4::WigU4U3_coeffs& coeffs)
+                                         int etamax, u34utils::SO3_CGC& cgcs,
+                                         u4::WigU4U3_coeffs& coeffs,
+                                         u3::WigU3U2_db& wigU3U2db)
   {
     std::vector<std::pair<int, int>> indices =
         expand_to_uncoupled(gArr3[0], gArr1, gArr2);
@@ -522,8 +523,8 @@ namespace u4
           // stop computing further via w2
           int w2min = u3c.n13() + u3c.n23(); // because we are at the hw state
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           Eigen::MatrixXd A(rhomax, rhomax), B(rhomax, etamax);
@@ -585,15 +586,15 @@ namespace u4
   // \   n13a  n23a  n33a      n13b  n23b n33b   |||   n13c  n23c n33c   /_eta,rho
 
   // build with E43
-  inline void E43(int parent_g3, int& row, int etamax,
-                  const std::vector<int>& same_weight_gArr3,
-                  const std::vector<std::pair<int, int>>& uncoupled_same_weight_gArr3,
-                  const std::vector<u4::gelfand>& gArr1,
-                  const std::vector<u4::gelfand>& gArr2,
-                  const std::vector<u4::gelfand>& gArr3, 
-                  Eigen::MatrixXd& b, u34utils::SO3_CGC& cgcs, 
-                  std::vector<Eigen::MatrixXd>& E43E42E41,
-                  u4::WigU4U3_coeffs& coeffs)
+  inline void
+  E43(int parent_g3, int& row, int etamax,
+      const std::vector<int>& same_weight_gArr3,
+      const std::vector<std::pair<int, int>>& uncoupled_same_weight_gArr3,
+      const std::vector<u4::gelfand>& gArr1,
+      const std::vector<u4::gelfand>& gArr2,
+      const std::vector<u4::gelfand>& gArr3, Eigen::MatrixXd& b,
+      u34utils::SO3_CGC& cgcs, std::vector<Eigen::MatrixXd>& E43E42E41,
+      u4::WigU4U3_coeffs& coeffs, u3::WigU3U2_db& wigU3U2db)
   {
     int jj3 = gArr3[parent_g3].Lambdax2(), 
         mm3 = gArr3[parent_g3].MLambdax2();
@@ -646,8 +647,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(g1_n13p1.n12() - g1_n13p1.n33(), 
@@ -701,8 +702,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(g1_n23p1.n12() - g1_n23p1.n33(), 
@@ -756,7 +757,7 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, 
                                      gArr3a, gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
@@ -812,8 +813,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
@@ -867,7 +868,7 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, 
                                      gArr3a, gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
@@ -922,8 +923,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
@@ -951,15 +952,15 @@ namespace u4
   }
 
   // build with E42
-  inline void E42(int parent_g3, int& row, int etamax,
-                  const std::vector<int>& same_weight_gArr3,
-                  const std::vector<std::pair<int, int>>& uncoupled_same_weight_gArr3,
-                  const std::vector<u4::gelfand>& gArr1,
-                  const std::vector<u4::gelfand>& gArr2,
-                  const std::vector<u4::gelfand>& gArr3, 
-                  Eigen::MatrixXd& b, u34utils::SO3_CGC& cgcs, 
-                  std::vector<Eigen::MatrixXd>& E43E42E41,
-                  u4::WigU4U3_coeffs& coeffs)
+  inline void
+  E42(int parent_g3, int& row, int etamax,
+      const std::vector<int>& same_weight_gArr3,
+      const std::vector<std::pair<int, int>>& uncoupled_same_weight_gArr3,
+      const std::vector<u4::gelfand>& gArr1,
+      const std::vector<u4::gelfand>& gArr2,
+      const std::vector<u4::gelfand>& gArr3, Eigen::MatrixXd& b,
+      u34utils::SO3_CGC& cgcs, std::vector<Eigen::MatrixXd>& E43E42E41,
+      u4::WigU4U3_coeffs& coeffs, u3::WigU3U2_db& wigU3U2db)
   {
     int jj3 = gArr3[parent_g3].Lambdax2(), 
         mm3 = gArr3[parent_g3].MLambdax2();
@@ -1019,8 +1020,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(g1_n13n12p1.n12() - g1_n13n12p1.n33(), 
@@ -1074,8 +1075,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(g1_n13n22p1.n12() - g1_n13n22p1.n33(), 
@@ -1129,8 +1130,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(g1_n23n12p1.n12() - g1_n23n12p1.n33(), 
@@ -1184,8 +1185,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(g1_n23n22p1.n12() - g1_n23n22p1.n33(), 
@@ -1239,8 +1240,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(g1_n33n12p1.n12() - g1_n33n12p1.n33(), 
@@ -1294,8 +1295,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(g1_n33n22p1.n12() - g1_n33n22p1.n33(), 
@@ -1350,8 +1351,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
@@ -1405,8 +1406,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
@@ -1460,8 +1461,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
@@ -1515,8 +1516,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
@@ -1570,8 +1571,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
@@ -1625,8 +1626,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
@@ -1661,7 +1662,8 @@ namespace u4
                   const std::vector<u4::gelfand>& gArr3, 
                   Eigen::MatrixXd& b, u34utils::SO3_CGC& cgcs, 
                   std::vector<Eigen::MatrixXd>& E43E42E41,
-                  u4::WigU4U3_coeffs& coeffs)
+                  u4::WigU4U3_coeffs& coeffs,
+                  u3::WigU3U2_db& wigU3U2db)
   {
     int jj3 = gArr3[parent_g3].Lambdax2(), 
         mm3 = gArr3[parent_g3].MLambdax2();
@@ -1722,8 +1724,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(g1_n13n12n11p1.n12() - g1_n13n12n11p1.n33(), 
@@ -1778,8 +1780,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(g1_n13n22n11p1.n12() - g1_n13n22n11p1.n33(), 
@@ -1834,8 +1836,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(g1_n23n12n11p1.n12() - g1_n23n12n11p1.n33(), 
@@ -1890,8 +1892,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(g1_n23n22n11p1.n12() - g1_n23n22n11p1.n33(), 
@@ -1946,8 +1948,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(g1_n33n12n11p1.n12() - g1_n33n12n11p1.n33(), 
@@ -2002,8 +2004,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(g1_n33n22n11p1.n12() - g1_n33n22n11p1.n33(), 
@@ -2059,8 +2061,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
@@ -2115,8 +2117,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
@@ -2171,8 +2173,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
@@ -2227,8 +2229,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
@@ -2283,8 +2285,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
@@ -2339,8 +2341,8 @@ namespace u4
 
           int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
 
-          auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                     gArr3a, gArr3b, gArr3c, cgcs);
+          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                       gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
           auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
@@ -2370,8 +2372,10 @@ namespace u4
   inline void LowerWeightReducedCoeffs(const std::vector<u4::gelfand>& gArr1,
                                        const std::vector<u4::gelfand>& gArr2,
                                        const std::vector<u4::gelfand>& gArr3,
-                                       int etamax, int w3, u34utils::SO3_CGC& cgcs, 
-                                       WigU4U3_coeffs& coeffs)
+                                       int etamax, int w3,
+                                       u34utils::SO3_CGC& cgcs,
+                                       WigU4U3_coeffs& coeffs,
+                                       u3::WigU3U2_db wigU3U2db)
   {
 
     // trace states with same [w3,w2,w1] (z-weight)
@@ -2445,7 +2449,7 @@ namespace u4
           {
             actOnParent.push_back(p);
             E43(j, row, etamax, same_weight_gArr3, uncoupled_same_weight_gArr3,
-                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs);
+                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs, wigU3U2db);
             continue;
           }
         }
@@ -2461,7 +2465,7 @@ namespace u4
           {
             actOnParent.push_back(p);
             E43(j, row, etamax, same_weight_gArr3, uncoupled_same_weight_gArr3,
-                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs);
+                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs, wigU3U2db);
             continue;
           }
         }
@@ -2477,7 +2481,7 @@ namespace u4
           {
             actOnParent.push_back(p);
             E43(j, row, etamax, same_weight_gArr3, uncoupled_same_weight_gArr3,
-                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs);
+                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs, wigU3U2db);
             continue;
           }
         }
@@ -2495,7 +2499,7 @@ namespace u4
           {
             actOnParent.push_back(p);
             E42(j, row, etamax, same_weight_gArr3, uncoupled_same_weight_gArr3,
-                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs);
+                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs, wigU3U2db);
             continue;
           }
         }
@@ -2512,7 +2516,7 @@ namespace u4
           {
             actOnParent.push_back(p);
             E42(j, row, etamax, same_weight_gArr3, uncoupled_same_weight_gArr3,
-                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs);
+                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs, wigU3U2db);
             continue;
           }
         }
@@ -2529,7 +2533,7 @@ namespace u4
           {
             actOnParent.push_back(p);
             E42(j, row, etamax, same_weight_gArr3, uncoupled_same_weight_gArr3,
-                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs);
+                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs, wigU3U2db);
             continue;
           }
         }
@@ -2546,7 +2550,7 @@ namespace u4
           {
             actOnParent.push_back(p);
             E42(j, row, etamax, same_weight_gArr3, uncoupled_same_weight_gArr3,
-                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs);
+                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs, wigU3U2db);
             continue;
           }
         }
@@ -2563,7 +2567,7 @@ namespace u4
           {
             actOnParent.push_back(p);
             E42(j, row, etamax, same_weight_gArr3, uncoupled_same_weight_gArr3,
-                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs);
+                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs, wigU3U2db);
             continue;
           }
         }
@@ -2580,7 +2584,7 @@ namespace u4
           {
             actOnParent.push_back(p);
             E42(j, row, etamax, same_weight_gArr3, uncoupled_same_weight_gArr3,
-                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs);
+                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs, wigU3U2db);
             continue;
           }
         }
@@ -2599,7 +2603,7 @@ namespace u4
           {
             actOnParent.push_back(p);
             E41(j, row, etamax, same_weight_gArr3, uncoupled_same_weight_gArr3,
-                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs);
+                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs, wigU3U2db);
             continue;
           }
         }
@@ -2617,7 +2621,7 @@ namespace u4
           {
             actOnParent.push_back(p);
             E41(j, row, etamax, same_weight_gArr3, uncoupled_same_weight_gArr3,
-                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs);
+                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs, wigU3U2db);
             continue;
           }
         }
@@ -2635,7 +2639,7 @@ namespace u4
           {
             actOnParent.push_back(p);
             E41(j, row, etamax, same_weight_gArr3, uncoupled_same_weight_gArr3,
-                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs);
+                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs, wigU3U2db);
             continue;
           }
         }
@@ -2653,7 +2657,7 @@ namespace u4
           {
             actOnParent.push_back(p);
             E41(j, row, etamax, same_weight_gArr3, uncoupled_same_weight_gArr3,
-                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs);
+                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs, wigU3U2db);
             continue;
           }
         }
@@ -2671,7 +2675,7 @@ namespace u4
           {
             actOnParent.push_back(p);
             E41(j, row, etamax, same_weight_gArr3, uncoupled_same_weight_gArr3,
-                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs);
+                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs, wigU3U2db);
             continue;
           }
         }
@@ -2689,7 +2693,7 @@ namespace u4
           {
             actOnParent.push_back(p);
             E41(j, row, etamax, same_weight_gArr3, uncoupled_same_weight_gArr3,
-                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs);
+                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs, wigU3U2db);
             continue;
           }
         }
@@ -2747,8 +2751,8 @@ namespace u4
               // stop computing further via w2
               int w2min = gArr3[i3].n12() + gArr3[i3].n22() - 2 * x;
 
-              auto wigU3U2 = u3::WigU3U2(u3a, u3b, u3c, rhomax, w2min, 
-                                         gArr3a, gArr3b, gArr3c, cgcs);
+              auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, w2min, gArr3a,
+                                           gArr3b, gArr3c, cgcs);
               // after this, u3c, gArr3c and wigU3U2 are normalized
 
               Eigen::MatrixXd A(rhomax, rhomax), B(rhomax, etamax);
@@ -2820,8 +2824,9 @@ namespace u4
                       u34utils::SO3_CGC &cgcs)
   {
     WigU4U3_coeffs coeffs(u4A, u4B, u4C, etamax);
+    u3::WigU3U2_db wigU3U2db;
 
-    u4::HighestWeightReducedCoeffs(gArrA, gArrB, gArrC, etamax, cgcs, coeffs);
+    u4::HighestWeightReducedCoeffs(gArrA, gArrB, gArrC, etamax, cgcs, coeffs, wigU3U2db);
 
 #ifdef U4LIB_TIME_LOG
     auto t0 = std::chrono::high_resolution_clock::now();
@@ -2835,7 +2840,7 @@ namespace u4
 
       for (int w3 = w3max - 1; w3 >= w3min; w3--)
       {
-        u4::LowerWeightReducedCoeffs(gArrA, gArrB, gArrC, etamax, w3, cgcs, coeffs);
+        u4::LowerWeightReducedCoeffs(gArrA, gArrB, gArrC, etamax, w3, cgcs, coeffs, wigU3U2db);
       }
     }
 
