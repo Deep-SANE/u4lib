@@ -7,19 +7,19 @@
 #include <vector>
 
 #include <so3Coeffs/SO3_CGC.h>
-
+ 
 #include <U4basis.h>
 #include <U4decomposition.h>
 #include <U4U3xU4U3.h>
-
+ 
 #ifdef U4LIB_USE_SLEPC
 #include <slepcsys.h>
 #endif 
 
 int main(int argc, char* argv[])
 {  
-#ifdef U4LIB_USE_SLEPC
-  SlepcInitialize(&argc, &argv, NULL, NULL);  
+#ifdef U4LIB_USE_SLEPC 
+  SlepcInitialize(&argc, &argv, NULL, NULL);   
 #endif
 
   int n14a, n24a, n34a, n44a;
@@ -27,7 +27,7 @@ int main(int argc, char* argv[])
   std::cin >> n14a >> n24a >> n34a >> n44a;
   u4::irrep u4a(n14a, n24a, n34a, n44a);
   if (n44a != 0)
-  {
+  { 
     u4a.normalize();
     std::cout << "Your irrep is normalized to " << u4a << std::endl;
   }
@@ -41,7 +41,7 @@ int main(int argc, char* argv[])
     u4b.normalize();
     std::cout << "Your irrep is normalized to " << u4b << std::endl;
   }
-
+  
   auto [u4cs, etamaxs] = u4::decomposition(u4a, u4b);
 
   std::cout << "The normalized coupled irreps are: " << std::endl;
@@ -49,7 +49,7 @@ int main(int argc, char* argv[])
   {
     std::cout << "(" << i << "): [" << u4cs[i].n14() - u4cs[i].n44() << ","
               << u4cs[i].n24() - u4cs[i].n44() << "," << u4cs[i].n34() - u4cs[i].n44()
-              << ",0] \t eta = 1 ... " << etamaxs[i] << std::endl;
+              << ",0] \t eta = 1 ... " << etamaxs[i] << std::endl; 
   }
      
   int index;
@@ -62,7 +62,7 @@ int main(int argc, char* argv[])
 
   std::vector<u4::gelfand> gArrA = u4::gelfandBasis(u4a),
                            gArrB = u4::gelfandBasis(u4b),
-                           gArrC = u4::gelfandBasis(u4cs[index]);
+                           gArrC = u4::gelfandBasis(u4cs[index]); 
   
   u34utils::SO3_CGC cgcs;
                            
@@ -84,14 +84,14 @@ int main(int argc, char* argv[])
                 for (int n23c = u4c.n24(); n23c >= u4c.n34(); n23c--)   
                   for (int n33c = u4c.n34(); n33c >= u4c.n44(); n33c--)  
                   {   
-                    u3::irrep u3a(n13a,n23a,n33a),  
+                    u3::irrep u3a(n13a,n23a,n33a),
                               u3b(n13b,n23b,n33b),
                               u3c(n13c,n23c,n33c);
 
-                    auto [missing, coeffs_] = coeffs.access(u3a,u3b,u3c); 
+                    auto [missing, coeffs_] = coeffs.access(u3a,u3b,u3c);  
  
                     if (missing == true)
-                      continue; 
+                      continue;  
 
                     std::cout << "< " << u4a.n14() << "," << u4a.n24() << "," << u4a.n34() 
                               << ",0;" << n13a << "," << n23a << "," << n33a << " ; " 
@@ -111,7 +111,7 @@ int main(int argc, char* argv[])
 
   // Output the time in seconds
   std::cout << "Elapsed time: " << duration.count() << " seconds or "
-            << duration.count() / 60.0 << " minutes" << std::endl;
+            << duration.count() / 60.0 << " minutes" << std::endl; 
 
 #ifdef U4LIB_USE_SLEPC 
   SlepcFinalize();

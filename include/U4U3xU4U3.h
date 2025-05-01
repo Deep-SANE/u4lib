@@ -110,6 +110,7 @@ namespace u4
       {
         iter->second = coeffs_.rows();
         coeffs_.conservativeResize(coeffs_.rows() + rhomax, Eigen::NoChange);
+        coeffs_.block(iter->second, 0, rhomax, etamax_).setZero();
       }
 
       assert(iter->second + rhomax <= coeffs_.rows());
@@ -501,8 +502,6 @@ namespace u4
 
       auto rhomax = u3::Rho(u3a, u3b, u3c);
 
-      //std::cout << rhomax << std::endl;
-
       if (rhomax > 0)
       {
         auto [missing, coeffs_] = coeffs.access(u3a, u3b, u3c);
@@ -546,9 +545,6 @@ namespace u4
                 && jj3 >= std::fabs(jj1 - jj2))
             {
               Eigen::RowVectorXd B_row = nullspace.row(j);
-                
-              if (B_row.norm() <= 1e-14)
-                continue;
 
               double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
 
@@ -561,6 +557,7 @@ namespace u4
 
               Eigen::RowVectorXd A_row = wigU3U2.get_row(accU3) * cgc;
 
+              // not consider vanishing rows in A (otherwise not invertible)
               if (A_row.norm() <= 1e-14)
                 continue;
 
@@ -584,9 +581,6 @@ namespace u4
                 A_rows.push_back(A_row);
                 B_rows.push_back(B_row);
               }
-
-              if (A_rows.size() == rhomax)
-                break;
             }
           }
 
@@ -596,8 +590,6 @@ namespace u4
             A.row(i) = A_rows[i];
             B.row(i) = B_rows[i];
           }
-
-          assert(A.fullPivLu().isInvertible());
 
           Eigen::ColPivHouseholderQR<Eigen::MatrixXd> factorize;
           factorize.compute(A);
@@ -2518,15 +2510,21 @@ namespace u4
               && gArr3[i].e33() == (w3 - W2))
             same_weight_gArr3_temp.push_back(i);
         
-        if (same_weight_gArr3_temp.size() > same_weight_gArr3.size())
+        if (same_weight_gArr3_temp.size() > same_weight_gArr3.size()
+            && gArr3[same_weight_gArr3_temp.back()].n12() 
+            == gArr3[same_weight_gArr3_temp.back()].n13()
+            && gArr3[same_weight_gArr3_temp.back()].n22() 
+            == gArr3[same_weight_gArr3_temp.back()].n23()
+            && gArr3[same_weight_gArr3_temp.back()].n11() 
+            == gArr3[same_weight_gArr3_temp.back()].n13())
           same_weight_gArr3 = same_weight_gArr3_temp;
       }
     }
-
-    //for (int i = 0; i < same_weight_gArr3.size(); i++)    
-      //std::cout << gArr3[same_weight_gArr3[i]] << std::endl;
-    //std::cout << std::endl;
-
+/* 
+    for (int i = 0; i < same_weight_gArr3.size(); i++)    
+      std::cout << gArr3[same_weight_gArr3[i]] << std::endl;
+    std::cout << std::endl;  
+*/
 
     if (!same_weight_gArr3.empty())
     {
@@ -2824,6 +2822,8 @@ namespace u4
       Eigen::ColPivHouseholderQR<Eigen::MatrixXd> factorize;
       factorize.compute(b);
 
+      //std::cout << b << std::endl;
+
       std::vector<Eigen::MatrixXd> coeffs_temp(etamax);
 
       for (int e = 0; e < etamax; e++)
@@ -2838,22 +2838,14 @@ namespace u4
         // going through expansion
         for (int j = 0; j < uncoupled_same_weight_gArr3.size(); j++)
         {
-          // check if these coefficients are zeros
-          double norm = 0.0;
-          for (int e = 0; e < etamax; e++)
-            norm += coeffs_temp[e](i,j) * coeffs_temp[e](i,j);
-
-          if ( std::sqrt(norm) <= 1e-14)
-            continue;
-
           int i1 = uncoupled_same_weight_gArr3[j].first,
               i2 = uncoupled_same_weight_gArr3[j].second;
-
-          //std::cout << gArr1[i1] << " ; " << gArr2[i2] << " | " << gArr3[i3] << " -> ";
-          //for (int e = 0; e < etamax; e++)
-            //std::cout << coeffs_temp[e](i,j) << "\t";
-          //std::cout << std::endl;
-
+/*
+          std::cout << gArr1[i1] << " ; " << gArr2[i2] << " | " << gArr3[i3] << " -> ";
+          for (int e = 0; e < etamax; e++)
+            std::cout << coeffs_temp[e](i,j) << "\t";
+          std::cout << std::endl;
+*/
           u3::irrep u3a(gArr1[i1].n13(), gArr1[i1].n23(), gArr1[i1].n33()),
                     u3b(gArr2[i2].n13(), gArr2[i2].n23(), gArr2[i2].n33()),
                     u3c(gArr3[i3].n13(), gArr3[i3].n23(), gArr3[i3].n33());
@@ -2908,9 +2900,6 @@ namespace u4
                   Eigen::RowVectorXd B_row(etamax);
                   for (int e = 0; e < etamax; e++)
                     B_row(e) = coeffs_temp[e](i,k);
-                
-                  if (B_row.norm() <= 1e-14)
-                    continue;
 
                   double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
 
@@ -2923,6 +2912,7 @@ namespace u4
 
                   Eigen::RowVectorXd A_row = wigU3U2.get_row(accU3) * cgc;
 
+                  // not consider vanishing rows in A (otherwise not invertible)
                   if (A_row.norm() <= 1e-14)
                     continue;
 
@@ -2946,9 +2936,6 @@ namespace u4
                     A_rows.push_back(A_row);
                     B_rows.push_back(B_row);
                   }
-
-                  if (A_rows.size() == rhomax)
-                    break;
                 }
               }
 
@@ -2959,21 +2946,19 @@ namespace u4
                 B.row(i) = B_rows[i];
               }
 
-              assert(A.fullPivLu().isInvertible());
-
               Eigen::ColPivHouseholderQR<Eigen::MatrixXd> factorize;
               factorize.compute(A);
               coeffs_ = factorize.solve(B);  
               for (int m = 0; m < coeffs_.rows(); m++)
                 for (int n = 0; n < coeffs_.cols(); n++)
-                  if (std::fabs(coeffs_(m,n)) <= 1e-14)
+                  if (std::fabs(coeffs_(m,n)) < 1e-14)
                     coeffs_(m,n) = 0.0;   
 
               //std::cout << A << ";\n" << B << ";\n" << coeffs_ << "\n" << std::endl;   
             }
           }
         }
-      }
+      } 
     }
 
     return;
