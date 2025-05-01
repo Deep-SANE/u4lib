@@ -527,11 +527,8 @@ namespace u4
                                        gArr3b, gArr3c, cgcs);
           // after this, u3c, gArr3c and wigU3U2 are normalized
 
-          Eigen::MatrixXd A(rhomax, rhomax), B(rhomax, etamax);
-          A.setZero();
-          B.setZero();
+          std::vector<Eigen::RowVectorXd> A_rows, B_rows;
 
-          int r = 0;
           // vary U(2) and U(1) labels
           for (int j = i; j < indices.size(); j++)
           {
@@ -547,7 +544,12 @@ namespace u4
                 gArr2[i2_].n33() == gArr2[i2].n33() &&
                 (mm1 + mm2) == mm3 && jj3 <= (jj1 + jj2) 
                 && jj3 >= std::fabs(jj1 - jj2))
-            {                
+            {
+              Eigen::RowVectorXd B_row = nullspace.row(j);
+                
+              if (B_row.norm() <= 1e-14)
+                continue;
+
               double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
 
               auto accU3 = wigU3U2.access(gArr1[i1_].n12() - gArr1[i1_].n33(), 
@@ -557,23 +559,53 @@ namespace u4
                                           gArr3[0].n12() - gArr3[0].n33(), 
                                           gArr3[0].n22() - gArr3[0].n33());
 
-              A.row(r) = wigU3U2.get_row(accU3) * cgc;
-              B.row(r) = nullspace.row(j);
-              r++;
+              Eigen::RowVectorXd A_row = wigU3U2.get_row(accU3) * cgc;
+
+              if (A_row.norm() <= 1e-14)
+                continue;
+
+              // only add independent row
+              bool shouldAdd = true;
+              for (int i = 0; i < A_rows.size(); i++)
+              {
+                Eigen::MatrixXd M(2, A_row.size());
+                M.row(0) = A_row;
+                M.row(1) = A_rows[i];
+
+                if (M.fullPivLu().rank() < 2) // dependent
+                {
+                  shouldAdd = false;
+                  break; // no need to check further
+                }
+              }
+
+              if (shouldAdd == true) 
+              {
+                A_rows.push_back(A_row);
+                B_rows.push_back(B_row);
+              }
+
+              if (A_rows.size() == rhomax)
+                break;
             }
-            if (r == rhomax)
-              break;
           }
 
-          assert(A.rows() == rhomax);
+          Eigen::MatrixXd A(A_rows.size(), rhomax), B(A_rows.size(), etamax);
+          for (int i = 0; i < A_rows.size(); ++i) 
+          {
+            A.row(i) = A_rows[i];
+            B.row(i) = B_rows[i];
+          }
+
+          assert(A.fullPivLu().isInvertible());
 
           Eigen::ColPivHouseholderQR<Eigen::MatrixXd> factorize;
           factorize.compute(A);
           coeffs_ = factorize.solve(B);  
           for (int m = 0; m < coeffs_.rows(); m++)
             for (int n = 0; n < coeffs_.cols(); n++)
-              if (std::fabs(coeffs_(m,n)) < 1e-15)
-                coeffs_(m,n) = 0.0;      
+              if (std::fabs(coeffs_(m,n)) < 1e-14)
+                coeffs_(m,n) = 0.0;           
         }
       }
     }
@@ -665,8 +697,11 @@ namespace u4
        
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -720,8 +755,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -775,8 +813,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }   
         }
       }
@@ -831,8 +872,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }
         }
       }
@@ -886,8 +930,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }
         }
       }
@@ -941,8 +988,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }
         }
       }
@@ -1037,8 +1087,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -1092,8 +1145,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -1147,8 +1203,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -1202,8 +1261,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -1257,8 +1319,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -1312,8 +1377,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -1368,8 +1436,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -1423,8 +1494,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -1478,8 +1552,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -1533,8 +1610,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -1588,8 +1668,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -1643,8 +1726,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -1741,8 +1827,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -1797,8 +1886,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -1853,8 +1945,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -1909,8 +2004,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -1965,8 +2063,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -2021,8 +2122,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -2078,8 +2182,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -2134,8 +2241,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -2190,8 +2300,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -2246,8 +2359,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -2302,8 +2418,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -2358,8 +2477,11 @@ namespace u4
       
           for (int e = 0; e < etamax; e++)   
           {
+            double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              E43E42E41[e](row, j) += accU4(r,e) * wigU3U2.get(accU3, r) * cgc * factor;
+              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              
+            E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
       }
@@ -2716,6 +2838,14 @@ namespace u4
         // going through expansion
         for (int j = 0; j < uncoupled_same_weight_gArr3.size(); j++)
         {
+          // check if these coefficients are zeros
+          double norm = 0.0;
+          for (int e = 0; e < etamax; e++)
+            norm += coeffs_temp[e](i,j) * coeffs_temp[e](i,j);
+
+          if ( std::sqrt(norm) <= 1e-14)
+            continue;
+
           int i1 = uncoupled_same_weight_gArr3[j].first,
               i2 = uncoupled_same_weight_gArr3[j].second;
 
@@ -2755,11 +2885,8 @@ namespace u4
                                            gArr3b, gArr3c, cgcs);
               // after this, u3c, gArr3c and wigU3U2 are normalized
 
-              Eigen::MatrixXd A(rhomax, rhomax), B(rhomax, etamax);
-              A.setZero();
-              B.setZero();
+              std::vector<Eigen::RowVectorXd> A_rows, B_rows;
 
-              int r = 0;
               // vary U(2) and U(1) labels
               for (int k = j; k < uncoupled_same_weight_gArr3.size(); k++)
               {
@@ -2777,7 +2904,14 @@ namespace u4
                     gArr2[i2_].n33() == gArr2[i2].n33() &&
                     (mm1 + mm2) == mm3 && jj3 <= (jj1 + jj2)
                     && jj3 >= std::fabs(jj1 - jj2))
-                {                    
+                { 
+                  Eigen::RowVectorXd B_row(etamax);
+                  for (int e = 0; e < etamax; e++)
+                    B_row(e) = coeffs_temp[e](i,k);
+                
+                  if (B_row.norm() <= 1e-14)
+                    continue;
+
                   double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
 
                   auto accU3 = wigU3U2.access(gArr1[i1_].n12() - gArr1[i1_].n33(), 
@@ -2787,25 +2921,55 @@ namespace u4
                                               gArr3[i3].n12() - gArr3[i3].n33(), 
                                               gArr3[i3].n22() - gArr3[i3].n33());
 
-                  A.row(r) = wigU3U2.get_row(accU3) * cgc;
-                  for (int e = 0; e < etamax; e++)
-                    B(r,e) = coeffs_temp[e](i,k);
+                  Eigen::RowVectorXd A_row = wigU3U2.get_row(accU3) * cgc;
 
-                  r++;
+                  if (A_row.norm() <= 1e-14)
+                    continue;
+
+                  // only add independent row
+                  bool shouldAdd = true;
+                  for (int i = 0; i < A_rows.size(); i++)
+                  {
+                    Eigen::MatrixXd M(2, A_row.size());
+                    M.row(0) = A_row;
+                    M.row(1) = A_rows[i];
+
+                    if (M.fullPivLu().rank() < 2) // dependent
+                   {
+                      shouldAdd = false;
+                      break; // no need to check further
+                    }
+                  }
+
+                  if (shouldAdd == true) 
+                  {
+                    A_rows.push_back(A_row);
+                    B_rows.push_back(B_row);
+                  }
+
+                  if (A_rows.size() == rhomax)
+                    break;
                 }
-                if (r == rhomax)
-                  break;
               }
 
-              assert(A.rows() == rhomax);
+              Eigen::MatrixXd A(A_rows.size(), rhomax), B(A_rows.size(), etamax);
+              for (int i = 0; i < A_rows.size(); ++i) 
+              {
+                A.row(i) = A_rows[i];
+                B.row(i) = B_rows[i];
+              }
+
+              assert(A.fullPivLu().isInvertible());
 
               Eigen::ColPivHouseholderQR<Eigen::MatrixXd> factorize;
               factorize.compute(A);
               coeffs_ = factorize.solve(B);  
               for (int m = 0; m < coeffs_.rows(); m++)
                 for (int n = 0; n < coeffs_.cols(); n++)
-                  if (std::fabs(coeffs_(m,n)) < 1e-15)
-                    coeffs_(m,n) = 0.0;      
+                  if (std::fabs(coeffs_(m,n)) <= 1e-14)
+                    coeffs_(m,n) = 0.0;   
+
+              //std::cout << A << ";\n" << B << ";\n" << coeffs_ << "\n" << std::endl;   
             }
           }
         }
