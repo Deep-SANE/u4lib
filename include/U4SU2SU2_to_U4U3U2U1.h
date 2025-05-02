@@ -8,17 +8,25 @@
 #include <vector>
 
 #include <Eigen/Dense>
+
+#ifdef U4LIB_SPARSE_MAT
 #include <Eigen/Sparse>
+#endif
 
 #include "U4basis.h"
-#include "utils/nullspaceSolver.h"
 
+#include <nullspace_solver_qr.h>
+#ifdef U4LIB_USE_SLEPC
+#include <nullspace_solver_slepc.h>
+#endif
+ 
 namespace u4
 {
   // construction of the canonical basis: the canonical basis vectors will be
   // stored in an array
 
-  std::vector<int> expand_to_gelfand(int MSx2, int MTx2, std::vector<u4::gelfand>& gArr)
+  inline std::vector<int> 
+  expand_to_gelfand(int MSx2, int MTx2, const std::vector<u4::gelfand>& gArr)
   {
     std::vector<int> indices;
 
@@ -34,9 +42,8 @@ namespace u4
   Finding the transformation by solving a system of linear equations resulted
   from acting S+ = E13 + E24 and T+ = E12 + E34
   */
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>
-  STprojection(u4::physicalvector& physvec, std::vector<u4::gelfand>& gArr,
-               std::vector<int>& indices)
+  inline auto STprojection(u4::physicalvector& physvec, 
+    const std::vector<u4::gelfand>& gArr, std::vector<int>& indices)
   {
 
     std::vector<int> new_indices;
@@ -115,64 +122,127 @@ namespace u4
       }
     }
 
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> projector(
-        new_indices.size(), indices.size());
+    int row_num = new_indices.size(), col_num = indices.size();
 
-    for (int i = 0; i < projector.rows(); i++)
+#ifdef U4LIB_SPARSE_MAT
+    std::vector<Eigen::Triplet<double>> ija;
+#else
+    Eigen::MatrixXd projector(row_num, col_num);
+#endif
+
+    for (int i = 0; i < row_num; i++)
     {
-      for (int j = 0; j < projector.cols(); j++)
+      for (int j = 0; j < col_num; j++)
       {
         // action of E24
         if (u4::E24_13_12(gArr[indices[j]], gArr[new_indices[i]]))
+#ifdef U4LIB_SPARSE_MAT
+          ija.emplace_back(i, j, gArr[indices[j]].e24_13_12());
+#else
           projector(i, j) = gArr[indices[j]].e24_13_12();
+#endif
         else if (u4::E24_13_22(gArr[indices[j]], gArr[new_indices[i]]))
+#ifdef U4LIB_SPARSE_MAT
+          ija.emplace_back(i, j, gArr[indices[j]].e24_13_22());
+#else
           projector(i, j) = gArr[indices[j]].e24_13_22();
+#endif
         else if (u4::E24_23_12(gArr[indices[j]], gArr[new_indices[i]]))
+#ifdef U4LIB_SPARSE_MAT
+          ija.emplace_back(i, j, gArr[indices[j]].e24_23_12());
+#else
           projector(i, j) = gArr[indices[j]].e24_23_12();
+#endif
         else if (u4::E24_23_22(gArr[indices[j]], gArr[new_indices[i]]))
+#ifdef U4LIB_SPARSE_MAT
+          ija.emplace_back(i, j, gArr[indices[j]].e24_23_22());
+#else
           projector(i, j) = gArr[indices[j]].e24_23_22();
+#endif
         else if (u4::E24_33_12(gArr[indices[j]], gArr[new_indices[i]]))
+#ifdef U4LIB_SPARSE_MAT
+          ija.emplace_back(i, j, gArr[indices[j]].e24_33_12());
+#else
           projector(i, j) = gArr[indices[j]].e24_33_12();
+#endif
         else if (u4::E24_33_22(gArr[indices[j]], gArr[new_indices[i]]))
+#ifdef U4LIB_SPARSE_MAT
+          ija.emplace_back(i, j, gArr[indices[j]].e24_33_22());
+#else
           projector(i, j) = gArr[indices[j]].e24_33_22();
+#endif
 
         // action of E13
         else if (u4::E13_12(gArr[indices[j]], gArr[new_indices[i]]))
+#ifdef U4LIB_SPARSE_MAT
+          ija.emplace_back(i, j, gArr[indices[j]].e13_12());
+#else
           projector(i, j) = gArr[indices[j]].e13_12();
+#endif
         else if (u4::E13_22(gArr[indices[j]], gArr[new_indices[i]]))
+#ifdef U4LIB_SPARSE_MAT
+          ija.emplace_back(i, j, gArr[indices[j]].e13_22());
+#else
           projector(i, j) = gArr[indices[j]].e13_22();
+#endif
 
         // action of E34
         else if (u4::E34_13(gArr[indices[j]], gArr[new_indices[i]]))
+#ifdef U4LIB_SPARSE_MAT
+          ija.emplace_back(i, j, gArr[indices[j]].e34_13());
+#else
           projector(i, j) = gArr[indices[j]].e34_13();
+#endif
         else if (u4::E34_23(gArr[indices[j]], gArr[new_indices[i]]))
+#ifdef U4LIB_SPARSE_MAT
+          ija.emplace_back(i, j, gArr[indices[j]].e34_23());
+#else
           projector(i, j) = gArr[indices[j]].e34_23();
+#endif
         else if (u4::E34_33(gArr[indices[j]], gArr[new_indices[i]]))
+#ifdef U4LIB_SPARSE_MAT
+          ija.emplace_back(i, j, gArr[indices[j]].e34_33());
+#else
           projector(i, j) = gArr[indices[j]].e34_33();
+#endif
 
         // action of E12
         else if (u4::E12(gArr[indices[j]], gArr[new_indices[i]]))
+#ifdef U4LIB_SPARSE_MAT
+          ija.emplace_back(i, j, gArr[indices[j]].e12());
+#else
           projector(i, j) = gArr[indices[j]].e12();
+#endif
 
         else
+#ifdef U4LIB_SPARSE_MAT
+          ;
+#else
           projector(i, j) = 0.0;
+#endif
       }
     }
+
+#ifdef U4LIB_SPARSE_MAT
+    Eigen::SparseMatrix<double> projector(row_num, col_num);
+    projector.setFromTriplets(ija.begin(), ija.end());
+    projector.makeCompressed();
+#endif
 
     return projector;
   }
 
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>
-  lowerMS(int zeta_max, int Sx2, int MSx2, std::vector<u4::gelfand>& gArr,
-          Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& transformation,
-          std::vector<int>& canoBasis, std::vector<int>& canoBasis_new)
+  inline Eigen::MatrixXd lowerMS(int zeta_max, int Sx2, int MSx2, 
+    const std::vector<u4::gelfand>& gArr,
+    const Eigen::MatrixXd& transformation,
+    const std::vector<int>& canoBasis, 
+    const std::vector<int>& canoBasis_new)
   {
     // normalize coefficient
     double n = std::sqrt(4.0 / ((Sx2 - MSx2) * (Sx2 + MSx2 + 2.0)));
     // input MSx2 is for the new state
 
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> transformation_new(
-        canoBasis_new.size(), zeta_max);
+    Eigen::MatrixXd transformation_new(canoBasis_new.size(), zeta_max);
     transformation_new.setZero();
 
     // basis states are obtained by acting with two generators E31 and E42
@@ -183,56 +253,60 @@ namespace u4
         if (u4::E13_12(gArr[canoBasis_new[i]], gArr[canoBasis[j]]))
           for (int z = 0; z < zeta_max; z++)
             transformation_new(i, z) +=
-                n * transformation(j, z) * gArr[canoBasis[j]].e31_12();
+                transformation(j, z) * gArr[canoBasis[j]].e31_12();
         else if (u4::E13_22(gArr[canoBasis_new[i]], gArr[canoBasis[j]]))
           for (int z = 0; z < zeta_max; z++)
             transformation_new(i, z) +=
-                n * transformation(j, z) * gArr[canoBasis[j]].e31_22();
+                transformation(j, z) * gArr[canoBasis[j]].e31_22();
 
         else if (u4::E24_13_12(gArr[canoBasis_new[i]], gArr[canoBasis[j]]))
           for (int z = 0; z < zeta_max; z++)
             transformation_new(i, z) +=
-                n * transformation(j, z) * gArr[canoBasis[j]].e42_13_12();
+                transformation(j, z) * gArr[canoBasis[j]].e42_13_12();
         else if (u4::E24_13_22(gArr[canoBasis_new[i]], gArr[canoBasis[j]]))
           for (int z = 0; z < zeta_max; z++)
             transformation_new(i, z) +=
-                n * transformation(j, z) * gArr[canoBasis[j]].e42_13_22();
+                transformation(j, z) * gArr[canoBasis[j]].e42_13_22();
         else if (u4::E24_23_12(gArr[canoBasis_new[i]], gArr[canoBasis[j]]))
           for (int z = 0; z < zeta_max; z++)
             transformation_new(i, z) +=
-                n * transformation(j, z) * gArr[canoBasis[j]].e42_23_12();
+                transformation(j, z) * gArr[canoBasis[j]].e42_23_12();
         else if (u4::E24_23_22(gArr[canoBasis_new[i]], gArr[canoBasis[j]]))
           for (int z = 0; z < zeta_max; z++)
             transformation_new(i, z) +=
-                n * transformation(j, z) * gArr[canoBasis[j]].e42_23_22();
+                transformation(j, z) * gArr[canoBasis[j]].e42_23_22();
         else if (u4::E24_33_12(gArr[canoBasis_new[i]], gArr[canoBasis[j]]))
           for (int z = 0; z < zeta_max; z++)
             transformation_new(i, z) +=
-                n * transformation(j, z) * gArr[canoBasis[j]].e42_33_12();
+                transformation(j, z) * gArr[canoBasis[j]].e42_33_12();
         else if (u4::E24_33_22(gArr[canoBasis_new[i]], gArr[canoBasis[j]]))
           for (int z = 0; z < zeta_max; z++)
             transformation_new(i, z) +=
-                n * transformation(j, z) * gArr[canoBasis[j]].e42_33_22();
+                transformation(j, z) * gArr[canoBasis[j]].e42_33_22();
       }
 
       for (int z = 0; z < zeta_max; z++)
+      {
+        transformation_new(i, z) *= n;
+
         if (std::fabs(transformation_new(i, z)) < 1e-12)
           transformation_new(i, z) = 0.0;
+      }
     }
     return transformation_new;
   }
 
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>
-  lowerMT(int zeta_max, int Tx2, int MTx2, std::vector<u4::gelfand>& gArr,
-          Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>& transformation,
-          std::vector<int>& canoBasis, std::vector<int>& canoBasis_new)
+  inline Eigen::MatrixXd lowerMT(int zeta_max, int Tx2, int MTx2, 
+    const std::vector<u4::gelfand>& gArr,
+    const Eigen::MatrixXd& transformation,
+    const std::vector<int>& canoBasis, 
+    const std::vector<int>& canoBasis_new)
   {
     // normalize coefficient
     double n =  std::sqrt(4.0 / ((Tx2 - MTx2) * (Tx2 + MTx2 + 2.0)));
     // input MSx2 is for the new state
 
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> transformation_new(
-        canoBasis_new.size(), zeta_max);
+    Eigen::MatrixXd transformation_new(canoBasis_new.size(), zeta_max);
     transformation_new.setZero();
 
     // basis states are obtained by acting with two generators E21 and E43
@@ -243,43 +317,48 @@ namespace u4
         if (u4::E12(gArr[canoBasis_new[i]], gArr[canoBasis[j]]))
           for (int z = 0; z < zeta_max; z++)
             transformation_new(i, z) +=
-                n * transformation(j, z) * gArr[canoBasis[j]].e21();
+                transformation(j, z) * gArr[canoBasis[j]].e21();
 
         else if (u4::E34_13(gArr[canoBasis_new[i]], gArr[canoBasis[j]]))
           for (int z = 0; z < zeta_max; z++)
             transformation_new(i, z) +=
-                n * transformation(j, z) * gArr[canoBasis[j]].e43_13();
+                transformation(j, z) * gArr[canoBasis[j]].e43_13();
         else if (u4::E34_23(gArr[canoBasis_new[i]], gArr[canoBasis[j]]))
           for (int z = 0; z < zeta_max; z++)
             transformation_new(i, z) +=
-                n * transformation(j, z) * gArr[canoBasis[j]].e43_23();
+                transformation(j, z) * gArr[canoBasis[j]].e43_23();
         else if (u4::E34_33(gArr[canoBasis_new[i]], gArr[canoBasis[j]]))
           for (int z = 0; z < zeta_max; z++)
             transformation_new(i, z) +=
-                n * transformation(j, z) * gArr[canoBasis[j]].e43_33();
+                transformation(j, z) * gArr[canoBasis[j]].e43_33();
       }
 
       for (int z = 0; z < zeta_max; z++)
+      {
+        transformation_new(i, z) *= n;
+
         if (std::fabs(transformation_new(i, z)) < 1e-12)
           transformation_new(i, z) = 0.0;
+      }
     }
     return transformation_new;
   }
 
   // get the transformation for MS <= S and MT <= T
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>
-  phys_to_cano(u4::physicalvector& physvec, int MSx2, int MTx2,
-               std::vector<int>& canoBasis,
-               std::vector<u4::gelfand>& gArr)
+  inline Eigen::MatrixXd phys_to_cano(u4::physicalvector& physvec, int MSx2, int MTx2, 
+    std::vector<int>& canoBasis, const std::vector<u4::gelfand>& gArr)
   {
     canoBasis = u4::expand_to_gelfand(physvec.SS, physvec.TT, gArr);
 
     // build the projection matrix
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> STproj =
-        u4::STprojection(physvec, gArr, canoBasis);
+    auto STproj = u4::STprojection(physvec, gArr, canoBasis);
+    //std::cout << STproj << std::endl;
     // and solve its null space
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> transformation =
-        null_space(STproj);
+#ifdef U4LIB_USE_SLEPC
+    Eigen::MatrixXd transformation = u34utils::null_space_slepc(STproj, physvec.zeta);
+#else
+    Eigen::MatrixXd transformation = u34utils::null_space(STproj);
+#endif
 
     // ensure the nullspace is solved correctly
     assert(physvec.zeta == transformation.cols());
@@ -290,9 +369,8 @@ namespace u4
       //store new expansion
       std::vector<int> canoBasis_new = u4::expand_to_gelfand(msx2, physvec.TT, gArr);
 
-      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> transformation_new =
-          u4::lowerMS(physvec.zeta, physvec.SS, msx2, gArr, transformation,
-          canoBasis, canoBasis_new);
+      Eigen::MatrixXd transformation_new = u4::lowerMS(physvec.zeta, physvec.SS,  
+                          msx2, gArr, transformation, canoBasis, canoBasis_new);
 
       transformation = transformation_new;
       canoBasis = canoBasis_new;
@@ -304,9 +382,8 @@ namespace u4
       //store new expansion
       std::vector<int> canoBasis_new = u4::expand_to_gelfand(MSx2, mtx2, gArr);
 
-      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> transformation_new =
-          u4::lowerMT(physvec.zeta, physvec.TT, mtx2, gArr, transformation,
-          canoBasis, canoBasis_new);
+      Eigen::MatrixXd transformation_new = u4::lowerMT(physvec.zeta, physvec.TT,
+                          mtx2, gArr, transformation, canoBasis, canoBasis_new);
 
       transformation = transformation_new;
       canoBasis = canoBasis_new;

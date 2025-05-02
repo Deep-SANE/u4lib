@@ -4,15 +4,23 @@
 #include <vector>
 
 #include <U4basis.h>
-#include <U4SU2SU2_to_U4U3U2U1.h>
+#include <U4SU2SU2_to_U4U3U2U1.h> 
 
-int main()
+#ifdef U4LIB_USE_SLEPC
+#include <slepcsys.h>
+#endif
+  
+int main(int argc, char* argv[])
 {
+#ifdef U4LIB_USE_SLEPC
+  SlepcInitialize(&argc, &argv, NULL, NULL);
+#endif
+
   int P1, P2, P3;
   std::cout << "Please enter SU(4) quantum numbers (P1,P2,P3): ";
   std::cin >> P1 >> P2 >> P3;
 
-  u4::irrep u4top(P1, P2, P3);
+  u4::irrep u4top(P1, P2, P3); 
 
   // building the gelfand basis 
   std::vector<u4::gelfand> gArr = u4::gelfandBasis(u4top);
@@ -48,12 +56,12 @@ int main()
       u4::phys_to_cano(pArr[index], MSx2, MTx2, canoBasis, gArr);
 
   // End time measurement
-  auto t1 = std::chrono::high_resolution_clock::now();
+  auto t1 = std::chrono::high_resolution_clock::now(); 
 
   std::cout
       << "The Gelfand states and the expansion coefficients for zeta = 1,...,"
       << pArr[index].zeta << " are:" << std::endl;
-
+ 
   for (int i = 0; i < canoBasis.size(); i++)
     std::cout << "|" << gArr[canoBasis[i]] << "> \t" << transformation.row(i) 
               << std::endl; 
@@ -64,6 +72,10 @@ int main()
   // Output the time in seconds
   std::cout << "Elapsed time: " << duration.count() << " seconds or "
             << duration.count() / 60.0 << " minutes" << std::endl;
+
+#ifdef U4LIB_USE_SLEPC
+  SlepcFinalize();
+#endif  
 
   return 0;
 }
