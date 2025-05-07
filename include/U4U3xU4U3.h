@@ -3050,14 +3050,11 @@ namespace u4
     std::cerr << "LowerWeightReducedCoeffs total time: " << duration.count()
               << " [s]" << std::endl;
 #endif
-/*
-    u4C.normalize();
+
+    u4C.normalize(); // u4A and u4B are normalized in the source file
     for (int i = 0; i < gArrC.size(); i++)
       gArrC[i].normalize();
 
-    // once bases are normalized, coeffs needs to be as well:
-    coeffs.normalize();
-*/
     return coeffs;
   }
 

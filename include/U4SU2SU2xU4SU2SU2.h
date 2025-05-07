@@ -1,43 +1,222 @@
-// protection against multiple header file inclusion
-#ifndef U4SU2SU2XU4SU2SU2_H
-#define U4SU2SU2XU4SU2SU2_H
+#ifndef U4LIB_U4SU2SU2XU4SU2SU2_H
+#define U4LIB_U4SU2SU2XU4SU2SU2_H
 
 #include <algorithm>
 #include <cmath>
-#include <Eigen/Dense>
-#include <Eigen/Sparse>
 #include <iostream>
+#include <tuple>
 #include <vector>
+
+#include <Eigen/Dense>
 
 #include "U4basis.h"
 #include "U4SU2SU2_to_U4U3U2U1.h"
-#include "U4U3U2U1xU4U3U2U1.h"
+#include "U4U3xU4U3.h"
 
-extern "C"
-{
-#include <wigxjpf.h>
-}
+#include <so3Coeffs/SO3_CGC.h>
 
 namespace u4
 {
-
-  // usual SO(3) Clebsh-Gordan coefficients <JJ1 MM1; JJ2 MM2 | JJ3 MM3>
-  double CGC_SO3(int jj1, int jj2, int jj3, int mm1, int mm2, int mm3)
+  // generate all Wigner U(4)->SU(2)xSU(2) coefficients for multiple
+  // values of ss1, tt1, ss2, tt2, ss3, tt3
+  inline std::vector<Eigen::MatrixXd>  WigU4SU2SU2(int& etamax, 
+    std::vector<u4::physicalvector>& pArrA,
+    std::vector<u4::physicalvector>& pArrB,
+    std::vector<u4::physicalvector>& pArrC,
+    std::vector<std::tuple<int, int, int>>& tArr,
+    u34utils::SO3_CGC& cgcs, u3::WigU3U2_db& wigU3U2db)
   {
-    int phase = ((-jj1 + jj2 - mm3) % 4 == 0) ? 1 : -1;
+    // build Gelfand basis
+    std::vector<u4::gelfand> gArrA = u4::gelfandBasis(pArrA[0].toprow),
+                             gArrB = u4::gelfandBasis(pArrB[0].toprow),
+                             gArrC = u4::gelfandBasis(pArrC[0].toprow);
 
-    wig_table_init(2 * 100, 9);
-    wig_temp_init(2 * 100);
+    // find transformation for physical states belong to the 1st irrep
+    std::vector<std::vector<int>> canoBasisA(pArrA.size());
+    std::vector<Eigen::MatrixXd> transformationA(pArrA.size());
+    for (int i = 0; i < pArrA.size(); i++)
+      transformationA[i] =
+        u4::phys_to_cano(pArrA[i], pArrA[i].SS, pArrA[i].TT, canoBasisA[i], gArrA);
 
-    double val3j = wig3jj(jj1, jj2, jj3, mm1, mm2, -mm3);
+    // find transformation for physical states belong to the 3rd irrep
+    std::vector<int> w3mins(pArrC.size());
+    std::vector<std::vector<int>> canoBasisC(pArrC.size());
+    std::vector<Eigen::MatrixXd> transformationC(pArrC.size());
+    for (int i = 0; i < pArrC.size(); i++)
+    {
+      transformationC[i] =
+        u4::phys_to_cano(pArrC[i], pArrC[i].SS, pArrC[i].TT, canoBasisC[i], gArrC);
+      w3mins[i] = gArrC[canoBasisC[i].back()].n13() 
+                + gArrC[canoBasisC[i].back()].n23()
+                + gArrC[canoBasisC[i].back()].n33();
+    }
 
-    wig_temp_free();
-    wig_table_free();
+    // find all the reduced canonical coupling coefficients
+    int w3min = *std::min_element(w3mins.begin(), w3mins.end());
+    auto canoCoeffs =
+        u4::WigU4U3(pArrA[0].toprow, pArrB[0].toprow, pArrC[0].toprow, 
+                    etamax, w3min, gArrA, gArrB, gArrC, cgcs, wigU3U2db);
+    // note that u4C and all gelfand states are already normalized here
 
-    return phase * std::sqrt(jj3 + 1) * val3j;
+    std::vector<Eigen::MatrixXd> coeffs;
+
+    int i, j, k;
+    for (j = 0; j < pArrB.size(); j++)
+    {
+      std::vector<std::vector<int>> canoBasisB;
+      std::vector<Eigen::MatrixXd> transformationB;      
+
+      for (int mSx2 = pArrB[j].SS; mSx2 >= -pArrB[j].SS; mSx2 -= 2)
+      {
+        if (mSx2 == pArrB[j].SS)
+        {
+          std::vector<int> canoBasisB_new;
+          Eigen::MatrixXd transformationB_new = 
+            u4::phys_to_cano(pArrB[j], pArrB[j].SS, 
+            pArrB[j].TT, canoBasisB_new, gArrB);
+          
+          canoBasisB.push_back(canoBasisB_new);
+          transformationB.push_back(transformationB_new);
+        }
+              
+        else if (mSx2 < pArrB[j].SS)
+        {
+          // fix mT, track the previous mS state
+          int indexS = ((pArrB[j].SS - mSx2)/2 - 1) * (pArrB[j].TT + 1);
+
+          std::vector<int> canoBasisB_new =
+            u4::expand_to_gelfand(mSx2, pArrB[j].TT, gArrB);
+
+          Eigen::MatrixXd transformationB_new =
+            u4::lowerMS(pArrB[j].zeta, pArrB[j].SS, mSx2, gArrB,
+            transformationB[indexS], canoBasisB[indexS], canoBasisB_new);
+
+          canoBasisB.push_back(canoBasisB_new);
+          transformationB.push_back(transformationB_new);
+        }
+
+        for (int mTx2 = pArrB[j].TT - 2; mTx2 >= -pArrB[j].TT; mTx2 -= 2)
+        {
+          int indexT = (pArrB[j].SS - mSx2)/2 * (pArrB[j].TT + 1)
+                     + (pArrB[j].TT - mTx2)/2 - 1;
+
+          std::vector<int> canoBasisB_new =
+            u4::expand_to_gelfand(mSx2, mTx2, gArrB);
+
+          Eigen::MatrixXd transformationB_new =
+            u4::lowerMT(pArrB[j].zeta, pArrB[j].TT, mTx2, gArrB,
+            transformationB[indexT], canoBasisB[indexT], canoBasisB_new);
+
+          canoBasisB.push_back(canoBasisB_new);
+          transformationB.push_back(transformationB_new);
+        }
+      }  
+
+      for (i = 0; i < pArrA.size(); i++)
+      {
+        for (k = 0; k < pArrC.size(); k++)
+        {
+          if (std::fabs(pArrA[i].SS - pArrB[j].SS) <= pArrC[k].SS 
+              && (pArrA[i].SS + pArrB[j].SS) >= pArrC[k].SS && 
+              std::fabs(pArrA[i].TT - pArrB[j].TT) <= pArrC[k].TT 
+              && (pArrA[i].TT + pArrB[j].TT) >= pArrC[k].TT)
+          {
+            tArr.emplace_back(i,j,k);
+
+            Eigen::MatrixXd coeffs_temp(pArrA[i].zeta * pArrB[j].zeta 
+                                            * pArrC[k].zeta, etamax);
+            coeffs_temp.setZero();
+
+            int MSx2 = pArrC[k].SS - pArrA[i].SS,
+                MTx2 = pArrC[k].TT - pArrA[i].TT;
+
+            double cgcS = cgcs.compute(pArrA[i].SS, pArrB[j].SS, pArrC[k].SS,
+                                       pArrA[i].SS, MSx2, pArrC[k].SS),
+                   cgcT = cgcs.compute(pArrA[i].TT, pArrB[j].TT, pArrC[k].TT,
+                                       pArrA[i].TT, MTx2, pArrC[k].TT);
+            int index = (pArrB[j].SS - MSx2)/2 * (pArrB[j].TT + 1)
+                      + (pArrB[j].TT - MTx2)/2;
+            for (int iA = 0; iA < canoBasisA[i].size(); iA++)
+            {
+              int gA = canoBasisA[i][iA];
+              for (int iB = 0; iB < canoBasisB[index].size(); iB++)
+              {
+                int gB = canoBasisB[index][iB];
+                for (int iC = 0; iC < canoBasisC[k].size(); iC++)
+                {
+                  int gC = canoBasisC[k][iC];
+                  u3::irrep u3A(gArrA[gA].n13(), gArrA[gA].n23(), gArrA[gA].n33()),
+                            u3B(gArrB[gB].n13(), gArrB[gB].n23(), gArrB[gB].n33()),
+                            u3C(gArrC[gC].n13(), gArrC[gC].n23(), gArrC[gC].n33());
+                  int rhomax = u3::Rho(u3A, u3B, u3C);
+
+                  int jj1 = gArrA[gA].Lambdax2(), mm1 = gArrA[gA].MLambdax2(),
+                      jj2 = gArrB[gB].Lambdax2(), mm2 = gArrB[gB].MLambdax2(),
+                      jj3 = gArrC[gC].Lambdax2(), mm3 = gArrC[gC].MLambdax2();
+
+                  if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+                    std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
+                  {
+                    double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+
+                    auto [missing, accU4] = canoCoeffs.access(u3A,u3B,u3C);
+                    assert(missing == false);
+
+                    int x = u3A.n33() + u3B.n33();
+                    u3C.n13(u3C.n13() - x);
+                    u3C.n23(u3C.n23() - x);
+                    u3C.n33(u3C.n33() - x);
+                    u3A.normalize();
+                    u3B.normalize();
+
+                    std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3A),
+                                             gArr3b = u3::gelfandBasis(u3B),
+                                             gArr3c = u3::gelfandBasis(u3C);
+
+                    auto wigU3U2 = wigU3U2db.get(u3A, u3B, u3C, rhomax,
+                                              gArr3a, gArr3b, gArr3c, cgcs);
+                    // after this, u3c, gArr3c and wigU3U2 are normalized
+
+                    auto accU3 = wigU3U2.access(gArrA[gA].n12() - gArrA[gA].n33(), 
+                                                gArrA[gA].n22() - gArrA[gA].n33(), 
+                                                gArrB[gB].n12() - gArrB[gB].n33(), 
+                                                gArrB[gB].n22() - gArrB[gB].n33(), 
+                                                gArrC[gC].n12() - gArrC[gC].n33(), 
+                                                gArrC[gC].n22() - gArrC[gC].n33());
+
+                    for (int e = 0; e < etamax; e++)   
+                      for (int z1 = 0; z1 < pArrA[i].zeta; z1++)
+                        for (int z2 = 0; z2 < pArrB[j].zeta; z2++)
+                          for (int z3 = 0; z3 < pArrC[k].zeta; z3++)
+                          {
+                            double y = 0.0;
+                            for (int r = 0; r < rhomax; r++)
+                              y += accU4(r,e) * wigU3U2.get(accU3, r);
+                            
+                            coeffs_temp((z1 * pArrB[j].zeta + z2) * pArrC[k].zeta + z3, e)
+                             += y * cgc * transformationA[i](iA, z1)
+                             * transformationB[index](iB, z2)
+                             * transformationC[k](iC, z3);
+                          }
+                  }
+                }
+              }
+            }
+
+            coeffs_temp /= (cgcS * cgcT);
+            coeffs.push_back(coeffs_temp);
+          }
+        }
+      }
+    }
+    return coeffs;
   }
 
-  // generate all Wigner U(4)->SU(2)xSU(2) coefficients
+} // namespace u4
+
+#endif
+
+/*
   Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>
   WigU4SU2SU2(u4::irrep& u4A, u4::irrep& u4B, u4::irrep& u4C,
               std::vector<u4::physicalvector>& physvecA,
@@ -607,7 +786,4 @@ namespace u4
 
     return coeffs;
   }
-
-} // namespace u4
-
-#endif
+*/

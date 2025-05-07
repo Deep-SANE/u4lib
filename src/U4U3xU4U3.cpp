@@ -50,7 +50,7 @@ int main(int argc, char* argv[])
     std::cout << "(" << i << "): [" << u4cs[i].n14() - u4cs[i].n44() << ","
               << u4cs[i].n24() - u4cs[i].n44() << "," << u4cs[i].n34() - u4cs[i].n44() 
               << ",0] \t eta = 1 ... " << etamaxs[i] << std::endl; 
-  } 
+  }
      
   int index;
   std::cout 
