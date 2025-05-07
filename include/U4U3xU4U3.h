@@ -96,8 +96,11 @@ namespace u4
 
     // std::pair<bool, decltype(coeffs_.block(0, 0, 0, 0))>
     auto access(const u3::irrep& u3a, const u3::irrep& u3b,
-                const u3::irrep& u3c)
+                const u3::irrep& u3c_nn)
     {
+      u3::irrep u3c = u3c_nn;
+      u3c.normalize();
+
       auto rhomax = u3::Rho(u3a, u3b, u3c);
 
       assert(rhomax > 0);

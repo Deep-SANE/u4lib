@@ -89,6 +89,9 @@ int main(int argc, char* argv[])
                               u3b(n13b,n23b,n33b),
                               u3c(n13c,n23c,n33c);
 
+                    if (u3::Rho(u3a, u3b, u3c) <= 0)
+                      continue;
+
                     auto [missing, coeffs_] = coeffs.access(u3a,u3b,u3c);  
  
                     if (missing == true)
