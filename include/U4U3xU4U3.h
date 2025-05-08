@@ -99,7 +99,7 @@ namespace u4
                 const u3::irrep& u3c_nn)
     {
       u3::irrep u3c = u3c_nn;
-      u3c.normalize();
+      //u3c.normalize();
 
       auto rhomax = u3::Rho(u3a, u3b, u3c);
 
@@ -3054,9 +3054,9 @@ namespace u4
               << " [s]" << std::endl;
 #endif
 
-    u4C.normalize(); // u4A and u4B are normalized in the source file
-    for (int i = 0; i < gArrC.size(); i++)
-      gArrC[i].normalize();
+    //u4C.normalize(); // u4A and u4B are normalized in the source file
+    //for (int i = 0; i < gArrC.size(); i++)
+      //gArrC[i].normalize();
 
     return coeffs;
   }
