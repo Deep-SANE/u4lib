@@ -165,7 +165,7 @@ int main(int argc, char* argv[])
   {
     std::cout << "Your spin and isospin values are valid" << std::endl;
     return 1;
-  }
+  } 
 
   // Start time measurement
   auto t0 = std::chrono::high_resolution_clock::now();

@@ -83,7 +83,7 @@ int main(int argc, char* argv[])
             for (int n33b = u4b.n34(); n33b >= u4b.n44(); n33b--)
               for (int n13c = u4c.n14(); n13c >= u4c.n24(); n13c--)
                 for (int n23c = u4c.n24(); n23c >= u4c.n34(); n23c--)   
-                  for (int n33c = u4c.n34(); n33c >= u4c.n44(); n33c--)  
+                  for (int n33c = u4c.n34(); n33c >= u4c.n44(); n33c--) 
                   {   
                     u3::irrep u3a(n13a,n23a,n33a),
                               u3b(n13b,n23b,n33b),
