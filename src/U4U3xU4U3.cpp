@@ -47,9 +47,8 @@ int main(int argc, char* argv[])
   std::cout << "The normalized coupled irreps are: " << std::endl;
   for (int i = 0; i < u4cs.size(); i++)
   {
-    std::cout << "(" << i << "): [" << u4cs[i].n14() - u4cs[i].n44() << ","
-              << u4cs[i].n24() - u4cs[i].n44() << "," << u4cs[i].n34() - u4cs[i].n44() 
-              << ",0] \t eta = 1 ... " << etamaxs[i] << std::endl; 
+    std::cout << "(" << i << "): " << u4cs[i] << "\t eta = 1 ... " 
+              << etamaxs[i] << std::endl; 
   }
      
   int index;
@@ -65,7 +64,7 @@ int main(int argc, char* argv[])
                            gArrC = u4::gelfandBasis(u4cs[index]);
   
   u34utils::SO3_CGC cgcs; 
-  u3::WigU3U2_db wigU3U2db;
+  u3::WigU3U2_db wigU3U2db(cgcs);
                            
   auto coeffs = u4::WigU4U3(u4a, u4b, u4cs[index], etamaxs[index], -1,    
                             gArrA, gArrB, gArrC, cgcs, wigU3U2db);

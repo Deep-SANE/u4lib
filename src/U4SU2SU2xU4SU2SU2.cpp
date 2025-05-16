@@ -172,7 +172,7 @@ int main(int argc, char* argv[])
 
   std::vector<std::tuple<int, int, int>> tArr;
   u34utils::SO3_CGC cgcs;
-  u3::WigU3U2_db wigU3U2db;
+  u3::WigU3U2_db wigU3U2db(cgcs);
 
   auto coeffs =  
     u4::WigU4SU2SU2(etamax, pArrA, pArrB, pArrC, tArr, cgcs, wigU3U2db);

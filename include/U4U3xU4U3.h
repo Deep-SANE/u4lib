@@ -132,14 +132,22 @@ namespace u4
                       const std::vector<u4::gelfand>& gArr1,
                       const std::vector<u4::gelfand>& gArr2)
   {
+    int x = gArr1[0].n14() + gArr1[0].n24() + gArr1[0].n34() + 
+            gArr2[0].n14() + gArr2[0].n24() + gArr2[0].n34() -
+            g3.n14() - g3.n24() - g3.n34();
+
+    assert(x % 4 == 0);
+
+    x /= 4;
+
     std::vector<std::pair<int, int>> indices;
     for (int i = 0; i < gArr1.size(); i++)
     {
       for (int j = 0; j < gArr2.size(); j++)
       {
-        if ((gArr1[i].e33() + gArr2[j].e33()) == g3.e33() &&
-            (gArr1[i].e22() + gArr2[j].e22()) == g3.e22() &&
-            (gArr1[i].e11() + gArr2[j].e11()) == g3.e11())
+        if ((gArr1[i].e33() + gArr2[j].e33()) == (g3.e33() + x) &&
+            (gArr1[i].e22() + gArr2[j].e22()) == (g3.e22() + x) &&
+            (gArr1[i].e11() + gArr2[j].e11()) == (g3.e11() + x))
         {
           indices.emplace_back(i, j);
         }
@@ -511,24 +519,6 @@ namespace u4
 
         if (missing == true)
         {
-          // normalizing u3a and u3b before calculating U3U2xU3U2
-          u3c.n13(u3c.n13() - u3a.n33() - u3b.n33());
-          u3c.n23(u3c.n23() - u3a.n33() - u3b.n33());
-          u3c.n33(u3c.n33() - u3a.n33() - u3b.n33());
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          // stop computing further via w2
-          //int w2min = u3c.n13() + u3c.n23(); // because we are at the hw state
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax, 
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
           std::vector<Eigen::RowVectorXd> A_rows, B_rows;
 
           // vary U(2) and U(1) labels
@@ -551,14 +541,15 @@ namespace u4
 
               double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
 
-              auto accU3 = wigU3U2.access(gArr1[i1_].n12() - gArr1[i1_].n33(), 
-                                          gArr1[i1_].n22() - gArr1[i1_].n33(), 
-                                          gArr2[i2_].n12() - gArr2[i2_].n33(), 
-                                          gArr2[i2_].n22() - gArr2[i2_].n33(), 
-                                          gArr3[0].n12() - gArr3[0].n33(), 
-                                          gArr3[0].n22() - gArr3[0].n33());
+              auto accU3 = wigU3U2db.get(
+                gArr1[i1_].n13(), gArr1[i1_].n23(), gArr1[i1_].n33(), 
+                gArr1[i1_].n12(), gArr1[i1_].n22(), 
+                gArr2[i2_].n13(), gArr2[i2_].n23(), gArr2[i2_].n33(),                          
+                gArr2[i2_].n12(), gArr2[i2_].n22(),
+                gArr3[0].n13(), gArr3[0].n23(), gArr3[0].n33(), 
+                gArr3[0].n12(), gArr3[0].n22());
 
-              Eigen::RowVectorXd A_row = wigU3U2.get_row(accU3) * cgc;
+              Eigen::RowVectorXd A_row = accU3 * cgc;
 
               // not consider vanishing rows in A (otherwise not invertible)
               if (A_row.norm() <= 1e-14)
@@ -663,30 +654,13 @@ namespace u4
 
           //std::cout << u3a << ";" << u3b << ";" << u3c << "-->" << accU4 << std::endl;
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(g1_n13p1.n12() - g1_n13p1.n33(), 
-                                      g1_n13p1.n22() - g1_n13p1.n33(), 
-                                      gArr2[g2].n12() - gArr2[g2].n33(), 
-                                      gArr2[g2].n22() - gArr2[g2].n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            g1_n13p1.n13(), g1_n13p1.n23(), g1_n13p1.n33(),
+            g1_n13p1.n12(), g1_n13p1.n22(), 
+            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
+            gArr2[g2].n12(), gArr2[g2].n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
 
           double factor = g1_n13p1.e43_13();
 
@@ -699,7 +673,7 @@ namespace u4
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
             {
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               //std::cout << "y = " << accU4(r,e) << std::endl;
             }
               
@@ -728,29 +702,13 @@ namespace u4
 
           //std::cout << u3a << ";" << u3b << ";" << u3c << "-->" << accU4 << std::endl;
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(g1_n23p1.n12() - g1_n23p1.n33(), 
-                                      g1_n23p1.n22() - g1_n23p1.n33(), 
-                                      gArr2[g2].n12() - gArr2[g2].n33(), 
-                                      gArr2[g2].n22() - gArr2[g2].n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
+          auto accU3 = wigU3U2db.get(
+            g1_n23p1.n13(), g1_n23p1.n23(), g1_n23p1.n33(),
+            g1_n23p1.n12(), g1_n23p1.n22(), 
+            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
+            gArr2[g2].n12(), gArr2[g2].n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           //std::cout << wigU3U2.get_row(accU3) << std::endl;
 
           double factor = g1_n23p1.e43_23();
@@ -763,7 +721,7 @@ namespace u4
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
             {
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               //std::cout << "y = " << accU4(r,e) << std::endl;
             }
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -791,29 +749,13 @@ namespace u4
 
           //std::cout << u3a << ";" << u3b << ";" << u3c << "-->" << accU4 << std::endl;
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(g1_n33p1.n12() - g1_n33p1.n33(), 
-                                      g1_n33p1.n22() - g1_n33p1.n33(), 
-                                      gArr2[g2].n12() - gArr2[g2].n33(), 
-                                      gArr2[g2].n22() - gArr2[g2].n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
+          auto accU3 = wigU3U2db.get(
+            g1_n33p1.n13(), g1_n33p1.n23(), g1_n33p1.n33(),
+            g1_n33p1.n12(), g1_n33p1.n22(), 
+            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
+            gArr2[g2].n12(), gArr2[g2].n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           //std::cout << wigU3U2.get_row(accU3) << std::endl;
 
           double factor = g1_n33p1.e43_33();
@@ -826,7 +768,7 @@ namespace u4
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
             {
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               //std::cout << "y = " << accU4(r,e) << std::endl;
             }  
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -854,30 +796,13 @@ namespace u4
           assert(missing == false);
 
           //std::cout << u3a << ";" << u3b << ";" << u3c << "-->" << accU4 << std::endl;
-
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
-                                      gArr1[g1].n22() - gArr1[g1].n33(), 
-                                      g2_n13p1.n12() - g2_n13p1.n33(), 
-                                      g2_n13p1.n22() - g2_n13p1.n33(),  
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
+          auto accU3 = wigU3U2db.get(
+            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+            gArr1[g1].n12(), gArr1[g1].n22(), 
+            g2_n13p1.n13(), g2_n13p1.n23(), g2_n13p1.n33(),
+            g2_n13p1.n12(), g2_n13p1.n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           //std::cout << wigU3U2.get_row(accU3) << std::endl;
 
           double factor = g2_n13p1.e43_13();
@@ -890,7 +815,7 @@ namespace u4
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
             {
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               //std::cout << "y = " << accU4(r,e) << std::endl;
             }
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -918,29 +843,13 @@ namespace u4
 
           //std::cout << u3a << ";" << u3b << ";" << u3c << "-->" << accU4 << std::endl;
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a), 
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
-                                      gArr1[g1].n22() - gArr1[g1].n33(), 
-                                      g2_n23p1.n12() - g2_n23p1.n33(), 
-                                      g2_n23p1.n22() - g2_n23p1.n33(),  
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
+          auto accU3 = wigU3U2db.get(
+            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+            gArr1[g1].n12(), gArr1[g1].n22(), 
+            g2_n23p1.n13(), g2_n23p1.n23(), g2_n23p1.n33(),
+            g2_n23p1.n12(), g2_n23p1.n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           //std::cout << wigU3U2.get_row(accU3) << std::endl;
 
           double factor = g2_n23p1.e43_23();
@@ -953,7 +862,7 @@ namespace u4
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
             {
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               //std::cout << "y = " << accU4(r,e) << std::endl;
             } 
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -981,30 +890,13 @@ namespace u4
 
           //std::cout << u3a << ";" << u3b << ";" << u3c << "-->" << accU4 << std::endl;
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
-                                      gArr1[g1].n22() - gArr1[g1].n33(), 
-                                      g2_n33p1.n12() - g2_n33p1.n33(), 
-                                      g2_n33p1.n22() - g2_n33p1.n33(),  
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+            gArr1[g1].n12(), gArr1[g1].n22(), 
+            g2_n33p1.n13(), g2_n33p1.n23(), g2_n33p1.n33(),
+            g2_n33p1.n12(), g2_n33p1.n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
 
           double factor = g2_n33p1.e43_33();
 
@@ -1016,7 +908,7 @@ namespace u4
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
             {
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               //std::cout << "y = " << accU4(r,e) << std::endl;
             }  
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -1084,30 +976,13 @@ namespace u4
           auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
           assert(missing == false);
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(g1_n13n12p1.n12() - g1_n13n12p1.n33(), 
-                                      g1_n13n12p1.n22() - g1_n13n12p1.n33(), 
-                                      gArr2[g2].n12() - gArr2[g2].n33(), 
-                                      gArr2[g2].n22() - gArr2[g2].n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            g1_n13n12p1.n13(), g1_n13n12p1.n23(), g1_n13n12p1.n33(),
+            g1_n13n12p1.n12(), g1_n13n12p1.n22(), 
+            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
+            gArr2[g2].n12(), gArr2[g2].n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
 
           double factor = g1_n13n12p1.e42_13_12();
 
@@ -1117,7 +992,7 @@ namespace u4
           {
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -1143,30 +1018,13 @@ namespace u4
           auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
           assert(missing == false);
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(g1_n13n22p1.n12() - g1_n13n22p1.n33(), 
-                                      g1_n13n22p1.n22() - g1_n13n22p1.n33(), 
-                                      gArr2[g2].n12() - gArr2[g2].n33(), 
-                                      gArr2[g2].n22() - gArr2[g2].n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            g1_n13n22p1.n13(), g1_n13n22p1.n23(), g1_n13n22p1.n33(),
+            g1_n13n22p1.n12(), g1_n13n22p1.n22(), 
+            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
+            gArr2[g2].n12(), gArr2[g2].n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           
           double factor = g1_n13n22p1.e42_13_22();
 
@@ -1176,7 +1034,7 @@ namespace u4
           {
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -1202,30 +1060,13 @@ namespace u4
           auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
           assert(missing == false);
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(g1_n23n12p1.n12() - g1_n23n12p1.n33(), 
-                                      g1_n23n12p1.n22() - g1_n23n12p1.n33(), 
-                                      gArr2[g2].n12() - gArr2[g2].n33(), 
-                                      gArr2[g2].n22() - gArr2[g2].n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            g1_n23n12p1.n13(), g1_n23n12p1.n23(), g1_n23n12p1.n33(),
+            g1_n23n12p1.n12(), g1_n23n12p1.n22(), 
+            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
+            gArr2[g2].n12(), gArr2[g2].n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           
           double factor = g1_n23n12p1.e42_23_12();
 
@@ -1235,7 +1076,7 @@ namespace u4
           {
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -1261,30 +1102,14 @@ namespace u4
           auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
           assert(missing == false);
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
+          auto accU3 = wigU3U2db.get(
+            g1_n23n22p1.n13(), g1_n23n22p1.n23(), g1_n23n22p1.n33(),
+            g1_n23n22p1.n12(), g1_n23n22p1.n22(), 
+            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
+            gArr2[g2].n12(), gArr2[g2].n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
 
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(g1_n23n22p1.n12() - g1_n23n22p1.n33(), 
-                                      g1_n23n22p1.n22() - g1_n23n22p1.n33(), 
-                                      gArr2[g2].n12() - gArr2[g2].n33(), 
-                                      gArr2[g2].n22() - gArr2[g2].n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
           double factor = g1_n23n22p1.e42_23_22();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
@@ -1293,7 +1118,7 @@ namespace u4
           {
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -1319,30 +1144,13 @@ namespace u4
           auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
           assert(missing == false);
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(g1_n33n12p1.n12() - g1_n33n12p1.n33(), 
-                                      g1_n33n12p1.n22() - g1_n33n12p1.n33(), 
-                                      gArr2[g2].n12() - gArr2[g2].n33(), 
-                                      gArr2[g2].n22() - gArr2[g2].n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            g1_n33n12p1.n13(), g1_n33n12p1.n23(), g1_n33n12p1.n33(),
+            g1_n33n12p1.n12(), g1_n33n12p1.n22(), 
+            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
+            gArr2[g2].n12(), gArr2[g2].n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           
           double factor = g1_n33n12p1.e42_33_12();
 
@@ -1352,7 +1160,7 @@ namespace u4
           {
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -1378,30 +1186,13 @@ namespace u4
           auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
           assert(missing == false);
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(g1_n33n22p1.n12() - g1_n33n22p1.n33(), 
-                                      g1_n33n22p1.n22() - g1_n33n22p1.n33(), 
-                                      gArr2[g2].n12() - gArr2[g2].n33(), 
-                                      gArr2[g2].n22() - gArr2[g2].n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            g1_n33n22p1.n13(), g1_n33n22p1.n23(), g1_n33n22p1.n33(),
+            g1_n33n22p1.n12(), g1_n33n22p1.n22(), 
+            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
+            gArr2[g2].n12(), gArr2[g2].n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           
           double factor = g1_n33n22p1.e42_33_22();
 
@@ -1411,7 +1202,7 @@ namespace u4
           {
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -1438,30 +1229,13 @@ namespace u4
           auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
           assert(missing == false);
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
-                                      gArr1[g1].n22() - gArr1[g1].n33(), 
-                                      g2_n13n12p1.n12() - g2_n13n12p1.n33(), 
-                                      g2_n13n12p1.n22() - g2_n13n12p1.n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+            gArr1[g1].n12(), gArr1[g1].n22(), 
+            g2_n13n12p1.n13(), g2_n13n12p1.n23(), g2_n13n12p1.n33(),
+            g2_n13n12p1.n12(), g2_n13n12p1.n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           
           double factor = g2_n13n12p1.e42_13_12();
 
@@ -1471,7 +1245,7 @@ namespace u4
           {
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -1497,30 +1271,13 @@ namespace u4
           auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
           assert(missing == false);
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
-                                      gArr1[g1].n22() - gArr1[g1].n33(), 
-                                      g2_n13n22p1.n12() - g2_n13n22p1.n33(), 
-                                      g2_n13n22p1.n22() - g2_n13n22p1.n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+            gArr1[g1].n12(), gArr1[g1].n22(), 
+            g2_n13n22p1.n13(), g2_n13n22p1.n23(), g2_n13n22p1.n33(),
+            g2_n13n22p1.n12(), g2_n13n22p1.n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           
           double factor = g2_n13n22p1.e42_13_22();
 
@@ -1530,7 +1287,7 @@ namespace u4
           {
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -1556,30 +1313,13 @@ namespace u4
           auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
           assert(missing == false);
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
-                                      gArr1[g1].n22() - gArr1[g1].n33(), 
-                                      g2_n23n12p1.n12() - g2_n23n12p1.n33(), 
-                                      g2_n23n12p1.n22() - g2_n23n12p1.n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+            gArr1[g1].n12(), gArr1[g1].n22(), 
+            g2_n23n12p1.n13(), g2_n23n12p1.n23(), g2_n23n12p1.n33(),
+            g2_n23n12p1.n12(), g2_n23n12p1.n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           
           double factor = g2_n23n12p1.e42_23_12();
 
@@ -1589,7 +1329,7 @@ namespace u4
           {
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -1615,30 +1355,13 @@ namespace u4
           auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
           assert(missing == false);
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-          auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
-                                      gArr1[g1].n22() - gArr1[g1].n33(), 
-                                      g2_n23n22p1.n12() - g2_n23n22p1.n33(), 
-                                      g2_n23n22p1.n22() - g2_n23n22p1.n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+            gArr1[g1].n12(), gArr1[g1].n22(), 
+            g2_n23n22p1.n13(), g2_n23n22p1.n23(), g2_n23n22p1.n33(),
+            g2_n23n22p1.n12(), g2_n23n22p1.n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           
           double factor = g2_n23n22p1.e42_23_22();
 
@@ -1648,7 +1371,7 @@ namespace u4
           {
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -1674,30 +1397,13 @@ namespace u4
           auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
           assert(missing == false);
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
-                                      gArr1[g1].n22() - gArr1[g1].n33(), 
-                                      g2_n33n12p1.n12() - g2_n33n12p1.n33(), 
-                                      g2_n33n12p1.n22() - g2_n33n12p1.n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+            gArr1[g1].n12(), gArr1[g1].n22(), 
+            g2_n33n12p1.n13(), g2_n33n12p1.n23(), g2_n33n12p1.n33(),
+            g2_n33n12p1.n12(), g2_n33n12p1.n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           
           double factor = g2_n33n12p1.e42_33_12();
 
@@ -1707,7 +1413,7 @@ namespace u4
           {
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -1733,30 +1439,13 @@ namespace u4
           auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
           assert(missing == false);
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
-                                      gArr1[g1].n22() - gArr1[g1].n33(), 
-                                      g2_n33n22p1.n12() - g2_n33n22p1.n33(), 
-                                      g2_n33n22p1.n22() - g2_n33n22p1.n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+            gArr1[g1].n12(), gArr1[g1].n22(), 
+            g2_n33n22p1.n13(), g2_n33n22p1.n23(), g2_n33n22p1.n33(),
+            g2_n33n22p1.n12(), g2_n33n22p1.n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           
           double factor = g2_n33n22p1.e42_33_22();
 
@@ -1766,7 +1455,7 @@ namespace u4
           {
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -1835,30 +1524,13 @@ namespace u4
           auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
           assert(missing == false);
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(g1_n13n12n11p1.n12() - g1_n13n12n11p1.n33(), 
-                                      g1_n13n12n11p1.n22() - g1_n13n12n11p1.n33(), 
-                                      gArr2[g2].n12() - gArr2[g2].n33(), 
-                                      gArr2[g2].n22() - gArr2[g2].n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            g1_n13n12n11p1.n13(), g1_n13n12n11p1.n23(), g1_n13n12n11p1.n33(),
+            g1_n13n12n11p1.n12(), g1_n13n12n11p1.n22(), 
+            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
+            gArr2[g2].n12(), gArr2[g2].n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           
           double factor = g1_n13n12n11p1.e41_13_12();
 
@@ -1868,7 +1540,7 @@ namespace u4
           {
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -1895,30 +1567,13 @@ namespace u4
           auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
           assert(missing == false);
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(g1_n13n22n11p1.n12() - g1_n13n22n11p1.n33(), 
-                                      g1_n13n22n11p1.n22() - g1_n13n22n11p1.n33(), 
-                                      gArr2[g2].n12() - gArr2[g2].n33(), 
-                                      gArr2[g2].n22() - gArr2[g2].n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            g1_n13n22n11p1.n13(), g1_n13n22n11p1.n23(), g1_n13n22n11p1.n33(),
+            g1_n13n22n11p1.n12(), g1_n13n22n11p1.n22(), 
+            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
+            gArr2[g2].n12(), gArr2[g2].n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           
           double factor = g1_n13n22n11p1.e41_13_22();
 
@@ -1928,7 +1583,7 @@ namespace u4
           {
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -1955,30 +1610,13 @@ namespace u4
           auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
           assert(missing == false);
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(g1_n23n12n11p1.n12() - g1_n23n12n11p1.n33(), 
-                                      g1_n23n12n11p1.n22() - g1_n23n12n11p1.n33(), 
-                                      gArr2[g2].n12() - gArr2[g2].n33(), 
-                                      gArr2[g2].n22() - gArr2[g2].n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            g1_n23n12n11p1.n13(), g1_n23n12n11p1.n23(), g1_n23n12n11p1.n33(),
+            g1_n23n12n11p1.n12(), g1_n23n12n11p1.n22(), 
+            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
+            gArr2[g2].n12(), gArr2[g2].n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           
           double factor = g1_n23n12n11p1.e41_23_12();
 
@@ -1988,7 +1626,7 @@ namespace u4
           {
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -2015,30 +1653,13 @@ namespace u4
           auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
           assert(missing == false);
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(g1_n23n22n11p1.n12() - g1_n23n22n11p1.n33(), 
-                                      g1_n23n22n11p1.n22() - g1_n23n22n11p1.n33(), 
-                                      gArr2[g2].n12() - gArr2[g2].n33(), 
-                                      gArr2[g2].n22() - gArr2[g2].n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            g1_n23n22n11p1.n13(), g1_n23n22n11p1.n23(), g1_n23n22n11p1.n33(),
+            g1_n23n22n11p1.n12(), g1_n23n22n11p1.n22(), 
+            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
+            gArr2[g2].n12(), gArr2[g2].n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           
           double factor = g1_n23n22n11p1.e41_23_22();
 
@@ -2048,7 +1669,7 @@ namespace u4
           {
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -2075,30 +1696,13 @@ namespace u4
           auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
           assert(missing == false);
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(g1_n33n12n11p1.n12() - g1_n33n12n11p1.n33(), 
-                                      g1_n33n12n11p1.n22() - g1_n33n12n11p1.n33(), 
-                                      gArr2[g2].n12() - gArr2[g2].n33(), 
-                                      gArr2[g2].n22() - gArr2[g2].n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            g1_n33n12n11p1.n13(), g1_n33n12n11p1.n23(), g1_n33n12n11p1.n33(),
+            g1_n33n12n11p1.n12(), g1_n33n12n11p1.n22(), 
+            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
+            gArr2[g2].n12(), gArr2[g2].n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           
           double factor = g1_n33n12n11p1.e41_33_12();
 
@@ -2108,7 +1712,7 @@ namespace u4
           {
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -2135,30 +1739,13 @@ namespace u4
           auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
           assert(missing == false);
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(g1_n33n22n11p1.n12() - g1_n33n22n11p1.n33(), 
-                                      g1_n33n22n11p1.n22() - g1_n33n22n11p1.n33(), 
-                                      gArr2[g2].n12() - gArr2[g2].n33(), 
-                                      gArr2[g2].n22() - gArr2[g2].n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            g1_n33n22n11p1.n13(), g1_n33n22n11p1.n23(), g1_n33n22n11p1.n33(),
+            g1_n33n22n11p1.n12(), g1_n33n22n11p1.n22(), 
+            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
+            gArr2[g2].n12(), gArr2[g2].n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           
           double factor = g1_n33n22n11p1.e41_33_22();
 
@@ -2168,7 +1755,7 @@ namespace u4
           {
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -2196,30 +1783,13 @@ namespace u4
           auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
           assert(missing == false);
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
-                                      gArr1[g1].n22() - gArr1[g1].n33(), 
-                                      g2_n13n12n11p1.n12() - g2_n13n12n11p1.n33(), 
-                                      g2_n13n12n11p1.n22() - g2_n13n12n11p1.n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+            gArr1[g1].n12(), gArr1[g1].n22(), 
+            g2_n13n12n11p1.n13(), g2_n13n12n11p1.n23(), g2_n13n12n11p1.n33(),
+            g2_n13n12n11p1.n12(), g2_n13n12n11p1.n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           
           double factor = g2_n13n12n11p1.e41_13_12();
 
@@ -2229,7 +1799,7 @@ namespace u4
           {
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -2256,30 +1826,13 @@ namespace u4
           auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
           assert(missing == false);
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
-                                      gArr1[g1].n22() - gArr1[g1].n33(), 
-                                      g2_n13n22n11p1.n12() - g2_n13n22n11p1.n33(), 
-                                      g2_n13n22n11p1.n22() - g2_n13n22n11p1.n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+            gArr1[g1].n12(), gArr1[g1].n22(), 
+            g2_n13n22n11p1.n13(), g2_n13n22n11p1.n23(), g2_n13n22n11p1.n33(),
+            g2_n13n22n11p1.n12(), g2_n13n22n11p1.n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           
           double factor = g2_n13n22n11p1.e41_13_22();
 
@@ -2289,7 +1842,7 @@ namespace u4
           {
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -2316,30 +1869,13 @@ namespace u4
           auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
           assert(missing == false);
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
-                                      gArr1[g1].n22() - gArr1[g1].n33(), 
-                                      g2_n23n12n11p1.n12() - g2_n23n12n11p1.n33(), 
-                                      g2_n23n12n11p1.n22() - g2_n23n12n11p1.n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+            gArr1[g1].n12(), gArr1[g1].n22(), 
+            g2_n23n12n11p1.n13(), g2_n23n12n11p1.n23(), g2_n23n12n11p1.n33(),
+            g2_n23n12n11p1.n12(), g2_n23n12n11p1.n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           
           double factor = g2_n23n12n11p1.e41_23_12();
 
@@ -2349,7 +1885,7 @@ namespace u4
           {
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -2376,30 +1912,13 @@ namespace u4
           auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
           assert(missing == false);
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
-                                      gArr1[g1].n22() - gArr1[g1].n33(), 
-                                      g2_n23n22n11p1.n12() - g2_n23n22n11p1.n33(), 
-                                      g2_n23n22n11p1.n22() - g2_n23n22n11p1.n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+            gArr1[g1].n12(), gArr1[g1].n22(), 
+            g2_n23n22n11p1.n13(), g2_n23n22n11p1.n23(), g2_n23n22n11p1.n33(),
+            g2_n23n22n11p1.n12(), g2_n23n22n11p1.n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           
           double factor = g2_n23n22n11p1.e41_23_22();
 
@@ -2409,7 +1928,7 @@ namespace u4
           {
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -2436,30 +1955,13 @@ namespace u4
           auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
           assert(missing == false);
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
-                                      gArr1[g1].n22() - gArr1[g1].n33(), 
-                                      g2_n33n12n11p1.n12() - g2_n33n12n11p1.n33(), 
-                                      g2_n33n12n11p1.n22() - g2_n33n12n11p1.n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+            gArr1[g1].n12(), gArr1[g1].n22(), 
+            g2_n33n12n11p1.n13(), g2_n33n12n11p1.n23(), g2_n33n12n11p1.n33(),
+            g2_n33n12n11p1.n12(), g2_n33n12n11p1.n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           
           double factor = g2_n33n12n11p1.e41_33_12();
 
@@ -2469,7 +1971,7 @@ namespace u4
           {
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -2496,30 +1998,13 @@ namespace u4
           auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
           assert(missing == false);
 
-          int x = u3a.n33() + u3b.n33();
-          u3c.n13(u3c.n13() - x);
-          u3c.n23(u3c.n23() - x);
-          u3c.n33(u3c.n33() - x);
-          u3a.normalize();
-          u3b.normalize();
-
-          std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                   gArr3b = u3::gelfandBasis(u3b),
-                                   gArr3c = u3::gelfandBasis(u3c);
-
-          //int w2min = gArr3[parent_g3].n12() + gArr3[parent_g3].n22() - 2 * x;
-
-          auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                gArr3a, gArr3b, gArr3c, cgcs);
-          // after this, u3c, gArr3c and wigU3U2 are normalized
-
-          auto accU3 = wigU3U2.access(gArr1[g1].n12() - gArr1[g1].n33(), 
-                                      gArr1[g1].n22() - gArr1[g1].n33(), 
-                                      g2_n33n22n11p1.n12() - g2_n33n22n11p1.n33(), 
-                                      g2_n33n22n11p1.n22() - g2_n33n22n11p1.n33(), 
-                                      gArr3[parent_g3].n12() - gArr3[parent_g3].n33(), 
-                                      gArr3[parent_g3].n22() - gArr3[parent_g3].n33());
-          //std::cout << wigU3U2.get_row(accU3) << std::endl;
+          auto accU3 = wigU3U2db.get(
+            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+            gArr1[g1].n12(), gArr1[g1].n22(), 
+            g2_n33n22n11p1.n13(), g2_n33n22n11p1.n23(), g2_n33n22n11p1.n33(),
+            g2_n33n22n11p1.n12(), g2_n33n22n11p1.n22(), 
+            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           
           double factor = g2_n33n22n11p1.e41_33_22();
 
@@ -2529,7 +2014,7 @@ namespace u4
           {
             double y = 0.0;
             for (int r = 0; r < rhomax; r++)
-              y += accU4(r,e) * wigU3U2.get(accU3, r);
+              y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -2909,25 +2394,6 @@ namespace u4
 
             if (missing == true)
             {
-              // normalizing u3a and u3b before calculating U3U2xU3U2
-              int x = u3a.n33() + u3b.n33();
-              u3c.n13(u3c.n13() - x);
-              u3c.n23(u3c.n23() - x);
-              u3c.n33(u3c.n33() - x);
-              u3a.normalize();
-              u3b.normalize();
-
-              std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                       gArr3b = u3::gelfandBasis(u3b),
-                                       gArr3c = u3::gelfandBasis(u3c);
-
-              // stop computing further via w2
-              //int w2min = gArr3[i3].n12() + gArr3[i3].n22() - 2 * x;
-
-              auto wigU3U2 = wigU3U2db.get(u3a, u3b, u3c, rhomax,
-                                    gArr3a, gArr3b, gArr3c, cgcs);
-              // after this, u3c, gArr3c and wigU3U2 are normalized
-
               std::vector<Eigen::RowVectorXd> A_rows, B_rows;
 
               // vary U(2) and U(1) labels
@@ -2957,14 +2423,15 @@ namespace u4
 */
                   double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
 
-                  auto accU3 = wigU3U2.access(gArr1[i1_].n12() - gArr1[i1_].n33(), 
-                                              gArr1[i1_].n22() - gArr1[i1_].n33(), 
-                                              gArr2[i2_].n12() - gArr2[i2_].n33(), 
-                                              gArr2[i2_].n22() - gArr2[i2_].n33(), 
-                                              gArr3[i3].n12() - gArr3[i3].n33(), 
-                                              gArr3[i3].n22() - gArr3[i3].n33());
+                  auto accU3 = wigU3U2db.get(
+                    gArr1[i1_].n13(), gArr1[i1_].n23(), gArr1[i1_].n33(),
+                    gArr1[i1_].n12(), gArr1[i1_].n22(), 
+                    gArr2[i2_].n13(), gArr2[i2_].n23(), gArr2[i2_].n33(),
+                    gArr2[i2_].n12(), gArr2[i2_].n22(), 
+                    gArr3[i3].n13(), gArr3[i3].n23(), gArr3[i3].n33(),
+                    gArr3[i3].n12(), gArr3[i3].n22());
 
-                  Eigen::RowVectorXd A_row = wigU3U2.get_row(accU3) * cgc;
+                  Eigen::RowVectorXd A_row = accU3 * cgc;
 
                   // not consider vanishing rows in A (otherwise not invertible)
                   if (A_row.norm() <= 1e-14)
@@ -3053,10 +2520,6 @@ namespace u4
     std::cerr << "LowerWeightReducedCoeffs total time: " << duration.count()
               << " [s]" << std::endl;
 #endif
-
-    //u4C.normalize(); // u4A and u4B are normalized in the source file
-    //for (int i = 0; i < gArrC.size(); i++)
-      //gArrC[i].normalize();
 
     return coeffs;
   }

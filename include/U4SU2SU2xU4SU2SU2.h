@@ -158,27 +158,13 @@ namespace u4
                     auto [missing, accU4] = canoCoeffs.access(u3A,u3B,u3C);
                     assert(missing == false);
 
-                    int x = u3A.n33() + u3B.n33();
-                    u3C.n13(u3C.n13() - x);
-                    u3C.n23(u3C.n23() - x);
-                    u3C.n33(u3C.n33() - x);
-                    u3A.normalize();
-                    u3B.normalize();
-
-                    std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3A),
-                                             gArr3b = u3::gelfandBasis(u3B),
-                                             gArr3c = u3::gelfandBasis(u3C);
-
-                    auto wigU3U2 = wigU3U2db.get(u3A, u3B, u3C, rhomax,
-                                              gArr3a, gArr3b, gArr3c, cgcs);
-                    // after this, u3c, gArr3c and wigU3U2 are normalized
-
-                    auto accU3 = wigU3U2.access(gArrA[gA].n12() - gArrA[gA].n33(), 
-                                                gArrA[gA].n22() - gArrA[gA].n33(), 
-                                                gArrB[gB].n12() - gArrB[gB].n33(), 
-                                                gArrB[gB].n22() - gArrB[gB].n33(), 
-                                                gArrC[gC].n12() - gArrC[gC].n33(), 
-                                                gArrC[gC].n22() - gArrC[gC].n33());
+                    auto accU3 = wigU3U2db.get(
+                      gArrA[gA].n13(), gArrA[gA].n23(), gArrA[gA].n33(), 
+                      gArrA[gA].n12(), gArrA[gA].n22(), 
+                      gArrB[gB].n13(), gArrB[gB].n23(), gArrB[gB].n33(),                          
+                      gArrB[gB].n12(), gArrB[gB].n22(),
+                      gArrC[gC].n13(), gArrC[gC].n23(), gArrC[gC].n33(), 
+                      gArrC[gC].n12(), gArrC[gC].n22());
 
                     for (int e = 0; e < etamax; e++)   
                       for (int z1 = 0; z1 < pArrA[i].zeta; z1++)
@@ -187,7 +173,7 @@ namespace u4
                           {
                             double y = 0.0;
                             for (int r = 0; r < rhomax; r++)
-                              y += accU4(r,e) * wigU3U2.get(accU3, r);
+                              y += accU4(r,e) * accU3(r);
                             
                             coeffs_temp((z1 * pArrB[j].zeta + z2) * pArrC[k].zeta + z3, e)
                              += y * cgc * transformationA[i](iA, z1)
