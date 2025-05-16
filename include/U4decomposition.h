@@ -88,6 +88,7 @@ namespace u4
                 if (!u4c.check())
                   continue;
 
+                u4c.normalize();
                 auto iter = std::find(u4cs.begin(), u4cs.end(), u4c);
                 if (iter == u4cs.end())
                 {
@@ -109,10 +110,23 @@ namespace u4
     return std::make_pair(std::move(u4cs), std::move(etamaxs));
   }
 
-  // compute the outer multiplicity directly, before normalization
+  // compute the outer multiplicity directly
+  // input irreps are normalized
   int Eta(const u4::irrep& u4a, const u4::irrep& u4b, const u4::irrep& u4c)
   {
-    int eta = 0, n11 = u4c.n14() - u4b.n14();
+    u4::irrep u4c_temp = u4c;
+    int x = u4a.n14() + u4a.n24() + u4a.n34() +
+            u4b.n14() + u4b.n24() + u4b.n34() - 
+            u4c.n14() - u4c.n24() - u4c.n34(); 
+
+    assert(x % 4 == 0);
+    x /= 4;
+    u4c_temp.n14(u4c_temp.n14() + x);
+    u4c_temp.n24(u4c_temp.n24() + x);
+    u4c_temp.n34(u4c_temp.n34() + x);
+    u4c_temp.n44(u4c_temp.n44() + x);
+
+    int eta = 0, n11 = u4c_temp.n14() - u4b.n14();
 
     for (int n13 = u4a.n14(); n13 >= u4a.n24(); n13--)
     {
@@ -171,7 +185,7 @@ namespace u4
               if (!u4C.check())
                 continue;
 
-              if (u4C == u4c)
+              if (u4C == u4c_temp)
                 eta++;
             }
           }
