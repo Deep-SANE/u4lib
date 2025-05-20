@@ -10,8 +10,15 @@
 #include <U4_U6Z6Coeffs.h>
 #include <U4basis.h>
 
-int main()
-{
+#ifdef U4LIB_USE_SLEPC
+#include <slepcsys.h> 
+#endif 
+
+int main(int argc, char* argv[])
+{  
+#ifdef U4LIB_USE_SLEPC 
+  SlepcInitialize(&argc, &argv, NULL, NULL);     
+#endif
 
   std::cout
       << "This program compute Z6-recoupling coefficients of three U(4) irreps"
@@ -167,5 +174,9 @@ int main()
     std::cout << "Recoupling does not exist" << std::endl;
   }
 
+#ifdef U4LIB_USE_SLEPC 
+  SlepcFinalize();
+#endif
+  
   return 0;
 }
