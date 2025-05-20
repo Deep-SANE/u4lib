@@ -2493,10 +2493,10 @@ namespace u4
 
   // all reduced coupling coefficients
   inline auto WigU4U3(const u4::irrep& u4A, const u4::irrep& u4B, 
-                      u4::irrep& u4C, int etamax, int w3min, 
+                      const u4::irrep& u4C, int etamax, int w3min, 
                       const std::vector<u4::gelfand>& gArrA,
                       const std::vector<u4::gelfand>& gArrB, 
-                      std::vector<u4::gelfand>& gArrC,
+                      const std::vector<u4::gelfand>& gArrC,
                       u34utils::SO3_CGC& cgcs, 
                       u3::WigU3U2_db& wigU3U2db)
   {
