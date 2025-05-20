@@ -1,6 +1,6 @@
 // protection against multiple header file inclusion
-#ifndef U4BASIS_H
-#define U4BASIS_H
+#ifndef U4LIB_U4BASIS_H
+#define U4LIB_U4BASIS_H
 
 #include <cmath>
 #include <cstddef>

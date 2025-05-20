@@ -1,5 +1,5 @@
-#ifndef U4GENERATORSME_H
-#define U4GENERATORSME_H
+#ifndef U4LIB_GENERATORSRME_H
+#define U4LIB_GENERATORSRME_H
 
 #include <cmath>
 #include <iostream>

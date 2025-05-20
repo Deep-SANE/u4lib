@@ -1,5 +1,5 @@
-#ifndef U4LIB_U4SU2SU2_to_U4U3U2U1_H
-#define U4LIB_U4SU2SU2_to_U4U3U2U1_H
+#ifndef U4LIB_U4SU2SU2_TO_U4U3U2U1_H
+#define U4LIB_U4SU2SU2_TO_U4U3U2U1_H
 
 #include <algorithm>
 #include <cassert>
