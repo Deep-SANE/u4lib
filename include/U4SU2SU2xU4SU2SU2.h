@@ -158,13 +158,15 @@ namespace u4
                     auto [missing, accU4] = canoCoeffs.access(u3A,u3B,u3C);
                     assert(missing == false);
 
-                    auto accU3 = wigU3U2db.get(
+                    auto [allowU3, accU3] = wigU3U2db.get(
                       gArrA[gA].n13(), gArrA[gA].n23(), gArrA[gA].n33(), 
                       gArrA[gA].n12(), gArrA[gA].n22(), 
                       gArrB[gB].n13(), gArrB[gB].n23(), gArrB[gB].n33(),                          
                       gArrB[gB].n12(), gArrB[gB].n22(),
                       gArrC[gC].n13(), gArrC[gC].n23(), gArrC[gC].n33(), 
                       gArrC[gC].n12(), gArrC[gC].n22());
+                    if (allowU3 == false)
+                      continue;
 
                     for (int e = 0; e < etamax; e++)   
                       for (int z1 = 0; z1 < pArrA[i].zeta; z1++)
