@@ -149,8 +149,8 @@ int main(int argc, char* argv[])
         {
           for (int eac_b = 0; eac_b < etamaxsac_b[i_ac_b]; eac_b++)
           {
-            std::cout << "\t\t\t\t\t  " << eab + 1 << "   " << eab_c + 1
-                      << "\t\t     " << eac + 1 << "  " << eac_b + 1 << "\t -> "
+            std::cout << "\t\t\t\t\t\t   " << eab + 1 << "   " << eab_c + 1
+                      << "\t      " << eac + 1 << "  " << eac_b + 1 << "\t -> "
                       << coeffs[((eab * etamaxsab_c[i_ab_c] + eab_c) *
                                      etamaxsac[i_ac] +
                                  eac) *
@@ -177,6 +177,6 @@ int main(int argc, char* argv[])
 #ifdef U4LIB_USE_SLEPC 
   SlepcFinalize();
 #endif
-  
+
   return 0;
 }

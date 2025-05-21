@@ -113,8 +113,6 @@ int main(int argc, char* argv[])
 
   if (flag > 0)
   {
-    std::vector<int> etaab, etaab_c, etabc, etaa_bc;
-
     // Start time measurement
     auto t0 = std::chrono::high_resolution_clock::now();
 
@@ -137,7 +135,7 @@ int main(int argc, char* argv[])
     // End time measurement
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    std::cout << "U([ni4a],   [ni4b],   [ni4],   [ni4c] ; [ni4ab],eab,eab_c, "
+    std::cout << "U([ni4a],   [ni4b],   [ni4],    [ni4c] ;  [ni4ab],eab,eab_c, "
                  "[ni4bc],ebc,ea_bc)" << std::endl;
     std::cout << "  " << u4a << "," << u4b << "," << u4ab_c[i_ab_c] << ","
               << u4c << ";" << u4ab[i_ab] << ",\t    " << u4bc[i_bc]
@@ -151,8 +149,8 @@ int main(int argc, char* argv[])
         {
           for (int ea_bc = 0; ea_bc < etamaxsa_bc[i_a_bc]; ea_bc++)
           {
-            std::cout << "\t\t\t\t\t  " << eab + 1 << "   " << eab_c + 1
-                      << "\t\t     " << ebc + 1 << "  " << ea_bc + 1 << "\t -> "
+            std::cout << "\t\t\t\t\t\t   " << eab + 1 << "   " << eab_c + 1
+                      << "\t      " << ebc + 1 << "  " << ea_bc + 1 << "\t -> "
                       << coeffs[((eab * etamaxsab_c[i_ab_c] + eab_c) *
                                      etamaxsbc[i_bc] +
                                  ebc) *
