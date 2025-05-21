@@ -1,169 +1,119 @@
 // protection against multiple header file inclusion
-#ifndef U4_U9COEFFS_H
-#define U4_U9COEFFS_H
+#ifndef U4LIB_U4_U9COEFFS_H
+#define U4LIB_U4_U9COEFFS_H
 
 #include <cmath>
-#include <Eigen/Dense>
 #include <iostream>
 #include <vector>
 
-#include "decomposition.h"
+#include <Eigen/Dense>
+
+#include "U4decomposition.h"
 #include "U4_U6Z6Coeffs.h"
 #include "U4basis.h"
+
+#include <so3Coeffs/SO3_CGC.h>
+#include <so3Coeffs/SO3_Racah.h>
 
 namespace u4
 {
 
   // input by users: u4a, u4b, u4c, u4d, u4ab, u4cd, u4ac, u4bd, u4abcd
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>
-  U9(u4::irrep& u4a, u4::irrep& u4b, u4::irrep& u4c, u4::irrep& u4d,
-     u4::irrep& u4ab, u4::irrep& u4cd, u4::irrep& u4ac, u4::irrep& u4bd,
-     u4::irrep& u4abcd, std::vector<int>& etaab, int etaab_max,
-     std::vector<int>& etacd, int etacd_max, std::vector<int>& etaab_cd,
-     int etaab_cd_max, std::vector<int>& etaac, int etaac_max,
-     std::vector<int>& etabd, int etabd_max, std::vector<int>& etaac_bd,
-     int etaac_bd_max)
+  // all normalized
+  inline std::vector<double>
+    U9(const u4::irrep& u4A, const std::vector<u4::gelfand>& gArrA,
+       const u4::irrep& u4B, const std::vector<u4::gelfand>& gArrB,
+       const u4::irrep& u4C, const std::vector<u4::gelfand>& gArrC,
+       const u4::irrep& u4D, const std::vector<u4::gelfand>& gArrD,
+       const u4::irrep& u4AB, const std::vector<u4::gelfand>& gArrAB,
+       const u4::irrep& u4CD, const std::vector<u4::gelfand>& gArrCD,
+       const u4::irrep& u4AC, const std::vector<u4::gelfand>& gArrAC,
+       const u4::irrep& u4BD, const std::vector<u4::gelfand>& gArrBD,
+       const u4::irrep& u4ABCD, const std::vector<u4::gelfand>& gArrABCD,
+       int etaABmax, int etaCDmax, int etaAB_CDmax,
+       int etaACmax, int etaBDmax, int etaAC_BDmax,
+       u34utils::SO3_CGC& cgcs, u34utils::SO3_Racah& racahs,
+       u3::WigU3U2_db& wigU3U2db)
   {
-    // a matrix to store U9-coefficients
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> U9coeffs(
-        etaac_max * etabd_max * etaab_cd_max,
-        etaab_max * etacd_max * etaac_bd_max);
+    std::vector<double> U(etaACmax * etaBDmax * etaAB_CDmax * etaABmax *
+                              etaCDmax * etaAC_BDmax, 0.0);
 
-    // std::cout << etaac_max << etabd_max << etaab_cd_max << etaab_max <<
-    // etacd_max << etaac_bd_max;
-
-    // couple the I-III and II irreps
-    std::vector<int> etamaxsac_b;
-    std::vector<u4::irrep> u4ac_b = u4::decomposition(u4ac, u4b, etamaxsac_b);
-
-    // couple the I-II and III irreps
-    std::vector<int> etamaxsab_c;
-    std::vector<u4::irrep> u4ab_c = u4::decomposition(u4ab, u4c, etamaxsab_c);
+    // couple u4AB and u4C
+    auto [u4AB_C, etamaxsAB_C] = u4::decomposition(u4AB, u4C);
+    
+    // couple u4AC and u4B
+    auto [u4AC_B, etamaxsAC_B] = u4::decomposition(u4AC, u4B);
 
     // an array to store the couple I-II-III irreps
-    std::vector<int> etamaxsabc;
-    std::vector<u4::irrep> u4abc;
+    std::vector<u4::irrep> u4ABC;
+    std::vector<int> etaAB_Cmax, etaAC_Bmax;
 
-    for (int i = 0; i < u4ab_c.size(); i++)
+    for (int i = 0; i < u4AB_C.size(); i++)
     {
-      for (int j = 0; j < u4ac_b.size(); j++)
+      for (int j = 0; j < u4AC_B.size(); j++)
       {
-        if (u4ab_c[i].n14 == u4ac_b[j].n14 && u4ab_c[i].n24 == u4ac_b[j].n24 &&
-            u4ab_c[i].n34 == u4ac_b[j].n34 && u4ab_c[i].n44 == u4ac_b[j].n44)
+        if (u4AB_C[i] == u4AC_B[j])
         {
-          u4abc.push_back(u4ab_c[i]);
-          etamaxsabc.push_back(etamaxsab_c[i]);
+          u4ABC.push_back(u4AB_C[i]);
+          etaAB_Cmax.push_back(etamaxsAB_C[i]);
+          etaAC_Bmax.push_back(etamaxsAC_B[j]);
           break;
         }
       }
     }
 
-    std::vector<std::vector<int>> etaab_arr, etacd_arr, etaac_arr, etabd_arr,
-        etaab_cd_arr, etaac_bd_arr, etaac_b_uarr, etaac_b_zarr, etaab_c_zarr,
-        etaab_c_uarr, etaabc_d_arr1, etaabc_d_arr2;
-    std::vector<std::vector<double>> U6coeffs_arr1, Z6coeffs_arr, U6coeffs_arr2;
-
-    for (int i = 0; i < u4abc.size(); i++)
+    for (int i = 0; i < u4ABC.size(); i++)
     {
-      // std::cout << u4abc[i] << std::endl;
+      std::vector<u4::gelfand> gArrABC = u4::gelfandBasis(u4ABC[i]);
 
-      std::vector<int> eab, ecd, eac, ebd, eab_cd, eac_bd, eac_b_u, eac_b_z,
-          eab_c_z, eab_c_u, eabc_d_1, eabc_d_2;
-      std::vector<double> U6coeffs_1, Z6coeffs, U6coeffs_2;
+      int etaABC_Dmax = u4::Eta(u4ABC[i], u4D, u4ABCD);
+      if (etaABC_Dmax == 0)
+        continue;
 
-      U6coeffs_1 = u4::U6(u4ac, u4b, u4abcd, u4d, u4abc[i], eac_b_u, eabc_d_1,
-                          u4bd, ebd, eac_bd);
-      Z6coeffs = u4::Z6(u4b, u4a, u4abc[i], u4c, u4ab, eab, eab_c_z, u4ac, eac,
-                        eac_b_z);
-      U6coeffs_2 = u4::U6(u4ab, u4c, u4abcd, u4d, u4abc[i], eab_c_u, eabc_d_2,
-                          u4cd, ecd, eab_cd);
+      std::vector<double> U6_1 =
+          u4::U6(u4AC, gArrAC, u4B, gArrB, u4ABCD, gArrABCD, u4D, gArrD,
+                 u4ABC[i], gArrABC, etaAC_Bmax[i], etaABC_Dmax, u4BD, gArrBD,
+                 etaBDmax, etaAC_BDmax, cgcs, racahs, wigU3U2db);
 
-      etaab_arr.push_back(eab);
-      etacd_arr.push_back(ecd);
-      etaac_arr.push_back(eac);
-      etabd_arr.push_back(ebd);
-      etaab_cd_arr.push_back(eab_cd);
-      etaac_bd_arr.push_back(eac_bd);
-      etaac_b_uarr.push_back(eac_b_u);
-      etaac_b_zarr.push_back(eac_b_z);
-      etaab_c_zarr.push_back(eab_c_z);
-      etaab_c_uarr.push_back(eab_c_u);
-      etaabc_d_arr1.push_back(eabc_d_1);
-      etaabc_d_arr2.push_back(eabc_d_2);
+      std::vector<double> U6_2 =
+          u4::U6(u4AB, gArrAB, u4C, gArrC, u4ABCD, gArrABCD, u4D, gArrD,
+                 u4ABC[i], gArrABC, etaAB_Cmax[i], etaABC_Dmax, u4CD, gArrCD,
+                 etaCDmax, etaAB_CDmax, cgcs, racahs, wigU3U2db);
 
-      U6coeffs_arr1.push_back(U6coeffs_1);
-      U6coeffs_arr2.push_back(U6coeffs_2);
-      Z6coeffs_arr.push_back(Z6coeffs);
+      std::vector<double> Z6 =
+          u4::Z6(u4B, gArrB, u4A, gArrA, u4ABC[i], gArrABC, u4C, gArrC, u4AB,
+                 gArrAB, etaABmax, etaAB_Cmax[i], u4AC, gArrAC, etaACmax,
+                 etaAC_Bmax[i], cgcs, racahs, wigU3U2db);
 
-      /*
-                      for(int j=0; j<U6coeffs_1.size(); j++){
-                              std::cout << U6coeffs_1[j] << "\t";
-                      }
-                      std::cout << std::endl;
-                      for(int j=0; j<Z6coeffs.size(); j++){
-                              std::cout << Z6coeffs[j] << "\t";
-                      }
-                      std::cout << std::endl;
-                      for(int j=0; j<U6coeffs_2.size(); j++){
-                              std::cout << U6coeffs_2[j] << "\t";
-                      }
-                      std::cout << std::endl;
-      */
-    }
-
-    int row = 0, col = 0;
-    for (int eac = 0; eac < etaac_max; eac++)
-    {
-      for (int ebd = 0; ebd < etabd_max; ebd++)
+      for (int eAC = 0; eAC < etaACmax; eAC++)
       {
-        for (int eab_cd = 0; eab_cd < etaab_cd_max; eab_cd++)
+        for (int eBD = 0; eBD < etaBDmax; eBD++)
         {
-          etaac.push_back(eac + 1);
-          etabd.push_back(ebd + 1);
-          etaab_cd.push_back(eab_cd + 1);
-        }
-      }
-    }
-
-    for (int eab = 0; eab < etaab_max; eab++)
-    {
-      for (int ecd = 0; ecd < etacd_max; ecd++)
-      {
-        for (int eac_bd = 0; eac_bd < etaac_bd_max; eac_bd++)
-        {
-          etaab.push_back(eab + 1);
-          etacd.push_back(ecd + 1);
-          etaac_bd.push_back(eac_bd + 1);
-        }
-      }
-    }
-
-    for (int m = 0; m < etaab_cd.size(); m++)
-    { // m+1 is the multiplicity label for etaac, etabd, etaab_cd
-      for (int n = 0; n < etaac_bd.size(); n++)
-      { // n+1 is the multiplicity label for etaab, etacd, etaac_bd
-        U9coeffs(m, n) = 0.0;
-
-        for (int i = 0; i < u4abc.size(); i++)
-        {
-          for (int j = 0; j < U6coeffs_arr1[i].size(); j++)
+          for (int eAB_CD = 0; eAB_CD < etaAB_CDmax; eAB_CD++)
           {
-            for (int k = 0; k < Z6coeffs_arr[i].size(); k++)
+            for (int eAB = 0; eAB < etaABmax; eAB++)
             {
-              for (int l = 0; l < U6coeffs_arr2[i].size(); l++)
+              for (int eCD = 0; eCD < etaCDmax; eCD++)
               {
-                if (etaab_arr[i][k] == etaab[n] &&
-                    etacd_arr[i][l] == etacd[n] &&
-                    etaac_bd_arr[i][j] == etaac_bd[n] &&
-                    etaac_arr[i][k] == etaac[m] &&
-                    etabd_arr[i][j] == etabd[m] &&
-                    etaab_cd_arr[i][l] == etaab_cd[m] &&
-                    etaac_b_uarr[i][j] == etaac_b_zarr[i][k] &&
-                    etaabc_d_arr1[i][j] == etaabc_d_arr2[i][l] &&
-                    etaab_c_zarr[i][k] == etaab_c_uarr[i][l])
+                for (int eAC_BD = 0; eAC_BD < etaAC_BDmax; eAC_BD++)
                 {
-                  U9coeffs(m, n) += U6coeffs_arr1[i][j] * Z6coeffs_arr[i][k] *
-                                    U6coeffs_arr2[i][l];
+                  for (int eAC_B = 0; eAC_B < etaAC_Bmax[i]; eAC_B++)
+                  {
+                    for (int eAB_C = 0; eAB_C < etaAB_Cmax[i]; eAB_C++)
+                    {
+                      for (int eABC_D = 0; eABC_D < etaABC_Dmax; eABC_D++)
+                      {
+                        U[((((eAC * etaBDmax + eBD) * etaAB_CDmax + eAB_CD) *
+                        etaABmax + eAB) * etaCDmax + eCD) * etaAC_BDmax + eAC_BD] 
+                        += U6_1[((eAC_B * etaABC_Dmax + eABC_D) * etaBDmax +
+                                  eBD) * etaAC_BDmax + eAC_BD] 
+                         * Z6[((eAB * etaAB_Cmax[i] + eAB_C) * etaACmax +
+                                eAC) * etaAC_Bmax[i] + eAC_B] 
+                         * U6_2[((eAB_C * etaABC_Dmax + eABC_D) * etaCDmax +
+                                  eCD) * etaAB_CDmax + eAB_CD];
+                      }
+                    }
+                  }
                 }
               }
             }
@@ -172,7 +122,11 @@ namespace u4
       }
     }
 
-    return U9coeffs;
+    for (int i = 0; i < U.size(); i++)
+      if (std::fabs(U[i]) < 1e-14)
+        U[i] = 0.0;
+
+    return U;
   }
 
 } // namespace u4
