@@ -1,6 +1,6 @@
 // protection against multiple header file inclusion
-#ifndef U4_U6Z6COEFFS_H
-#define U4_U6Z6COEFFS_H
+#ifndef U4LIB_U4_U6Z6COEFFS_H
+#define U4LIB_U4_U6Z6COEFFS_H
 
 #include <cmath>
 #include <iostream>
