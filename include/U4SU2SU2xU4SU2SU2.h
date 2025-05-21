@@ -144,19 +144,16 @@ namespace u4
                   u3::irrep u3A(gArrA[gA].n13(), gArrA[gA].n23(), gArrA[gA].n33()),
                             u3B(gArrB[gB].n13(), gArrB[gB].n23(), gArrB[gB].n33()),
                             u3C(gArrC[gC].n13(), gArrC[gC].n23(), gArrC[gC].n33());
-                  int rhomax = u3::Rho(u3A, u3B, u3C);
+                  auto [exist, accU4] = canoCoeffs.access(u3A,u3B,u3C);
 
                   int jj1 = gArrA[gA].Lambdax2(), mm1 = gArrA[gA].MLambdax2(),
                       jj2 = gArrB[gB].Lambdax2(), mm2 = gArrB[gB].MLambdax2(),
                       jj3 = gArrC[gC].Lambdax2(), mm3 = gArrC[gC].MLambdax2();
 
-                  if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+                  if (exist == true && (mm1 + mm2) == mm3 && 
                     std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
                   {
                     double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-
-                    auto [missing, accU4] = canoCoeffs.access(u3A,u3B,u3C);
-                    assert(missing == false);
 
                     auto [allowU3, accU3] = wigU3U2db.get(
                       gArrA[gA].n13(), gArrA[gA].n23(), gArrA[gA].n33(), 
@@ -174,7 +171,7 @@ namespace u4
                           for (int z3 = 0; z3 < pArrC[k].zeta; z3++)
                           {
                             double y = 0.0;
-                            for (int r = 0; r < rhomax; r++)
+                            for (int r = 0; r < accU4.rows(); r++)
                               y += accU4(r,e) * accU3(r);
                             
                             coeffs_temp((z1 * pArrB[j].zeta + z2) * pArrC[k].zeta + z3, e)
