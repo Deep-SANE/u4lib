@@ -95,12 +95,9 @@ namespace u4
     }
 
     // std::pair<bool, decltype(coeffs_.block(0, 0, 0, 0))>
-    auto access(const u3::irrep& u3a, const u3::irrep& u3b,
-                const u3::irrep& u3c_nn)
+    auto push(const u3::irrep& u3a, const u3::irrep& u3b,
+                const u3::irrep& u3c)
     {
-      u3::irrep u3c = u3c_nn;
-      //u3c.normalize();
-
       auto rhomax = u3::Rho(u3a, u3b, u3c);
 
       assert(rhomax > 0);
@@ -120,6 +117,31 @@ namespace u4
 
       return std::pair(inserted,
                        coeffs_.block(iter->second, 0, rhomax, etamax_));
+    }
+
+    auto access(const u3::irrep& u3a, const u3::irrep& u3b,
+                const u3::irrep& u3c)
+    {
+      auto rhomax = u3::Rho(u3a, u3b, u3c);
+
+      //assert(rhomax > 0);
+
+      key_type key = {u3a.n13(), u3a.n23(), u3a.n33(), u3b.n13(), u3b.n23(),
+                      u3b.n33(), u3c.n13(), u3c.n23(), u3c.n33()};
+
+      auto iter = map_.find(key);
+      bool exist;
+      Eigen::MatrixXd X;
+      if (iter == map_.end())
+      {
+        exist = false;
+      }
+      else
+      {
+        X = coeffs_.block(iter->second, 0, rhomax, etamax_);
+        exist = true;
+      }
+      return std::pair(exist, X);
     }
   };
 
@@ -515,7 +537,7 @@ namespace u4
 
       if (rhomax > 0)
       {
-        auto [missing, coeffs_] = coeffs.access(u3a, u3b, u3c);
+        auto [missing, coeffs_] = coeffs.push(u3a, u3b, u3c);
 
         if (missing == false)
           continue;
@@ -651,7 +673,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -695,7 +717,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -738,7 +760,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -782,7 +804,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -825,7 +847,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -868,7 +890,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -953,7 +975,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -996,7 +1018,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -1039,7 +1061,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -1082,7 +1104,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -1125,7 +1147,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -1168,7 +1190,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -1212,7 +1234,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -1255,7 +1277,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -1298,7 +1320,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -1341,7 +1363,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -1384,7 +1406,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -1427,7 +1449,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -1513,7 +1535,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -1557,7 +1579,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -1601,7 +1623,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -1645,7 +1667,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -1689,7 +1711,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -1733,7 +1755,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -1778,7 +1800,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -1822,7 +1844,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -1866,7 +1888,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -1910,7 +1932,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -1954,7 +1976,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -1998,7 +2020,7 @@ namespace u4
         if (rhomax > 0 && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.access(u3a,u3b,u3c);
+          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
           assert(missing == false);
 
           auto [allowU3, accU3] = wigU3U2db.get(
@@ -2394,7 +2416,7 @@ namespace u4
 
           if (rhomax > 0)
           {
-            auto [missing, coeffs_] = coeffs.access(u3a, u3b, u3c);
+            auto [missing, coeffs_] = coeffs.push(u3a, u3b, u3c);
 
             if (missing == false)
               continue;

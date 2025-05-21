@@ -91,9 +91,9 @@ int main(int argc, char* argv[])
                     if (u3::Rho(u3a, u3b, u3c) <= 0)
                       continue;
 
-                    auto [missing, coeffs_] = coeffs.access(u3a,u3b,u3c);  
+                    auto [exist, coeffs_] = coeffs.access(u3a,u3b,u3c);  
  
-                    if (missing == true)
+                    if (exist == false)
                       continue;  
 
                     std::cout << "< " << u4a.n14() << "," << u4a.n24() << "," << u4a.n34() 
