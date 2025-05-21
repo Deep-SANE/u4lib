@@ -122,25 +122,23 @@ namespace u4
     auto access(const u3::irrep& u3a, const u3::irrep& u3b,
                 const u3::irrep& u3c)
     {
-      auto rhomax = u3::Rho(u3a, u3b, u3c);
-
-      //assert(rhomax > 0);
-
-      key_type key = {u3a.n13(), u3a.n23(), u3a.n33(), u3b.n13(), u3b.n23(),
-                      u3b.n33(), u3c.n13(), u3c.n23(), u3c.n33()};
-
-      auto iter = map_.find(key);
-      bool exist;
+      bool exist = false;
       Eigen::MatrixXd X;
-      if (iter == map_.end())
+
+      auto rhomax = u3::Rho(u3a, u3b, u3c);
+      if (rhomax > 0)
       {
-        exist = false;
+        key_type key = {u3a.n13(), u3a.n23(), u3a.n33(), u3b.n13(), u3b.n23(),
+                        u3b.n33(), u3c.n13(), u3c.n23(), u3c.n33()};
+
+        auto iter = map_.find(key);
+        if (iter != map_.end())
+        {
+          X = coeffs_.block(iter->second, 0, rhomax, etamax_);
+          exist = true;
+        }
       }
-      else
-      {
-        X = coeffs_.block(iter->second, 0, rhomax, etamax_);
-        exist = true;
-      }
+
       return std::pair(exist, X);
     }
   };
@@ -665,17 +663,14 @@ namespace u4
         u3::irrep u3a(g1_n13p1.n13(), g1_n13p1.n23(), g1_n13p1.n33()),
                   u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj1 = g1_n13p1.Lambdax2(), mm1 = g1_n13p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             g1_n13p1.n13(), g1_n13p1.n23(), g1_n13p1.n33(),
             g1_n13p1.n12(), g1_n13p1.n22(), 
@@ -692,10 +687,8 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
-            {
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
-            }
               
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
@@ -709,17 +702,14 @@ namespace u4
         u3::irrep u3a(g1_n23p1.n13(), g1_n23p1.n23(), g1_n23p1.n33()),
                   u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj1 = g1_n23p1.Lambdax2(), mm1 = g1_n23p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             g1_n23p1.n13(), g1_n23p1.n23(), g1_n23p1.n33(),
             g1_n23p1.n12(), g1_n23p1.n22(), 
@@ -736,10 +726,9 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
-            {
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
-            }
+
             E43E42E41[e](row, j) += y * cgc * factor;
           }         
         }
@@ -752,17 +741,14 @@ namespace u4
         u3::irrep u3a(g1_n33p1.n13(), g1_n33p1.n23(), g1_n33p1.n33()),
                   u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj1 = g1_n33p1.Lambdax2(), mm1 = g1_n33p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             g1_n33p1.n13(), g1_n33p1.n23(), g1_n33p1.n33(),
             g1_n33p1.n12(), g1_n33p1.n22(), 
@@ -779,10 +765,9 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
-            {
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
-            }  
+
             E43E42E41[e](row, j) += y * cgc * factor;
           }   
         }
@@ -796,17 +781,14 @@ namespace u4
         u3::irrep u3b(g2_n13p1.n13(), g2_n13p1.n23(), g2_n13p1.n33()),
                   u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj2 = g2_n13p1.Lambdax2(), mm2 = g2_n13p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
             gArr1[g1].n12(), gArr1[g1].n22(), 
@@ -823,10 +805,9 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
-            {
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
-            }
+
             E43E42E41[e](row, j) += y * cgc * factor;
           }
         }
@@ -839,17 +820,14 @@ namespace u4
         u3::irrep u3b(g2_n23p1.n13(), g2_n23p1.n23(), g2_n23p1.n33()),
                   u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj2 = g2_n23p1.Lambdax2(), mm2 = g2_n23p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
             gArr1[g1].n12(), gArr1[g1].n22(), 
@@ -866,10 +844,9 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
-            {
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
-            } 
+            
             E43E42E41[e](row, j) += y * cgc * factor;
           }
         }
@@ -882,17 +859,14 @@ namespace u4
         u3::irrep u3b(g2_n33p1.n13(), g2_n33p1.n23(), g2_n33p1.n33()),
                   u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj2 = g2_n33p1.Lambdax2(), mm2 = g2_n33p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
             gArr1[g1].n12(), gArr1[g1].n22(), 
@@ -909,10 +883,9 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
-            {
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
-            }  
+            
             E43E42E41[e](row, j) += y * cgc * factor;
           }
         }
@@ -967,17 +940,14 @@ namespace u4
         u3::irrep u3a(g1_n13n12p1.n13(), g1_n13n12p1.n23(), g1_n13n12p1.n33()),
                   u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj1 = g1_n13n12p1.Lambdax2(), mm1 = g1_n13n12p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             g1_n13n12p1.n13(), g1_n13n12p1.n23(), g1_n13n12p1.n33(),
             g1_n13n12p1.n12(), g1_n13n12p1.n22(), 
@@ -994,7 +964,7 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -1010,17 +980,14 @@ namespace u4
         u3::irrep u3a(g1_n13n22p1.n13(), g1_n13n22p1.n23(), g1_n13n22p1.n33()),
                   u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj1 = g1_n13n22p1.Lambdax2(), mm1 = g1_n13n22p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             g1_n13n22p1.n13(), g1_n13n22p1.n23(), g1_n13n22p1.n33(),
             g1_n13n22p1.n12(), g1_n13n22p1.n22(), 
@@ -1037,7 +1004,7 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -1053,17 +1020,14 @@ namespace u4
         u3::irrep u3a(g1_n23n12p1.n13(), g1_n23n12p1.n23(), g1_n23n12p1.n33()),
                   u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj1 = g1_n23n12p1.Lambdax2(), mm1 = g1_n23n12p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             g1_n23n12p1.n13(), g1_n23n12p1.n23(), g1_n23n12p1.n33(),
             g1_n23n12p1.n12(), g1_n23n12p1.n22(), 
@@ -1080,7 +1044,7 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -1096,17 +1060,14 @@ namespace u4
         u3::irrep u3a(g1_n23n22p1.n13(), g1_n23n22p1.n23(), g1_n23n22p1.n33()),
                   u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj1 = g1_n23n22p1.Lambdax2(), mm1 = g1_n23n22p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             g1_n23n22p1.n13(), g1_n23n22p1.n23(), g1_n23n22p1.n33(),
             g1_n23n22p1.n12(), g1_n23n22p1.n22(), 
@@ -1123,7 +1084,7 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -1139,17 +1100,14 @@ namespace u4
         u3::irrep u3a(g1_n33n12p1.n13(), g1_n33n12p1.n23(), g1_n33n12p1.n33()),
                   u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj1 = g1_n33n12p1.Lambdax2(), mm1 = g1_n33n12p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             g1_n33n12p1.n13(), g1_n33n12p1.n23(), g1_n33n12p1.n33(),
             g1_n33n12p1.n12(), g1_n33n12p1.n22(), 
@@ -1166,7 +1124,7 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -1182,17 +1140,14 @@ namespace u4
         u3::irrep u3a(g1_n33n22p1.n13(), g1_n33n22p1.n23(), g1_n33n22p1.n33()),
                   u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj1 = g1_n33n22p1.Lambdax2(), mm1 = g1_n33n22p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             g1_n33n22p1.n13(), g1_n33n22p1.n23(), g1_n33n22p1.n33(),
             g1_n33n22p1.n12(), g1_n33n22p1.n22(), 
@@ -1209,7 +1164,7 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -1226,17 +1181,14 @@ namespace u4
         u3::irrep u3b(g2_n13n12p1.n13(), g2_n13n12p1.n23(), g2_n13n12p1.n33()),
                   u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj2 = g2_n13n12p1.Lambdax2(), mm2 = g2_n13n12p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
             gArr1[g1].n12(), gArr1[g1].n22(), 
@@ -1253,7 +1205,7 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -1269,17 +1221,14 @@ namespace u4
         u3::irrep u3b(g2_n13n22p1.n13(), g2_n13n22p1.n23(), g2_n13n22p1.n33()),
                   u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj2 = g2_n13n22p1.Lambdax2(), mm2 = g2_n13n22p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
             gArr1[g1].n12(), gArr1[g1].n22(), 
@@ -1296,7 +1245,7 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -1312,17 +1261,14 @@ namespace u4
         u3::irrep u3b(g2_n23n12p1.n13(), g2_n23n12p1.n23(), g2_n23n12p1.n33()),
                   u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj2 = g2_n23n12p1.Lambdax2(), mm2 = g2_n23n12p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
             gArr1[g1].n12(), gArr1[g1].n22(), 
@@ -1339,7 +1285,7 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -1355,17 +1301,14 @@ namespace u4
         u3::irrep u3b(g2_n23n22p1.n13(), g2_n23n22p1.n23(), g2_n23n22p1.n33()),
                   u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj2 = g2_n23n22p1.Lambdax2(), mm2 = g2_n23n22p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
             gArr1[g1].n12(), gArr1[g1].n22(), 
@@ -1382,7 +1325,7 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -1398,17 +1341,14 @@ namespace u4
         u3::irrep u3b(g2_n33n12p1.n13(), g2_n33n12p1.n23(), g2_n33n12p1.n33()),
                   u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj2 = g2_n33n12p1.Lambdax2(), mm2 = g2_n33n12p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
             gArr1[g1].n12(), gArr1[g1].n22(), 
@@ -1425,7 +1365,7 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -1441,17 +1381,14 @@ namespace u4
         u3::irrep u3b(g2_n33n22p1.n13(), g2_n33n22p1.n23(), g2_n33n22p1.n33()),
                   u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj2 = g2_n33n22p1.Lambdax2(), mm2 = g2_n33n22p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
             gArr1[g1].n12(), gArr1[g1].n22(), 
@@ -1468,7 +1405,7 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -1527,17 +1464,14 @@ namespace u4
         u3::irrep u3a(g1_n13n12n11p1.n13(), g1_n13n12n11p1.n23(), g1_n13n12n11p1.n33()),
                   u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj1 = g1_n13n12n11p1.Lambdax2(), mm1 = g1_n13n12n11p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             g1_n13n12n11p1.n13(), g1_n13n12n11p1.n23(), g1_n13n12n11p1.n33(),
             g1_n13n12n11p1.n12(), g1_n13n12n11p1.n22(), 
@@ -1554,7 +1488,7 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -1571,17 +1505,14 @@ namespace u4
         u3::irrep u3a(g1_n13n22n11p1.n13(), g1_n13n22n11p1.n23(), g1_n13n22n11p1.n33()),
                   u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj1 = g1_n13n22n11p1.Lambdax2(), mm1 = g1_n13n22n11p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             g1_n13n22n11p1.n13(), g1_n13n22n11p1.n23(), g1_n13n22n11p1.n33(),
             g1_n13n22n11p1.n12(), g1_n13n22n11p1.n22(), 
@@ -1598,7 +1529,7 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -1615,17 +1546,14 @@ namespace u4
         u3::irrep u3a(g1_n23n12n11p1.n13(), g1_n23n12n11p1.n23(), g1_n23n12n11p1.n33()),
                   u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj1 = g1_n23n12n11p1.Lambdax2(), mm1 = g1_n23n12n11p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             g1_n23n12n11p1.n13(), g1_n23n12n11p1.n23(), g1_n23n12n11p1.n33(),
             g1_n23n12n11p1.n12(), g1_n23n12n11p1.n22(), 
@@ -1642,7 +1570,7 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -1659,17 +1587,14 @@ namespace u4
         u3::irrep u3a(g1_n23n22n11p1.n13(), g1_n23n22n11p1.n23(), g1_n23n22n11p1.n33()),
                   u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj1 = g1_n23n22n11p1.Lambdax2(), mm1 = g1_n23n22n11p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             g1_n23n22n11p1.n13(), g1_n23n22n11p1.n23(), g1_n23n22n11p1.n33(),
             g1_n23n22n11p1.n12(), g1_n23n22n11p1.n22(), 
@@ -1686,7 +1611,7 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -1703,17 +1628,14 @@ namespace u4
         u3::irrep u3a(g1_n33n12n11p1.n13(), g1_n33n12n11p1.n23(), g1_n33n12n11p1.n33()),
                   u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj1 = g1_n33n12n11p1.Lambdax2(), mm1 = g1_n33n12n11p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             g1_n33n12n11p1.n13(), g1_n33n12n11p1.n23(), g1_n33n12n11p1.n33(),
             g1_n33n12n11p1.n12(), g1_n33n12n11p1.n22(), 
@@ -1730,7 +1652,7 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -1747,17 +1669,14 @@ namespace u4
         u3::irrep u3a(g1_n33n22n11p1.n13(), g1_n33n22n11p1.n23(), g1_n33n22n11p1.n33()),
                   u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj1 = g1_n33n22n11p1.Lambdax2(), mm1 = g1_n33n22n11p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             g1_n33n22n11p1.n13(), g1_n33n22n11p1.n23(), g1_n33n22n11p1.n33(),
             g1_n33n22n11p1.n12(), g1_n33n22n11p1.n22(), 
@@ -1774,7 +1693,7 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -1792,17 +1711,14 @@ namespace u4
         u3::irrep u3b(g2_n13n12n11p1.n13(), g2_n13n12n11p1.n23(), g2_n13n12n11p1.n33()),
                   u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj2 = g2_n13n12n11p1.Lambdax2(), mm2 = g2_n13n12n11p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
             gArr1[g1].n12(), gArr1[g1].n22(), 
@@ -1819,7 +1735,7 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -1836,17 +1752,14 @@ namespace u4
         u3::irrep u3b(g2_n13n22n11p1.n13(), g2_n13n22n11p1.n23(), g2_n13n22n11p1.n33()),
                   u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj2 = g2_n13n22n11p1.Lambdax2(), mm2 = g2_n13n22n11p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
             gArr1[g1].n12(), gArr1[g1].n22(), 
@@ -1863,7 +1776,7 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -1880,17 +1793,14 @@ namespace u4
         u3::irrep u3b(g2_n23n12n11p1.n13(), g2_n23n12n11p1.n23(), g2_n23n12n11p1.n33()),
                   u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj2 = g2_n23n12n11p1.Lambdax2(), mm2 = g2_n23n12n11p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
             gArr1[g1].n12(), gArr1[g1].n22(), 
@@ -1907,7 +1817,7 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -1924,17 +1834,14 @@ namespace u4
         u3::irrep u3b(g2_n23n22n11p1.n13(), g2_n23n22n11p1.n23(), g2_n23n22n11p1.n33()),
                   u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj2 = g2_n23n22n11p1.Lambdax2(), mm2 = g2_n23n22n11p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
             gArr1[g1].n12(), gArr1[g1].n22(), 
@@ -1951,7 +1858,7 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -1968,17 +1875,14 @@ namespace u4
         u3::irrep u3b(g2_n33n12n11p1.n13(), g2_n33n12n11p1.n23(), g2_n33n12n11p1.n33()),
                   u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj2 = g2_n33n12n11p1.Lambdax2(), mm2 = g2_n33n12n11p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
             gArr1[g1].n12(), gArr1[g1].n22(), 
@@ -1995,7 +1899,7 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
@@ -2012,17 +1916,14 @@ namespace u4
         u3::irrep u3b(g2_n33n22n11p1.n13(), g2_n33n22n11p1.n23(), g2_n33n22n11p1.n33()),
                   u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
                   u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        int rhomax = u3::Rho(u3a, u3b, u3c);
+        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
 
         int jj2 = g2_n33n22n11p1.Lambdax2(), mm2 = g2_n33n22n11p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (rhomax > 0 && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 && 
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [missing, accU4] = coeffs.push(u3a,u3b,u3c);
-          assert(missing == false);
-
           auto [allowU3, accU3] = wigU3U2db.get(
             gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
             gArr1[g1].n12(), gArr1[g1].n22(), 
@@ -2039,7 +1940,7 @@ namespace u4
           for (int e = 0; e < etamax; e++)   
           {
             double y = 0.0;
-            for (int r = 0; r < rhomax; r++)
+            for (int r = 0; r < accU4.rows(); r++)
               y += accU4(r,e) * accU3(r);
               
             E43E42E41[e](row, j) += y * cgc * factor;
