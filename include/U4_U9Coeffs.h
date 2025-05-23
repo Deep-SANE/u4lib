@@ -40,25 +40,20 @@ namespace u4
 
     // couple u4AB and u4C
     auto [u4AB_C, etamaxsAB_C] = u4::decomposition(u4AB, u4C);
-    
-    // couple u4AC and u4B
-    auto [u4AC_B, etamaxsAC_B] = u4::decomposition(u4AC, u4B);
 
     // an array to store the couple I-II-III irreps
     std::vector<u4::irrep> u4ABC;
-    std::vector<int> etaAB_Cmax, etaAC_Bmax;
+    std::vector<int> etaAB_Cmax, etaAC_Bmax;    
 
     for (int i = 0; i < u4AB_C.size(); i++)
     {
-      for (int j = 0; j < u4AC_B.size(); j++)
+      int etamaxAC_B = u4::Eta(u4AC, u4B, u4AB_C[i]);
+      if (etamaxAC_B > 0)
       {
-        if (u4AB_C[i] == u4AC_B[j])
-        {
-          u4ABC.push_back(u4AB_C[i]);
-          etaAB_Cmax.push_back(etamaxsAB_C[i]);
-          etaAC_Bmax.push_back(etamaxsAC_B[j]);
-          break;
-        }
+        u4ABC.push_back(u4AB_C[i]);
+        etaAB_Cmax.push_back(etamaxsAB_C[i]);
+        etaAC_Bmax.push_back(etamaxAC_B);
+        break;
       }
     }
 

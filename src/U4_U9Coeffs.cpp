@@ -125,8 +125,7 @@ int main(int argc, char* argv[])
   // couple the 4 irreps in the scheme (I-II)-(III-IV)
   auto [u4ab_cd, etamaxsab_cd] = u4::decomposition(u4ab[i_ab], u4cd[i_cd]);
 
-  // couple the 4 irreps in scheme (I-III)-(II-IV)
-  auto [u4ac_bd, etamaxsac_bd] = u4::decomposition(u4ac[i_ac], u4bd[i_bd]);
+  
 
   std::cout << "The normalized coupled irreps of the I, II, III and IV are: "
             << std::endl;
@@ -139,18 +138,10 @@ int main(int argc, char* argv[])
                "are interested: ";
   std::cin >> i_ab_cd;
 
-  int flag = 0;
+  // couple the 4 irreps in scheme (I-III)-(II-IV)
+  auto etamaxac_bd = u4::Eta(u4ac[i_ac], u4bd[i_bd], u4ab_cd[i_ab_cd]);
 
-  for (i_ac_bd = 0; i_ac_bd < u4ac_bd.size(); i_ac_bd++)
-  {
-    if (u4ab_cd[i_ab_cd] == u4ac_bd[i_ac_bd])
-    {
-      flag++;
-      break;
-    }
-  }
-
-  if (flag > 0)
+  if (etamaxac_bd > 0)
   {
     // Start time measurement
     auto t0 = std::chrono::high_resolution_clock::now();
@@ -174,7 +165,7 @@ int main(int argc, char* argv[])
              gArrAB, u4cd[i_cd], gArrCD, u4ac[i_ac], gArrAC, u4bd[i_bd],
              gArrBD, u4ab_cd[i_ab_cd], gArrABCD, etamaxsab[i_ab],
              etamaxscd[i_cd], etamaxsab_cd[i_ab_cd], etamaxsac[i_ac],
-             etamaxsbd[i_bd], etamaxsac_bd[i_ac_bd], cgcs, racahs, wigU3U2db);
+             etamaxsbd[i_bd], etamaxac_bd, cgcs, racahs, wigU3U2db);
 
     // End time measurement
     auto t1 = std::chrono::high_resolution_clock::now();
@@ -196,7 +187,7 @@ int main(int argc, char* argv[])
         for (int eab_cd = 0; eab_cd < etamaxsab_cd[i_ab_cd]; eab_cd++)
           for (int eab = 0; eab < etamaxsab[i_ab]; eab++)
             for (int ecd = 0; ecd < etamaxscd[i_cd]; ecd++)
-              for (int eac_bd = 0; eac_bd < etamaxsac_bd[i_ac_bd]; eac_bd++)
+              for (int eac_bd = 0; eac_bd < etamaxac_bd; eac_bd++)
                 std::cout << "  " << eac + 1 << "\t  " << ebd + 1 << "\t  "
                           << eab_cd + 1 << "\t\t  " << eab + 1 << "\t  "
                           << ecd + 1 << "\t  " << eac_bd + 1 << "\t\t  ->  "
@@ -204,7 +195,7 @@ int main(int argc, char* argv[])
                                         etamaxsab_cd[i_ab_cd] + eab_cd) *
                                         etamaxsab[i_ab] + eab) *
                                         etamaxscd[i_cd] + ecd) *
-                                        etamaxsac_bd[i_ac_bd] + eac_bd]
+                                        etamaxac_bd + eac_bd]
                           << std::endl;
 
     // Calculate the duration

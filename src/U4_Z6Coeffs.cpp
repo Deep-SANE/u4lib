@@ -99,19 +99,9 @@ int main(int argc, char* argv[])
   std::cin >> i_ab_c;
 
   // couple the three irreps in scheme (I-III)-II
-  auto [u4ac_b, etamaxsac_b] = u4::decomposition(u4ac[i_ac], u4b);
+  auto etamaxac_b = u4::Eta(u4ac[i_ac], u4b, u4ab_c[i_ab_c]);
 
-  int flag = 0, i_ac_b;
-  for (i_ac_b = 0; i_ac_b < u4ac_b.size(); i_ac_b++)
-  {
-    if (u4ab_c[i_ab_c] == u4ac_b[i_ac_b])
-    {
-      flag++;
-      break;
-    }
-  }
-
-  if (flag > 0)
+  if (etamaxac_b > 0)
   {
     // Start time measurement
     auto t0 = std::chrono::high_resolution_clock::now();
@@ -130,7 +120,7 @@ int main(int argc, char* argv[])
     std::vector<double> coeffs = u4::Z6(
       u4b, gArrB, u4a, gArrA, u4ab_c[i_ab_c], gArrABC, u4c, gArrC, u4ab[i_ab], 
       gArrAB, etamaxsab[i_ab], etamaxsab_c[i_ab_c], u4ac[i_ac], gArrAC, 
-      etamaxsac[i_ac], etamaxsac_b[i_ac_b], cgcs, racahs, wigU3U2db);
+      etamaxsac[i_ac], etamaxac_b, cgcs, racahs, wigU3U2db);
 
     // End time measurement
     auto t1 = std::chrono::high_resolution_clock::now();
@@ -147,15 +137,14 @@ int main(int argc, char* argv[])
       {
         for (int eac = 0; eac < etamaxsac[i_ac]; eac++)
         {
-          for (int eac_b = 0; eac_b < etamaxsac_b[i_ac_b]; eac_b++)
+          for (int eac_b = 0; eac_b < etamaxac_b; eac_b++)
           {
             std::cout << "\t\t\t\t\t\t   " << eab + 1 << "   " << eab_c + 1
                       << "\t      " << eac + 1 << "  " << eac_b + 1 << "\t -> "
                       << coeffs[((eab * etamaxsab_c[i_ab_c] + eab_c) *
                                      etamaxsac[i_ac] +
                                  eac) *
-                                    etamaxsac_b[i_ac_b] +
-                                eac_b]
+                                    etamaxac_b + eac_b]
                       << std::endl;
           }
         }
