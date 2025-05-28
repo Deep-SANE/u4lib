@@ -141,6 +141,8 @@ namespace u4
 
       return std::pair(exist, X);
     }
+
+    const auto& matrix() const { return coeffs_; }
   };
 
   // expansion of a coupled gelfand basis state (u4c) in terms of those
@@ -2449,6 +2451,8 @@ namespace u4
     std::cerr << "LowerWeightReducedCoeffs total time: " << duration.count()
               << " [s]" << std::endl;
 #endif
+
+    assert(coeffs.matrix().hasNaN() == false);
 
     return coeffs;
   }
