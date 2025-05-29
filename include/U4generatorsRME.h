@@ -14,13 +14,12 @@
 namespace u4
 {
 
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>
+  inline Eigen::MatrixXd
   RME_S(u4::physicalvector& bra, u4::physicalvector& ket,
         std::vector<int>& bra_zeta, std::vector<int>& ket_zeta)
   {
 
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> RME(bra.zeta,
-                                                              ket.zeta);
+    Eigen::MatrixXd RME(bra.zeta, ket.zeta);
 
     // running through the multiplicity labels
     for (int i = 1; i <= bra.zeta; i++)
@@ -50,13 +49,12 @@ namespace u4
     return RME;
   }
 
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>
+  inline Eigen::MatrixXd
   RME_T(u4::physicalvector& bra, u4::physicalvector& ket,
         std::vector<int>& bra_zeta, std::vector<int>& ket_zeta)
   {
 
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> RME(bra.zeta,
-                                                              ket.zeta);
+    Eigen::MatrixXd RME(bra.zeta, ket.zeta);
 
     // running through the multiplicity labels
     for (int i = 1; i <= bra.zeta; i++)
@@ -85,13 +83,12 @@ namespace u4
     return RME;
   }
 
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic>
+  inline Eigen::MatrixXd
   RME_U(u4::physicalvector& bra, u4::physicalvector& ket,
         std::vector<int>& bra_zeta, std::vector<int>& ket_zeta)
   {
 
-    Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> RME(bra.zeta,
-                                                              ket.zeta);
+    Eigen::MatrixXd RME(bra.zeta, ket.zeta);
     RME.setZero();
 
     // getting the tensor components of U
@@ -116,12 +113,12 @@ namespace u4
       // Expanding in canonical basis
       std::vector<u4::gelfand> bra_gArr = u4::gelfandBasis(bra.toprow);
       std::vector<int> bra_indices;
-      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> bra_coeffs =
+      Eigen::MatrixXd bra_coeffs =
         u4::phys_to_cano(bra, bra.SS, bra.TT, bra_indices, bra_gArr);
 
       std::vector<u4::gelfand> ket_gArr = u4::gelfandBasis(ket.toprow);
       std::vector<int> ket_indices;
-      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> ket_coeffs =
+      Eigen::MatrixXd ket_coeffs =
         u4::phys_to_cano(ket, ket.SS, ket.TT, ket_indices, ket_gArr);
 
       double c = std::sqrt((bra.SS + 1.0) * (bra.TT + 1.0));
@@ -193,12 +190,12 @@ namespace u4
       // Expanding in canonical basis
       std::vector<u4::gelfand> bra_gArr = u4::gelfandBasis(bra.toprow);
       std::vector<int> bra_indices;
-      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> bra_coeffs =
+      Eigen::MatrixXd bra_coeffs =
         u4::phys_to_cano(bra, bra.SS, bra.TT, bra_indices, bra_gArr);
 
       std::vector<u4::gelfand> ket_gArr = u4::gelfandBasis(ket.toprow);
       std::vector<int> ket_indices;
-      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> ket_coeffs =
+      Eigen::MatrixXd ket_coeffs =
         u4::phys_to_cano(ket, ket.SS, ket.TT, ket_indices, ket_gArr);
 
       double c = std::sqrt((bra.SS + 1.0) * (bra.TT + 1.0) *
@@ -291,7 +288,7 @@ namespace u4
       // Expanding in canonical basis
       std::vector<u4::gelfand> ket_gArr = u4::gelfandBasis(ket.toprow);
       std::vector<int> ket_indices;
-      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> ket_coeffs =
+      Eigen::MatrixXd ket_coeffs =
         u4::phys_to_cano(ket, ket.SS, ket.TT, ket_indices, ket_gArr);
 
       double c =
@@ -322,12 +319,12 @@ namespace u4
       // Expanding in canonical basis
       std::vector<u4::gelfand> bra_gArr = u4::gelfandBasis(bra.toprow);
       std::vector<int> bra_indices;
-      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> bra_coeffs =
+      Eigen::MatrixXd bra_coeffs =
         u4::phys_to_cano(bra, bra.SS, bra.TT, bra_indices, bra_gArr);
 
       std::vector<u4::gelfand> ket_gArr = u4::gelfandBasis(ket.toprow);
       std::vector<int> ket_indices;
-      Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> ket_coeffs =
+      Eigen::MatrixXd ket_coeffs =
         u4::phys_to_cano(ket, ket.SS, ket.TT, ket_indices, ket_gArr);
 
       double c = -std::sqrt((bra.SS + 1.0) * (bra.TT + 1.0) * (ket.SS + 1.0) /

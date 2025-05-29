@@ -13,7 +13,7 @@ namespace u4
 {
 
   // compare two gelfand patterns of the same irrep
-  bool E11(const u4::gelfand& i, const u4::gelfand& f)
+  inline bool E11(const u4::gelfand& i, const u4::gelfand& f)
   {
     return i.n13() == f.n13() && i.n23() == f.n23() && i.n33() == f.n33() &&
            i.n12() == f.n12() && i.n22() == f.n22() && i.n11() == f.n11();
@@ -21,128 +21,128 @@ namespace u4
 
   // define action of the raising generators, that of the lowering generators
   // is simply swapping the initial and final states
-  bool E12(const u4::gelfand& i, const u4::gelfand& f)
+  inline bool E12(const u4::gelfand& i, const u4::gelfand& f)
   {
     return i.n13() == f.n13() && i.n23() == f.n23() && i.n33() == f.n33() &&
            i.n12() == f.n12() && i.n22() == f.n22() && (i.n11() + 1) == f.n11();
   }
 
-  bool E23_12(const u4::gelfand& i, const u4::gelfand& f)
+  inline bool E23_12(const u4::gelfand& i, const u4::gelfand& f)
   {
     return i.n13() == f.n13() && i.n23() == f.n23() && i.n33() == f.n33() &&
            (i.n12() + 1) == f.n12() && i.n22() == f.n22() && i.n11() == f.n11();
   }
 
-  bool E23_22(const u4::gelfand& i, const u4::gelfand& f)
+  inline bool E23_22(const u4::gelfand& i, const u4::gelfand& f)
   {
     return i.n13() == f.n13() && i.n23() == f.n23() && i.n33() == f.n33() &&
            i.n12() == f.n12() && (i.n22() + 1) == f.n22() && i.n11() == f.n11();
   }
 
-  bool E13_12(const u4::gelfand& i, const u4::gelfand& f)
+  inline bool E13_12(const u4::gelfand& i, const u4::gelfand& f)
   {
     return i.n13() == f.n13() && i.n23() == f.n23() && i.n33() == f.n33() &&
            (i.n12() + 1) == f.n12() && i.n22() == f.n22() &&
            (i.n11() + 1) == f.n11();
   }
 
-  bool E13_22(const u4::gelfand& i, const u4::gelfand& f)
+  inline bool E13_22(const u4::gelfand& i, const u4::gelfand& f)
   {
     return i.n13() == f.n13() && i.n23() == f.n23() && i.n33() == f.n33() &&
            i.n12() == f.n12() && (i.n22() + 1) == f.n22() &&
            (i.n11() + 1) == f.n11();
   }
 
-  bool E34_13(const u4::gelfand& i, const u4::gelfand& f)
+  inline bool E34_13(const u4::gelfand& i, const u4::gelfand& f)
   {
     return (i.n13() + 1) == f.n13() && i.n23() == f.n23() && i.n33() == f.n33() 
            && i.n12() == f.n12() && i.n22() == f.n22() && i.n11() == f.n11();
   }
 
-  bool E34_23(const u4::gelfand& i, const u4::gelfand& f)
+  inline bool E34_23(const u4::gelfand& i, const u4::gelfand& f)
   {
     return i.n13() == f.n13() && (i.n23() + 1) == f.n23() && i.n33() == f.n33() 
            && i.n12() == f.n12() && i.n22() == f.n22() && i.n11() == f.n11();
   }
 
-  bool E34_33(const u4::gelfand& i, const u4::gelfand& f)
+  inline bool E34_33(const u4::gelfand& i, const u4::gelfand& f)
   {
     return i.n13() == f.n13() && i.n23() == f.n23() && (i.n33() + 1) == f.n33() 
            && i.n12() == f.n12() && i.n22() == f.n22() && i.n11() == f.n11();
   }
 
-  bool E24_13_12(const u4::gelfand& i, const u4::gelfand& f)
+  inline bool E24_13_12(const u4::gelfand& i, const u4::gelfand& f)
   {
     return (i.n13() + 1) == f.n13() && i.n23() == f.n23() && i.n33() == f.n33() 
            && (i.n12() + 1) == f.n12() && i.n22() == f.n22() && i.n11() == f.n11();
   }
 
-  bool E24_13_22(const u4::gelfand& i, const u4::gelfand& f)
+  inline bool E24_13_22(const u4::gelfand& i, const u4::gelfand& f)
   {
     return (i.n13() + 1) == f.n13() && i.n23() == f.n23() && i.n33() == f.n33() 
            && i.n12() == f.n12() && (i.n22() + 1) == f.n22() && i.n11() == f.n11();
   }
 
-  bool E24_23_12(const u4::gelfand& i, const u4::gelfand& f)
+  inline bool E24_23_12(const u4::gelfand& i, const u4::gelfand& f)
   {
     return i.n13() == f.n13() && (i.n23() + 1) == f.n23() && i.n33() == f.n33() 
            && (i.n12() + 1) == f.n12() && i.n22() == f.n22() && i.n11() == f.n11();
   }
 
-  bool E24_23_22(const u4::gelfand& i, const u4::gelfand& f)
+  inline bool E24_23_22(const u4::gelfand& i, const u4::gelfand& f)
   {
     return i.n13() == f.n13() && (i.n23() + 1) == f.n23() && i.n33() == f.n33() 
            && i.n12() == f.n12() && (i.n22() + 1) == f.n22() && i.n11() == f.n11();
   }
 
-  bool E24_33_12(const u4::gelfand& i, const u4::gelfand& f)
+  inline bool E24_33_12(const u4::gelfand& i, const u4::gelfand& f)
   {
     return i.n13() == f.n13() && i.n23() == f.n23() && (i.n33() + 1) == f.n33() 
            && (i.n12() + 1) == f.n12() && i.n22() == f.n22() && i.n11() == f.n11();
   }
 
-  bool E24_33_22(const u4::gelfand& i, const u4::gelfand& f)
+  inline bool E24_33_22(const u4::gelfand& i, const u4::gelfand& f)
   {
     return i.n13() == f.n13() && i.n23() == f.n23() && (i.n33() + 1) == f.n33() 
            && i.n12() == f.n12() && (i.n22() + 1) == f.n22() && i.n11() == f.n11();
   }
 
-  bool E14_13_12(const u4::gelfand& i, const u4::gelfand& f)
+  inline bool E14_13_12(const u4::gelfand& i, const u4::gelfand& f)
   {
     return (i.n13() + 1) == f.n13() && i.n23() == f.n23() && i.n33() == f.n33() 
            && (i.n12() + 1) == f.n12() && i.n22() == f.n22() 
            && (i.n11() + 1) == f.n11();
   }
 
-  bool E14_13_22(const u4::gelfand& i, const u4::gelfand& f)
+  inline bool E14_13_22(const u4::gelfand& i, const u4::gelfand& f)
   {
     return (i.n13() + 1) == f.n13() && i.n23() == f.n23() && i.n33() == f.n33() 
            && i.n12() == f.n12() && (i.n22() + 1) == f.n22() 
            && (i.n11() + 1) == f.n11();
   }
 
-  bool E14_23_12(const u4::gelfand& i, const u4::gelfand& f)
+  inline bool E14_23_12(const u4::gelfand& i, const u4::gelfand& f)
   {
     return i.n13() == f.n13() && (i.n23() + 1) == f.n23() && i.n33() == f.n33() 
            && (i.n12() + 1) == f.n12() && i.n22() == f.n22() 
            && (i.n11() + 1) == f.n11();
   }
 
-  bool E14_23_22(const u4::gelfand& i, const u4::gelfand& f)
+  inline bool E14_23_22(const u4::gelfand& i, const u4::gelfand& f)
   {
     return i.n13() == f.n13() && (i.n23() + 1) == f.n23() && i.n33() == f.n33() 
            && i.n12() == f.n12() && (i.n22() + 1) == f.n22() 
            && (i.n11() + 1) == f.n11();
   }
 
-  bool E14_33_12(const u4::gelfand& i, const u4::gelfand& f)
+  inline bool E14_33_12(const u4::gelfand& i, const u4::gelfand& f)
   {
     return i.n13() == f.n13() && i.n23() == f.n23() && (i.n33() + 1) == f.n33() 
            && (i.n12() + 1) == f.n12() && i.n22() == f.n22() 
            && (i.n11() + 1) == f.n11();
   }
 
-  bool E14_33_22(const u4::gelfand& i, const u4::gelfand& f)
+  inline bool E14_33_22(const u4::gelfand& i, const u4::gelfand& f)
   {
     return i.n13() == f.n13() && i.n23() == f.n23() && (i.n33() + 1) == f.n33() 
            && i.n12() == f.n12() && (i.n22() + 1) == f.n22() 
@@ -150,7 +150,7 @@ namespace u4
   }
 
   // find all Gelfand states associated with an irrep
-  std::vector<u4::gelfand> gelfandBasis(const u4::irrep& x)
+  inline std::vector<u4::gelfand> gelfandBasis(const u4::irrep& x)
   {
     std::vector<u4::gelfand> gArr;
 
@@ -166,7 +166,7 @@ namespace u4
   }
 
   // find the location (index) of a Gelfand state within the Gelfand basis above
-  std::size_t findGelfand(const u4::gelfand& g,
+  inline std::size_t findGelfand(const u4::gelfand& g,
                           const std::vector<u4::gelfand>& gArr)
   {
     std::size_t i;
@@ -201,7 +201,7 @@ namespace u4
   [x^2/4], x > 0 = 0, otherwise
   */
   // phi function
-  int phi(int x)
+  inline int phi(int x)
   {
     if (x > 0)
       return x * x / 4;
@@ -210,7 +210,7 @@ namespace u4
   }
 
   // Omega function
-  int Omega(int SS, int TT, int x, int y)
+  inline int Omega(int SS, int TT, int x, int y)
   {
     if (x >= y && TT <= (x + y) && SS <= (x + y))
     {
@@ -229,7 +229,7 @@ namespace u4
   }
 
   // Multiplicity of (S,T)
-  int Zeta(int SS, int TT, int n1, int n2, int n3, int n4)
+  inline int Zeta(int SS, int TT, int n1, int n2, int n3, int n4)
   {
     return Omega(SS, TT, n1 - n3, n2 - n4) -
            Omega(SS, TT, n1 - n4 + 1, n2 - n3 - 1) -
@@ -274,7 +274,7 @@ namespace u4
   }
 
   // find all physical states associated with an irrep
-  std::vector<u4::physicalvector> physicalBasis(const u4::irrep& u4)
+  inline std::vector<u4::physicalvector> physicalBasis(const u4::irrep& u4)
   {
     std::vector<u4::physicalvector> basis;
 

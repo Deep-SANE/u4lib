@@ -10,7 +10,7 @@
 namespace u4
 {
 
-  std::pair<std::vector<u4::irrep>, std::vector<int>> 
+  inline std::pair<std::vector<u4::irrep>, std::vector<int>> 
   decomposition(const u4::irrep& u41, const u4::irrep& u42)
   {
     std::vector<u4::irrep> u4cs;
@@ -112,7 +112,7 @@ namespace u4
 
   // compute the outer multiplicity directly
   // input irreps are normalized
-  int Eta(const u4::irrep& u4a, const u4::irrep& u4b, const u4::irrep& u4c)
+  inline int Eta(const u4::irrep& u4a, const u4::irrep& u4b, const u4::irrep& u4c)
   {
     u4::irrep u4c_temp = u4c;
     int x = u4a.n14() + u4a.n24() + u4a.n34() +
