@@ -9,8 +9,8 @@
 #include <functional>
 #include <limits>
 #include <tuple>
-#include <utility>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 
 #ifdef U4LIB_TIME_LOG
@@ -95,8 +95,7 @@ namespace u4
     }
 
     // std::pair<bool, decltype(coeffs_.block(0, 0, 0, 0))>
-    auto push(const u3::irrep& u3a, const u3::irrep& u3b,
-                const u3::irrep& u3c)
+    auto push(const u3::irrep& u3a, const u3::irrep& u3b, const u3::irrep& u3c)
     {
       auto rhomax = u3::Rho(u3a, u3b, u3c);
 
@@ -154,9 +153,8 @@ namespace u4
                       const std::vector<u4::gelfand>& gArr1,
                       const std::vector<u4::gelfand>& gArr2)
   {
-    int x = gArr1[0].n14() + gArr1[0].n24() + gArr1[0].n34() + 
-            gArr2[0].n14() + gArr2[0].n24() + gArr2[0].n34() -
-            g3.n14() - g3.n24() - g3.n34();
+    int x = gArr1[0].n14() + gArr1[0].n24() + gArr1[0].n34() + gArr2[0].n14() +
+            gArr2[0].n24() + gArr2[0].n34() - g3.n14() - g3.n24() - g3.n34();
 
     assert(x % 4 == 0);
 
@@ -458,7 +456,7 @@ namespace u4
 
   // highest-weight reduced coefficients
   // / n14a n24a n34a n44a ; n14b n24b n34b n44b ||| n14c n24c n34c n44c \
-  // \   n13a  n23a  n33a      n13b  n23b n33b   |||   n14c  n24c n34c   /_eta,rho
+  // \   n13a  n23a  n33a      n13b  n23b n33b   |||   n14c  n24c n34c /_eta,rho
 
   inline void HighestWeightReducedCoeffs(const std::vector<u4::gelfand>& gArr1,
                                          const std::vector<u4::gelfand>& gArr2,
@@ -497,7 +495,6 @@ namespace u4
     Eigen::MatrixXd nullspace = u34utils::null_space(mat);
 #endif
 
-
 #ifdef U4LIB_NULLSPACE_LOG
     std::cout << "nullspace: " << nullspace.rows() << " x " << nullspace.cols()
               << std::endl;
@@ -515,14 +512,14 @@ namespace u4
     std::chrono::duration<double> duration = t1 - t0;
     std::cerr << "null_space time: " << duration.count() << " [s]" << std::endl;
 #endif
-/*
-    for (int i = 0; i < indices.size(); i++)
-    {
-      std::cout << "< " << gArr1[indices[i].first] << " ; "
-                << gArr2[indices[i].second] << " | "
-                << gArr3[0] << " > " << nullspace.row(i) << std::endl;
-    }
-*/
+    /*
+        for (int i = 0; i < indices.size(); i++)
+        {
+          std::cout << "< " << gArr1[indices[i].first] << " ; "
+                    << gArr2[indices[i].second] << " | "
+                    << gArr3[0] << " > " << nullspace.row(i) << std::endl;
+        }
+    */
     int jj3 = gArr3[0].Lambdax2(), mm3 = gArr3[0].MLambdax2();
 
     for (int i = 0; i < indices.size(); i++)
@@ -530,8 +527,8 @@ namespace u4
       int i1 = indices[i].first, i2 = indices[i].second;
 
       u3::irrep u3a(gArr1[i1].n13(), gArr1[i1].n23(), gArr1[i1].n33()),
-                u3b(gArr2[i2].n13(), gArr2[i2].n23(), gArr2[i2].n33()),
-                u3c(gArr3[0].n13(), gArr3[0].n23(), gArr3[0].n33());
+          u3b(gArr2[i2].n13(), gArr2[i2].n23(), gArr2[i2].n33()),
+          u3c(gArr3[0].n13(), gArr3[0].n23(), gArr3[0].n33());
 
       auto rhomax = u3::Rho(u3a, u3b, u3c);
 
@@ -541,7 +538,7 @@ namespace u4
 
         if (missing == false)
           continue;
-        
+
         std::vector<Eigen::RowVectorXd> A_rows, B_rows;
 
         // vary U(2) and U(1) labels
@@ -556,17 +553,15 @@ namespace u4
               gArr1[i1_].n33() == gArr1[i1].n33() &&
               gArr2[i2_].n13() == gArr2[i2].n13() &&
               gArr2[i2_].n23() == gArr2[i2].n23() &&
-              gArr2[i2_].n33() == gArr2[i2].n33() &&
-              (mm1 + mm2) == mm3 && jj3 <= (jj1 + jj2) 
-              && jj3 >= std::fabs(jj1 - jj2))
+              gArr2[i2_].n33() == gArr2[i2].n33() && (mm1 + mm2) == mm3 &&
+              jj3 <= (jj1 + jj2) && jj3 >= std::fabs(jj1 - jj2))
           {
             auto [allowU3, accU3] = wigU3U2db.get(
-              gArr1[i1_].n13(), gArr1[i1_].n23(), gArr1[i1_].n33(), 
-              gArr1[i1_].n12(), gArr1[i1_].n22(), 
-              gArr2[i2_].n13(), gArr2[i2_].n23(), gArr2[i2_].n33(),                          
-              gArr2[i2_].n12(), gArr2[i2_].n22(),
-              gArr3[0].n13(), gArr3[0].n23(), gArr3[0].n33(), 
-              gArr3[0].n12(), gArr3[0].n22());
+                gArr1[i1_].n13(), gArr1[i1_].n23(), gArr1[i1_].n33(),
+                gArr1[i1_].n12(), gArr1[i1_].n22(), gArr2[i2_].n13(),
+                gArr2[i2_].n23(), gArr2[i2_].n33(), gArr2[i2_].n12(),
+                gArr2[i2_].n22(), gArr3[0].n13(), gArr3[0].n23(),
+                gArr3[0].n33(), gArr3[0].n12(), gArr3[0].n22());
 
             if (allowU3 == false)
               continue;
@@ -595,7 +590,7 @@ namespace u4
               }
             }
 
-            if (shouldAdd == true) 
+            if (shouldAdd == true)
             {
               A_rows.push_back(A_row);
               B_rows.push_back(B_row);
@@ -604,7 +599,7 @@ namespace u4
         }
 
         Eigen::MatrixXd A(A_rows.size(), rhomax), B(A_rows.size(), etamax);
-        for (int i = 0; i < A_rows.size(); ++i) 
+        for (int i = 0; i < A_rows.size(); ++i)
         {
           A.row(i) = A_rows[i];
           B.row(i) = B_rows[i];
@@ -612,11 +607,11 @@ namespace u4
 
         Eigen::ColPivHouseholderQR<Eigen::MatrixXd> factorize;
         factorize.compute(A);
-        coeffs_ = factorize.solve(B);  
+        coeffs_ = factorize.solve(B);
         for (int m = 0; m < coeffs_.rows(); m++)
           for (int n = 0; n < coeffs_.cols(); n++)
-            if (std::fabs(coeffs_(m,n)) < 1e-14)
-              coeffs_(m,n) = 0.0;           
+            if (std::fabs(coeffs_(m, n)) < 1e-14)
+              coeffs_(m, n) = 0.0;
       }
     }
 
@@ -625,7 +620,7 @@ namespace u4
 
   // lower-weight reduced coefficients
   // / n14a n24a n34a n44a ; n14b n24b n34b n44b ||| n14c n24c n34c n44c \
-  // \   n13a  n23a  n33a      n13b  n23b n33b   |||   n13c  n23c n33c   /_eta,rho
+  // \   n13a  n23a  n33a      n13b  n23b n33b   |||   n13c  n23c n33c /_eta,rho
 
   // build with E43
   inline void
@@ -638,8 +633,7 @@ namespace u4
       u34utils::SO3_CGC& cgcs, std::vector<Eigen::MatrixXd>& E43E42E41,
       u4::WigU4U3_coeffs& coeffs, u3::WigU3U2_db& wigU3U2db)
   {
-    int jj3 = gArr3[parent_g3].Lambdax2(), 
-        mm3 = gArr3[parent_g3].MLambdax2();
+    int jj3 = gArr3[parent_g3].Lambdax2(), mm3 = gArr3[parent_g3].MLambdax2();
 
     // loop over daughter states
     for (int j = 0; j < same_weight_gArr3.size(); j++)
@@ -663,37 +657,37 @@ namespace u4
       if (g1_n13p1.check())
       {
         u3::irrep u3a(g1_n13p1.n13(), g1_n13p1.n23(), g1_n13p1.n33()),
-                  u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+            u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj1 = g1_n13p1.Lambdax2(), mm1 = g1_n13p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            g1_n13p1.n13(), g1_n13p1.n23(), g1_n13p1.n33(),
-            g1_n13p1.n12(), g1_n13p1.n22(), 
-            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
-            gArr2[g2].n12(), gArr2[g2].n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              g1_n13p1.n13(), g1_n13p1.n23(), g1_n13p1.n33(), g1_n13p1.n12(),
+              g1_n13p1.n22(), gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
+              gArr2[g2].n12(), gArr2[g2].n22(), gArr3[parent_g3].n13(),
+              gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+              gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           assert(allowU3 == true);
 
           double factor = g1_n13p1.e43_13();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-       
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
 
@@ -702,37 +696,37 @@ namespace u4
       if (g1_n23p1.check())
       {
         u3::irrep u3a(g1_n23p1.n13(), g1_n23p1.n23(), g1_n23p1.n33()),
-                  u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+            u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj1 = g1_n23p1.Lambdax2(), mm1 = g1_n23p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            g1_n23p1.n13(), g1_n23p1.n23(), g1_n23p1.n33(),
-            g1_n23p1.n12(), g1_n23p1.n22(), 
-            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
-            gArr2[g2].n12(), gArr2[g2].n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              g1_n23p1.n13(), g1_n23p1.n23(), g1_n23p1.n33(), g1_n23p1.n12(),
+              g1_n23p1.n22(), gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
+              gArr2[g2].n12(), gArr2[g2].n22(), gArr3[parent_g3].n13(),
+              gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+              gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           assert(allowU3 == true);
 
           double factor = g1_n23p1.e43_23();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
+              y += accU4(r, e) * accU3(r);
 
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
 
@@ -741,37 +735,37 @@ namespace u4
       if (g1_n33p1.check())
       {
         u3::irrep u3a(g1_n33p1.n13(), g1_n33p1.n23(), g1_n33p1.n33()),
-                  u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+            u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj1 = g1_n33p1.Lambdax2(), mm1 = g1_n33p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            g1_n33p1.n13(), g1_n33p1.n23(), g1_n33p1.n33(),
-            g1_n33p1.n12(), g1_n33p1.n22(), 
-            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
-            gArr2[g2].n12(), gArr2[g2].n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              g1_n33p1.n13(), g1_n33p1.n23(), g1_n33p1.n33(), g1_n33p1.n12(),
+              g1_n33p1.n22(), gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
+              gArr2[g2].n12(), gArr2[g2].n22(), gArr3[parent_g3].n13(),
+              gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+              gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           assert(allowU3 == true);
 
           double factor = g1_n33p1.e43_33();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
+              y += accU4(r, e) * accU3(r);
 
             E43E42E41[e](row, j) += y * cgc * factor;
-          }   
+          }
         }
       }
 
@@ -781,34 +775,35 @@ namespace u4
       if (g2_n13p1.check())
       {
         u3::irrep u3b(g2_n13p1.n13(), g2_n13p1.n23(), g2_n13p1.n33()),
-                  u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+            u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj2 = g2_n13p1.Lambdax2(), mm2 = g2_n13p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [allowU3, accU3] = wigU3U2db.get(
-            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
-            gArr1[g1].n12(), gArr1[g1].n22(), 
-            g2_n13p1.n13(), g2_n13p1.n23(), g2_n13p1.n33(),
-            g2_n13p1.n12(), g2_n13p1.n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+          auto [allowU3, accU3] =
+              wigU3U2db.get(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+                            gArr1[g1].n12(), gArr1[g1].n22(), g2_n13p1.n13(),
+                            g2_n13p1.n23(), g2_n13p1.n33(), g2_n13p1.n12(),
+                            g2_n13p1.n22(), gArr3[parent_g3].n13(),
+                            gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+                            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           assert(allowU3 == true);
 
           double factor = g2_n13p1.e43_13();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
+              y += accU4(r, e) * accU3(r);
 
             E43E42E41[e](row, j) += y * cgc * factor;
           }
@@ -820,35 +815,36 @@ namespace u4
       if (g2_n23p1.check())
       {
         u3::irrep u3b(g2_n23p1.n13(), g2_n23p1.n23(), g2_n23p1.n33()),
-                  u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+            u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj2 = g2_n23p1.Lambdax2(), mm2 = g2_n23p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [allowU3, accU3] = wigU3U2db.get(
-            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
-            gArr1[g1].n12(), gArr1[g1].n22(), 
-            g2_n23p1.n13(), g2_n23p1.n23(), g2_n23p1.n33(),
-            g2_n23p1.n12(), g2_n23p1.n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+          auto [allowU3, accU3] =
+              wigU3U2db.get(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+                            gArr1[g1].n12(), gArr1[g1].n22(), g2_n23p1.n13(),
+                            g2_n23p1.n23(), g2_n23p1.n33(), g2_n23p1.n12(),
+                            g2_n23p1.n22(), gArr3[parent_g3].n13(),
+                            gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+                            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           assert(allowU3 == true);
 
           double factor = g2_n23p1.e43_23();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-            
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
           }
         }
@@ -859,35 +855,36 @@ namespace u4
       if (g2_n33p1.check())
       {
         u3::irrep u3b(g2_n33p1.n13(), g2_n33p1.n23(), g2_n33p1.n33()),
-                  u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+            u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj2 = g2_n33p1.Lambdax2(), mm2 = g2_n33p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
-          auto [allowU3, accU3] = wigU3U2db.get(
-            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
-            gArr1[g1].n12(), gArr1[g1].n22(), 
-            g2_n33p1.n13(), g2_n33p1.n23(), g2_n33p1.n33(),
-            g2_n33p1.n12(), g2_n33p1.n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+          auto [allowU3, accU3] =
+              wigU3U2db.get(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+                            gArr1[g1].n12(), gArr1[g1].n22(), g2_n33p1.n13(),
+                            g2_n33p1.n23(), g2_n33p1.n33(), g2_n33p1.n12(),
+                            g2_n33p1.n22(), gArr3[parent_g3].n13(),
+                            gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+                            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           assert(allowU3 == true);
 
           double factor = g2_n33p1.e43_33();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-            
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
           }
         }
@@ -908,8 +905,7 @@ namespace u4
       u34utils::SO3_CGC& cgcs, std::vector<Eigen::MatrixXd>& E43E42E41,
       u4::WigU4U3_coeffs& coeffs, u3::WigU3U2_db& wigU3U2db)
   {
-    int jj3 = gArr3[parent_g3].Lambdax2(), 
-        mm3 = gArr3[parent_g3].MLambdax2();
+    int jj3 = gArr3[parent_g3].Lambdax2(), mm3 = gArr3[parent_g3].MLambdax2();
 
     // loop over daughter states
     for (int j = 0; j < same_weight_gArr3.size(); j++)
@@ -940,37 +936,38 @@ namespace u4
       if (g1_n13n12p1.check())
       {
         u3::irrep u3a(g1_n13n12p1.n13(), g1_n13n12p1.n23(), g1_n13n12p1.n33()),
-                  u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+            u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj1 = g1_n13n12p1.Lambdax2(), mm1 = g1_n13n12p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            g1_n13n12p1.n13(), g1_n13n12p1.n23(), g1_n13n12p1.n33(),
-            g1_n13n12p1.n12(), g1_n13n12p1.n22(), 
-            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
-            gArr2[g2].n12(), gArr2[g2].n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              g1_n13n12p1.n13(), g1_n13n12p1.n23(), g1_n13n12p1.n33(),
+              g1_n13n12p1.n12(), g1_n13n12p1.n22(), gArr2[g2].n13(),
+              gArr2[g2].n23(), gArr2[g2].n33(), gArr2[g2].n12(),
+              gArr2[g2].n22(), gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+              gArr3[parent_g3].n33(), gArr3[parent_g3].n12(),
+              gArr3[parent_g3].n22());
           assert(allowU3 == true);
 
           double factor = g1_n13n12p1.e42_13_12();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
 
@@ -980,37 +977,38 @@ namespace u4
       if (g1_n13n22p1.check())
       {
         u3::irrep u3a(g1_n13n22p1.n13(), g1_n13n22p1.n23(), g1_n13n22p1.n33()),
-                  u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+            u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj1 = g1_n13n22p1.Lambdax2(), mm1 = g1_n13n22p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            g1_n13n22p1.n13(), g1_n13n22p1.n23(), g1_n13n22p1.n33(),
-            g1_n13n22p1.n12(), g1_n13n22p1.n22(), 
-            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
-            gArr2[g2].n12(), gArr2[g2].n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              g1_n13n22p1.n13(), g1_n13n22p1.n23(), g1_n13n22p1.n33(),
+              g1_n13n22p1.n12(), g1_n13n22p1.n22(), gArr2[g2].n13(),
+              gArr2[g2].n23(), gArr2[g2].n33(), gArr2[g2].n12(),
+              gArr2[g2].n22(), gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+              gArr3[parent_g3].n33(), gArr3[parent_g3].n12(),
+              gArr3[parent_g3].n22());
           assert(allowU3 == true);
-          
+
           double factor = g1_n13n22p1.e42_13_22();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
 
@@ -1020,37 +1018,38 @@ namespace u4
       if (g1_n23n12p1.check())
       {
         u3::irrep u3a(g1_n23n12p1.n13(), g1_n23n12p1.n23(), g1_n23n12p1.n33()),
-                  u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+            u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj1 = g1_n23n12p1.Lambdax2(), mm1 = g1_n23n12p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            g1_n23n12p1.n13(), g1_n23n12p1.n23(), g1_n23n12p1.n33(),
-            g1_n23n12p1.n12(), g1_n23n12p1.n22(), 
-            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
-            gArr2[g2].n12(), gArr2[g2].n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              g1_n23n12p1.n13(), g1_n23n12p1.n23(), g1_n23n12p1.n33(),
+              g1_n23n12p1.n12(), g1_n23n12p1.n22(), gArr2[g2].n13(),
+              gArr2[g2].n23(), gArr2[g2].n33(), gArr2[g2].n12(),
+              gArr2[g2].n22(), gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+              gArr3[parent_g3].n33(), gArr3[parent_g3].n12(),
+              gArr3[parent_g3].n22());
           assert(allowU3 == true);
-          
+
           double factor = g1_n23n12p1.e42_23_12();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
 
@@ -1060,37 +1059,38 @@ namespace u4
       if (g1_n23n22p1.check())
       {
         u3::irrep u3a(g1_n23n22p1.n13(), g1_n23n22p1.n23(), g1_n23n22p1.n33()),
-                  u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+            u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj1 = g1_n23n22p1.Lambdax2(), mm1 = g1_n23n22p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            g1_n23n22p1.n13(), g1_n23n22p1.n23(), g1_n23n22p1.n33(),
-            g1_n23n22p1.n12(), g1_n23n22p1.n22(), 
-            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
-            gArr2[g2].n12(), gArr2[g2].n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              g1_n23n22p1.n13(), g1_n23n22p1.n23(), g1_n23n22p1.n33(),
+              g1_n23n22p1.n12(), g1_n23n22p1.n22(), gArr2[g2].n13(),
+              gArr2[g2].n23(), gArr2[g2].n33(), gArr2[g2].n12(),
+              gArr2[g2].n22(), gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+              gArr3[parent_g3].n33(), gArr3[parent_g3].n12(),
+              gArr3[parent_g3].n22());
           assert(allowU3 == true);
 
           double factor = g1_n23n22p1.e42_23_22();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
 
@@ -1100,37 +1100,38 @@ namespace u4
       if (g1_n33n12p1.check())
       {
         u3::irrep u3a(g1_n33n12p1.n13(), g1_n33n12p1.n23(), g1_n33n12p1.n33()),
-                  u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+            u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj1 = g1_n33n12p1.Lambdax2(), mm1 = g1_n33n12p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            g1_n33n12p1.n13(), g1_n33n12p1.n23(), g1_n33n12p1.n33(),
-            g1_n33n12p1.n12(), g1_n33n12p1.n22(), 
-            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
-            gArr2[g2].n12(), gArr2[g2].n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              g1_n33n12p1.n13(), g1_n33n12p1.n23(), g1_n33n12p1.n33(),
+              g1_n33n12p1.n12(), g1_n33n12p1.n22(), gArr2[g2].n13(),
+              gArr2[g2].n23(), gArr2[g2].n33(), gArr2[g2].n12(),
+              gArr2[g2].n22(), gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+              gArr3[parent_g3].n33(), gArr3[parent_g3].n12(),
+              gArr3[parent_g3].n22());
           assert(allowU3 == true);
-          
+
           double factor = g1_n33n12p1.e42_33_12();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
 
@@ -1140,37 +1141,38 @@ namespace u4
       if (g1_n33n22p1.check())
       {
         u3::irrep u3a(g1_n33n22p1.n13(), g1_n33n22p1.n23(), g1_n33n22p1.n33()),
-                  u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+            u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj1 = g1_n33n22p1.Lambdax2(), mm1 = g1_n33n22p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            g1_n33n22p1.n13(), g1_n33n22p1.n23(), g1_n33n22p1.n33(),
-            g1_n33n22p1.n12(), g1_n33n22p1.n22(), 
-            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
-            gArr2[g2].n12(), gArr2[g2].n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              g1_n33n22p1.n13(), g1_n33n22p1.n23(), g1_n33n22p1.n33(),
+              g1_n33n22p1.n12(), g1_n33n22p1.n22(), gArr2[g2].n13(),
+              gArr2[g2].n23(), gArr2[g2].n33(), gArr2[g2].n12(),
+              gArr2[g2].n22(), gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+              gArr3[parent_g3].n33(), gArr3[parent_g3].n12(),
+              gArr3[parent_g3].n22());
           assert(allowU3 == true);
-          
+
           double factor = g1_n33n22p1.e42_33_22();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
 
@@ -1181,37 +1183,38 @@ namespace u4
       if (g2_n13n12p1.check())
       {
         u3::irrep u3b(g2_n13n12p1.n13(), g2_n13n12p1.n23(), g2_n13n12p1.n33()),
-                  u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+            u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj2 = g2_n13n12p1.Lambdax2(), mm2 = g2_n13n12p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
-            gArr1[g1].n12(), gArr1[g1].n22(), 
-            g2_n13n12p1.n13(), g2_n13n12p1.n23(), g2_n13n12p1.n33(),
-            g2_n13n12p1.n12(), g2_n13n12p1.n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+              gArr1[g1].n12(), gArr1[g1].n22(), g2_n13n12p1.n13(),
+              g2_n13n12p1.n23(), g2_n13n12p1.n33(), g2_n13n12p1.n12(),
+              g2_n13n12p1.n22(), gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+              gArr3[parent_g3].n33(), gArr3[parent_g3].n12(),
+              gArr3[parent_g3].n22());
           assert(allowU3 == true);
-          
+
           double factor = g2_n13n12p1.e42_13_12();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
 
@@ -1221,37 +1224,38 @@ namespace u4
       if (g2_n13n22p1.check())
       {
         u3::irrep u3b(g2_n13n22p1.n13(), g2_n13n22p1.n23(), g2_n13n22p1.n33()),
-                  u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+            u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj2 = g2_n13n22p1.Lambdax2(), mm2 = g2_n13n22p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
-            gArr1[g1].n12(), gArr1[g1].n22(), 
-            g2_n13n22p1.n13(), g2_n13n22p1.n23(), g2_n13n22p1.n33(),
-            g2_n13n22p1.n12(), g2_n13n22p1.n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+              gArr1[g1].n12(), gArr1[g1].n22(), g2_n13n22p1.n13(),
+              g2_n13n22p1.n23(), g2_n13n22p1.n33(), g2_n13n22p1.n12(),
+              g2_n13n22p1.n22(), gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+              gArr3[parent_g3].n33(), gArr3[parent_g3].n12(),
+              gArr3[parent_g3].n22());
           assert(allowU3 == true);
-          
+
           double factor = g2_n13n22p1.e42_13_22();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
 
@@ -1261,37 +1265,38 @@ namespace u4
       if (g2_n23n12p1.check())
       {
         u3::irrep u3b(g2_n23n12p1.n13(), g2_n23n12p1.n23(), g2_n23n12p1.n33()),
-                  u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+            u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj2 = g2_n23n12p1.Lambdax2(), mm2 = g2_n23n12p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
-            gArr1[g1].n12(), gArr1[g1].n22(), 
-            g2_n23n12p1.n13(), g2_n23n12p1.n23(), g2_n23n12p1.n33(),
-            g2_n23n12p1.n12(), g2_n23n12p1.n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+              gArr1[g1].n12(), gArr1[g1].n22(), g2_n23n12p1.n13(),
+              g2_n23n12p1.n23(), g2_n23n12p1.n33(), g2_n23n12p1.n12(),
+              g2_n23n12p1.n22(), gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+              gArr3[parent_g3].n33(), gArr3[parent_g3].n12(),
+              gArr3[parent_g3].n22());
           assert(allowU3 == true);
-          
+
           double factor = g2_n23n12p1.e42_23_12();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
 
@@ -1301,37 +1306,38 @@ namespace u4
       if (g2_n23n22p1.check())
       {
         u3::irrep u3b(g2_n23n22p1.n13(), g2_n23n22p1.n23(), g2_n23n22p1.n33()),
-                  u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+            u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj2 = g2_n23n22p1.Lambdax2(), mm2 = g2_n23n22p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
-            gArr1[g1].n12(), gArr1[g1].n22(), 
-            g2_n23n22p1.n13(), g2_n23n22p1.n23(), g2_n23n22p1.n33(),
-            g2_n23n22p1.n12(), g2_n23n22p1.n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+              gArr1[g1].n12(), gArr1[g1].n22(), g2_n23n22p1.n13(),
+              g2_n23n22p1.n23(), g2_n23n22p1.n33(), g2_n23n22p1.n12(),
+              g2_n23n22p1.n22(), gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+              gArr3[parent_g3].n33(), gArr3[parent_g3].n12(),
+              gArr3[parent_g3].n22());
           assert(allowU3 == true);
-          
+
           double factor = g2_n23n22p1.e42_23_22();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
 
@@ -1341,37 +1347,38 @@ namespace u4
       if (g2_n33n12p1.check())
       {
         u3::irrep u3b(g2_n33n12p1.n13(), g2_n33n12p1.n23(), g2_n33n12p1.n33()),
-                  u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+            u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj2 = g2_n33n12p1.Lambdax2(), mm2 = g2_n33n12p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
-            gArr1[g1].n12(), gArr1[g1].n22(), 
-            g2_n33n12p1.n13(), g2_n33n12p1.n23(), g2_n33n12p1.n33(),
-            g2_n33n12p1.n12(), g2_n33n12p1.n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+              gArr1[g1].n12(), gArr1[g1].n22(), g2_n33n12p1.n13(),
+              g2_n33n12p1.n23(), g2_n33n12p1.n33(), g2_n33n12p1.n12(),
+              g2_n33n12p1.n22(), gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+              gArr3[parent_g3].n33(), gArr3[parent_g3].n12(),
+              gArr3[parent_g3].n22());
           assert(allowU3 == true);
-          
+
           double factor = g2_n33n12p1.e42_33_12();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
 
@@ -1381,37 +1388,38 @@ namespace u4
       if (g2_n33n22p1.check())
       {
         u3::irrep u3b(g2_n33n22p1.n13(), g2_n33n22p1.n23(), g2_n33n22p1.n33()),
-                  u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+            u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj2 = g2_n33n22p1.Lambdax2(), mm2 = g2_n33n22p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
-            gArr1[g1].n12(), gArr1[g1].n22(), 
-            g2_n33n22p1.n13(), g2_n33n22p1.n23(), g2_n33n22p1.n33(),
-            g2_n33n22p1.n12(), g2_n33n22p1.n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+              gArr1[g1].n12(), gArr1[g1].n22(), g2_n33n22p1.n13(),
+              g2_n33n22p1.n23(), g2_n33n22p1.n33(), g2_n33n22p1.n12(),
+              g2_n33n22p1.n22(), gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+              gArr3[parent_g3].n33(), gArr3[parent_g3].n12(),
+              gArr3[parent_g3].n22());
           assert(allowU3 == true);
-          
+
           double factor = g2_n33n22p1.e42_33_22();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
     }
@@ -1420,19 +1428,17 @@ namespace u4
   }
 
   // build with E41
-  inline void E41(int parent_g3, int& row, int etamax,
-                  const std::vector<int>& same_weight_gArr3,
-                  const std::vector<std::pair<int, int>>& uncoupled_same_weight_gArr3,
-                  const std::vector<u4::gelfand>& gArr1,
-                  const std::vector<u4::gelfand>& gArr2,
-                  const std::vector<u4::gelfand>& gArr3, 
-                  Eigen::MatrixXd& b, u34utils::SO3_CGC& cgcs, 
-                  std::vector<Eigen::MatrixXd>& E43E42E41,
-                  u4::WigU4U3_coeffs& coeffs,
-                  u3::WigU3U2_db& wigU3U2db)
+  inline void
+  E41(int parent_g3, int& row, int etamax,
+      const std::vector<int>& same_weight_gArr3,
+      const std::vector<std::pair<int, int>>& uncoupled_same_weight_gArr3,
+      const std::vector<u4::gelfand>& gArr1,
+      const std::vector<u4::gelfand>& gArr2,
+      const std::vector<u4::gelfand>& gArr3, Eigen::MatrixXd& b,
+      u34utils::SO3_CGC& cgcs, std::vector<Eigen::MatrixXd>& E43E42E41,
+      u4::WigU4U3_coeffs& coeffs, u3::WigU3U2_db& wigU3U2db)
   {
-    int jj3 = gArr3[parent_g3].Lambdax2(), 
-        mm3 = gArr3[parent_g3].MLambdax2();
+    int jj3 = gArr3[parent_g3].Lambdax2(), mm3 = gArr3[parent_g3].MLambdax2();
 
     // loop over daughter states
     for (int j = 0; j < same_weight_gArr3.size(); j++)
@@ -1463,38 +1469,40 @@ namespace u4
       g1_n13n12n11p1.n11(g1_n13n12n11p1.n11() + 1);
       if (g1_n13n12n11p1.check())
       {
-        u3::irrep u3a(g1_n13n12n11p1.n13(), g1_n13n12n11p1.n23(), g1_n13n12n11p1.n33()),
-                  u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+        u3::irrep u3a(g1_n13n12n11p1.n13(), g1_n13n12n11p1.n23(),
+                      g1_n13n12n11p1.n33()),
+            u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj1 = g1_n13n12n11p1.Lambdax2(), mm1 = g1_n13n12n11p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            g1_n13n12n11p1.n13(), g1_n13n12n11p1.n23(), g1_n13n12n11p1.n33(),
-            g1_n13n12n11p1.n12(), g1_n13n12n11p1.n22(), 
-            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
-            gArr2[g2].n12(), gArr2[g2].n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              g1_n13n12n11p1.n13(), g1_n13n12n11p1.n23(), g1_n13n12n11p1.n33(),
+              g1_n13n12n11p1.n12(), g1_n13n12n11p1.n22(), gArr2[g2].n13(),
+              gArr2[g2].n23(), gArr2[g2].n33(), gArr2[g2].n12(),
+              gArr2[g2].n22(), gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+              gArr3[parent_g3].n33(), gArr3[parent_g3].n12(),
+              gArr3[parent_g3].n22());
           assert(allowU3 == true);
-          
+
           double factor = g1_n13n12n11p1.e41_13_12();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
 
@@ -1504,38 +1512,40 @@ namespace u4
       g1_n13n22n11p1.n11(g1_n13n22n11p1.n11() + 1);
       if (g1_n13n22n11p1.check())
       {
-        u3::irrep u3a(g1_n13n22n11p1.n13(), g1_n13n22n11p1.n23(), g1_n13n22n11p1.n33()),
-                  u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+        u3::irrep u3a(g1_n13n22n11p1.n13(), g1_n13n22n11p1.n23(),
+                      g1_n13n22n11p1.n33()),
+            u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj1 = g1_n13n22n11p1.Lambdax2(), mm1 = g1_n13n22n11p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            g1_n13n22n11p1.n13(), g1_n13n22n11p1.n23(), g1_n13n22n11p1.n33(),
-            g1_n13n22n11p1.n12(), g1_n13n22n11p1.n22(), 
-            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
-            gArr2[g2].n12(), gArr2[g2].n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              g1_n13n22n11p1.n13(), g1_n13n22n11p1.n23(), g1_n13n22n11p1.n33(),
+              g1_n13n22n11p1.n12(), g1_n13n22n11p1.n22(), gArr2[g2].n13(),
+              gArr2[g2].n23(), gArr2[g2].n33(), gArr2[g2].n12(),
+              gArr2[g2].n22(), gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+              gArr3[parent_g3].n33(), gArr3[parent_g3].n12(),
+              gArr3[parent_g3].n22());
           assert(allowU3 == true);
-          
+
           double factor = g1_n13n22n11p1.e41_13_22();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
 
@@ -1545,38 +1555,40 @@ namespace u4
       g1_n23n12n11p1.n11(g1_n23n12n11p1.n11() + 1);
       if (g1_n23n12n11p1.check())
       {
-        u3::irrep u3a(g1_n23n12n11p1.n13(), g1_n23n12n11p1.n23(), g1_n23n12n11p1.n33()),
-                  u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+        u3::irrep u3a(g1_n23n12n11p1.n13(), g1_n23n12n11p1.n23(),
+                      g1_n23n12n11p1.n33()),
+            u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj1 = g1_n23n12n11p1.Lambdax2(), mm1 = g1_n23n12n11p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            g1_n23n12n11p1.n13(), g1_n23n12n11p1.n23(), g1_n23n12n11p1.n33(),
-            g1_n23n12n11p1.n12(), g1_n23n12n11p1.n22(), 
-            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
-            gArr2[g2].n12(), gArr2[g2].n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              g1_n23n12n11p1.n13(), g1_n23n12n11p1.n23(), g1_n23n12n11p1.n33(),
+              g1_n23n12n11p1.n12(), g1_n23n12n11p1.n22(), gArr2[g2].n13(),
+              gArr2[g2].n23(), gArr2[g2].n33(), gArr2[g2].n12(),
+              gArr2[g2].n22(), gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+              gArr3[parent_g3].n33(), gArr3[parent_g3].n12(),
+              gArr3[parent_g3].n22());
           assert(allowU3 == true);
-          
+
           double factor = g1_n23n12n11p1.e41_23_12();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
 
@@ -1586,38 +1598,40 @@ namespace u4
       g1_n23n22n11p1.n11(g1_n23n22n11p1.n11() + 1);
       if (g1_n23n22n11p1.check())
       {
-        u3::irrep u3a(g1_n23n22n11p1.n13(), g1_n23n22n11p1.n23(), g1_n23n22n11p1.n33()),
-                  u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+        u3::irrep u3a(g1_n23n22n11p1.n13(), g1_n23n22n11p1.n23(),
+                      g1_n23n22n11p1.n33()),
+            u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj1 = g1_n23n22n11p1.Lambdax2(), mm1 = g1_n23n22n11p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            g1_n23n22n11p1.n13(), g1_n23n22n11p1.n23(), g1_n23n22n11p1.n33(),
-            g1_n23n22n11p1.n12(), g1_n23n22n11p1.n22(), 
-            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
-            gArr2[g2].n12(), gArr2[g2].n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              g1_n23n22n11p1.n13(), g1_n23n22n11p1.n23(), g1_n23n22n11p1.n33(),
+              g1_n23n22n11p1.n12(), g1_n23n22n11p1.n22(), gArr2[g2].n13(),
+              gArr2[g2].n23(), gArr2[g2].n33(), gArr2[g2].n12(),
+              gArr2[g2].n22(), gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+              gArr3[parent_g3].n33(), gArr3[parent_g3].n12(),
+              gArr3[parent_g3].n22());
           assert(allowU3 == true);
-          
+
           double factor = g1_n23n22n11p1.e41_23_22();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
 
@@ -1627,38 +1641,40 @@ namespace u4
       g1_n33n12n11p1.n11(g1_n33n12n11p1.n11() + 1);
       if (g1_n33n12n11p1.check())
       {
-        u3::irrep u3a(g1_n33n12n11p1.n13(), g1_n33n12n11p1.n23(), g1_n33n12n11p1.n33()),
-                  u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+        u3::irrep u3a(g1_n33n12n11p1.n13(), g1_n33n12n11p1.n23(),
+                      g1_n33n12n11p1.n33()),
+            u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj1 = g1_n33n12n11p1.Lambdax2(), mm1 = g1_n33n12n11p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            g1_n33n12n11p1.n13(), g1_n33n12n11p1.n23(), g1_n33n12n11p1.n33(),
-            g1_n33n12n11p1.n12(), g1_n33n12n11p1.n22(), 
-            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
-            gArr2[g2].n12(), gArr2[g2].n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              g1_n33n12n11p1.n13(), g1_n33n12n11p1.n23(), g1_n33n12n11p1.n33(),
+              g1_n33n12n11p1.n12(), g1_n33n12n11p1.n22(), gArr2[g2].n13(),
+              gArr2[g2].n23(), gArr2[g2].n33(), gArr2[g2].n12(),
+              gArr2[g2].n22(), gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+              gArr3[parent_g3].n33(), gArr3[parent_g3].n12(),
+              gArr3[parent_g3].n22());
           assert(allowU3 == true);
-          
+
           double factor = g1_n33n12n11p1.e41_33_12();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
 
@@ -1668,38 +1684,40 @@ namespace u4
       g1_n33n22n11p1.n11(g1_n33n22n11p1.n11() + 1);
       if (g1_n33n22n11p1.check())
       {
-        u3::irrep u3a(g1_n33n22n11p1.n13(), g1_n33n22n11p1.n23(), g1_n33n22n11p1.n33()),
-                  u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+        u3::irrep u3a(g1_n33n22n11p1.n13(), g1_n33n22n11p1.n23(),
+                      g1_n33n22n11p1.n33()),
+            u3b(gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj1 = g1_n33n22n11p1.Lambdax2(), mm1 = g1_n33n22n11p1.MLambdax2(),
             jj2 = gArr2[g2].Lambdax2(), mm2 = gArr2[g2].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            g1_n33n22n11p1.n13(), g1_n33n22n11p1.n23(), g1_n33n22n11p1.n33(),
-            g1_n33n22n11p1.n12(), g1_n33n22n11p1.n22(), 
-            gArr2[g2].n13(), gArr2[g2].n23(), gArr2[g2].n33(),
-            gArr2[g2].n12(), gArr2[g2].n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              g1_n33n22n11p1.n13(), g1_n33n22n11p1.n23(), g1_n33n22n11p1.n33(),
+              g1_n33n22n11p1.n12(), g1_n33n22n11p1.n22(), gArr2[g2].n13(),
+              gArr2[g2].n23(), gArr2[g2].n33(), gArr2[g2].n12(),
+              gArr2[g2].n22(), gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+              gArr3[parent_g3].n33(), gArr3[parent_g3].n12(),
+              gArr3[parent_g3].n22());
           assert(allowU3 == true);
-          
+
           double factor = g1_n33n22n11p1.e41_33_22();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
 
@@ -1710,38 +1728,40 @@ namespace u4
       g2_n13n12n11p1.n11(g2_n13n12n11p1.n11() + 1);
       if (g2_n13n12n11p1.check())
       {
-        u3::irrep u3b(g2_n13n12n11p1.n13(), g2_n13n12n11p1.n23(), g2_n13n12n11p1.n33()),
-                  u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+        u3::irrep u3b(g2_n13n12n11p1.n13(), g2_n13n12n11p1.n23(),
+                      g2_n13n12n11p1.n33()),
+            u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj2 = g2_n13n12n11p1.Lambdax2(), mm2 = g2_n13n12n11p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
-            gArr1[g1].n12(), gArr1[g1].n22(), 
-            g2_n13n12n11p1.n13(), g2_n13n12n11p1.n23(), g2_n13n12n11p1.n33(),
-            g2_n13n12n11p1.n12(), g2_n13n12n11p1.n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+              gArr1[g1].n12(), gArr1[g1].n22(), g2_n13n12n11p1.n13(),
+              g2_n13n12n11p1.n23(), g2_n13n12n11p1.n33(), g2_n13n12n11p1.n12(),
+              g2_n13n12n11p1.n22(), gArr3[parent_g3].n13(),
+              gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+              gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           assert(allowU3 == true);
-          
+
           double factor = g2_n13n12n11p1.e41_13_12();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
 
@@ -1751,38 +1771,40 @@ namespace u4
       g2_n13n22n11p1.n11(g2_n13n22n11p1.n11() + 1);
       if (g2_n13n22n11p1.check())
       {
-        u3::irrep u3b(g2_n13n22n11p1.n13(), g2_n13n22n11p1.n23(), g2_n13n22n11p1.n33()),
-                  u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+        u3::irrep u3b(g2_n13n22n11p1.n13(), g2_n13n22n11p1.n23(),
+                      g2_n13n22n11p1.n33()),
+            u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj2 = g2_n13n22n11p1.Lambdax2(), mm2 = g2_n13n22n11p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
-            gArr1[g1].n12(), gArr1[g1].n22(), 
-            g2_n13n22n11p1.n13(), g2_n13n22n11p1.n23(), g2_n13n22n11p1.n33(),
-            g2_n13n22n11p1.n12(), g2_n13n22n11p1.n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+              gArr1[g1].n12(), gArr1[g1].n22(), g2_n13n22n11p1.n13(),
+              g2_n13n22n11p1.n23(), g2_n13n22n11p1.n33(), g2_n13n22n11p1.n12(),
+              g2_n13n22n11p1.n22(), gArr3[parent_g3].n13(),
+              gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+              gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           assert(allowU3 == true);
-          
+
           double factor = g2_n13n22n11p1.e41_13_22();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
 
@@ -1792,38 +1814,40 @@ namespace u4
       g2_n23n12n11p1.n11(g2_n23n12n11p1.n11() + 1);
       if (g2_n23n12n11p1.check())
       {
-        u3::irrep u3b(g2_n23n12n11p1.n13(), g2_n23n12n11p1.n23(), g2_n23n12n11p1.n33()),
-                  u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+        u3::irrep u3b(g2_n23n12n11p1.n13(), g2_n23n12n11p1.n23(),
+                      g2_n23n12n11p1.n33()),
+            u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj2 = g2_n23n12n11p1.Lambdax2(), mm2 = g2_n23n12n11p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
-            gArr1[g1].n12(), gArr1[g1].n22(), 
-            g2_n23n12n11p1.n13(), g2_n23n12n11p1.n23(), g2_n23n12n11p1.n33(),
-            g2_n23n12n11p1.n12(), g2_n23n12n11p1.n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+              gArr1[g1].n12(), gArr1[g1].n22(), g2_n23n12n11p1.n13(),
+              g2_n23n12n11p1.n23(), g2_n23n12n11p1.n33(), g2_n23n12n11p1.n12(),
+              g2_n23n12n11p1.n22(), gArr3[parent_g3].n13(),
+              gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+              gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           assert(allowU3 == true);
-          
+
           double factor = g2_n23n12n11p1.e41_23_12();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
 
@@ -1833,38 +1857,40 @@ namespace u4
       g2_n23n22n11p1.n11(g2_n23n22n11p1.n11() + 1);
       if (g2_n23n22n11p1.check())
       {
-        u3::irrep u3b(g2_n23n22n11p1.n13(), g2_n23n22n11p1.n23(), g2_n23n22n11p1.n33()),
-                  u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+        u3::irrep u3b(g2_n23n22n11p1.n13(), g2_n23n22n11p1.n23(),
+                      g2_n23n22n11p1.n33()),
+            u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj2 = g2_n23n22n11p1.Lambdax2(), mm2 = g2_n23n22n11p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
-            gArr1[g1].n12(), gArr1[g1].n22(), 
-            g2_n23n22n11p1.n13(), g2_n23n22n11p1.n23(), g2_n23n22n11p1.n33(),
-            g2_n23n22n11p1.n12(), g2_n23n22n11p1.n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+              gArr1[g1].n12(), gArr1[g1].n22(), g2_n23n22n11p1.n13(),
+              g2_n23n22n11p1.n23(), g2_n23n22n11p1.n33(), g2_n23n22n11p1.n12(),
+              g2_n23n22n11p1.n22(), gArr3[parent_g3].n13(),
+              gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+              gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           assert(allowU3 == true);
-          
+
           double factor = g2_n23n22n11p1.e41_23_22();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
 
@@ -1874,38 +1900,40 @@ namespace u4
       g2_n33n12n11p1.n11(g2_n33n12n11p1.n11() + 1);
       if (g2_n33n12n11p1.check())
       {
-        u3::irrep u3b(g2_n33n12n11p1.n13(), g2_n33n12n11p1.n23(), g2_n33n12n11p1.n33()),
-                  u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+        u3::irrep u3b(g2_n33n12n11p1.n13(), g2_n33n12n11p1.n23(),
+                      g2_n33n12n11p1.n33()),
+            u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj2 = g2_n33n12n11p1.Lambdax2(), mm2 = g2_n33n12n11p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
-            gArr1[g1].n12(), gArr1[g1].n22(), 
-            g2_n33n12n11p1.n13(), g2_n33n12n11p1.n23(), g2_n33n12n11p1.n33(),
-            g2_n33n12n11p1.n12(), g2_n33n12n11p1.n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+              gArr1[g1].n12(), gArr1[g1].n22(), g2_n33n12n11p1.n13(),
+              g2_n33n12n11p1.n23(), g2_n33n12n11p1.n33(), g2_n33n12n11p1.n12(),
+              g2_n33n12n11p1.n22(), gArr3[parent_g3].n13(),
+              gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+              gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           assert(allowU3 == true);
-          
+
           double factor = g2_n33n12n11p1.e41_33_12();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
 
@@ -1915,38 +1943,40 @@ namespace u4
       g2_n33n22n11p1.n11(g2_n33n22n11p1.n11() + 1);
       if (g2_n33n22n11p1.check())
       {
-        u3::irrep u3b(g2_n33n22n11p1.n13(), g2_n33n22n11p1.n23(), g2_n33n22n11p1.n33()),
-                  u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
-                  u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33());
-        auto [exist, accU4] = coeffs.access(u3a,u3b,u3c);
+        u3::irrep u3b(g2_n33n22n11p1.n13(), g2_n33n22n11p1.n23(),
+                      g2_n33n22n11p1.n33()),
+            u3a(gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33()),
+            u3c(gArr3[parent_g3].n13(), gArr3[parent_g3].n23(),
+                gArr3[parent_g3].n33());
+        auto [exist, accU4] = coeffs.access(u3a, u3b, u3c);
 
         int jj2 = g2_n33n22n11p1.Lambdax2(), mm2 = g2_n33n22n11p1.MLambdax2(),
             jj1 = gArr1[g1].Lambdax2(), mm1 = gArr1[g1].MLambdax2();
 
-        if (exist == true && (mm1 + mm2) == mm3 && 
+        if (exist == true && (mm1 + mm2) == mm3 &&
             std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
         {
           auto [allowU3, accU3] = wigU3U2db.get(
-            gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
-            gArr1[g1].n12(), gArr1[g1].n22(), 
-            g2_n33n22n11p1.n13(), g2_n33n22n11p1.n23(), g2_n33n22n11p1.n33(),
-            g2_n33n22n11p1.n12(), g2_n33n22n11p1.n22(), 
-            gArr3[parent_g3].n13(), gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
-            gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
+              gArr1[g1].n13(), gArr1[g1].n23(), gArr1[g1].n33(),
+              gArr1[g1].n12(), gArr1[g1].n22(), g2_n33n22n11p1.n13(),
+              g2_n33n22n11p1.n23(), g2_n33n22n11p1.n33(), g2_n33n22n11p1.n12(),
+              g2_n33n22n11p1.n22(), gArr3[parent_g3].n13(),
+              gArr3[parent_g3].n23(), gArr3[parent_g3].n33(),
+              gArr3[parent_g3].n12(), gArr3[parent_g3].n22());
           assert(allowU3 == true);
-          
+
           double factor = g2_n33n22n11p1.e41_33_22();
 
           double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
-      
-          for (int e = 0; e < etamax; e++)   
+
+          for (int e = 0; e < etamax; e++)
           {
             double y = 0.0;
             for (int r = 0; r < accU4.rows(); r++)
-              y += accU4(r,e) * accU3(r);
-              
+              y += accU4(r, e) * accU3(r);
+
             E43E42E41[e](row, j) += y * cgc * factor;
-          }         
+          }
         }
       }
     }
@@ -1970,33 +2000,33 @@ namespace u4
         W2min = gArr3[0].n34() + gArr3[0].n44();
 
     std::vector<int> same_weight_gArr3;
-              
-    for (int W1 = W1max; W1 >= W1min; W1--)   
+
+    for (int W1 = W1max; W1 >= W1min; W1--)
     {
       for (int W2 = W2max; W2 >= W2min; W2--)
       {
         std::vector<int> same_weight_gArr3_temp;
 
         for (int i = 0; i < gArr3.size(); i++)
-          if (gArr3[i].e11() == W1 && gArr3[i].e22() == (W2 - W1)
-              && gArr3[i].e33() == (w3 - W2))
+          if (gArr3[i].e11() == W1 && gArr3[i].e22() == (W2 - W1) &&
+              gArr3[i].e33() == (w3 - W2))
             same_weight_gArr3_temp.push_back(i);
-        
-        if (same_weight_gArr3_temp.size() > same_weight_gArr3.size()
-            && gArr3[same_weight_gArr3_temp.back()].n12() 
-            == gArr3[same_weight_gArr3_temp.back()].n13()
-            && gArr3[same_weight_gArr3_temp.back()].n22() 
-            == gArr3[same_weight_gArr3_temp.back()].n23()
-            && gArr3[same_weight_gArr3_temp.back()].n11() 
-            == gArr3[same_weight_gArr3_temp.back()].n13())
+
+        if (same_weight_gArr3_temp.size() > same_weight_gArr3.size() &&
+            gArr3[same_weight_gArr3_temp.back()].n12() ==
+                gArr3[same_weight_gArr3_temp.back()].n13() &&
+            gArr3[same_weight_gArr3_temp.back()].n22() ==
+                gArr3[same_weight_gArr3_temp.back()].n23() &&
+            gArr3[same_weight_gArr3_temp.back()].n11() ==
+                gArr3[same_weight_gArr3_temp.back()].n13())
           same_weight_gArr3 = same_weight_gArr3_temp;
       }
     }
-/* 
-    for (int i = 0; i < same_weight_gArr3.size(); i++)    
-      std::cout << gArr3[same_weight_gArr3[i]] << std::endl;
-    std::cout << std::endl;  
-*/
+    /*
+        for (int i = 0; i < same_weight_gArr3.size(); i++)
+          std::cout << gArr3[same_weight_gArr3[i]] << std::endl;
+        std::cout << std::endl;
+    */
 
     if (!same_weight_gArr3.empty())
     {
@@ -2019,12 +2049,10 @@ namespace u4
         {
           auto j = u4::findGelfand(g3_n13p1, gArr3);
           std::pair<int, int> p(0, j);
-          //std::cout << "p = " << p.first << std::endl;
+          // std::cout << "p = " << p.first << std::endl;
           auto it = std::find(actOnParent.begin(), actOnParent.end(), p);
           if (it == actOnParent.end())
-          {
             actOnParent.push_back(p);
-          }
         }
 
         u4::gelfand g3_n23p1 = gArr3[same_weight_gArr3[i]];
@@ -2033,12 +2061,10 @@ namespace u4
         {
           auto j = u4::findGelfand(g3_n23p1, gArr3);
           std::pair<int, int> p(0, j);
-          //std::cout << "p = " << p.first << std::endl;
+          // std::cout << "p = " << p.first << std::endl;
           auto it = std::find(actOnParent.begin(), actOnParent.end(), p);
           if (it == actOnParent.end())
-          {
             actOnParent.push_back(p);
-          }
         }
 
         u4::gelfand g3_n33p1 = gArr3[same_weight_gArr3[i]];
@@ -2047,12 +2073,10 @@ namespace u4
         {
           auto j = u4::findGelfand(g3_n33p1, gArr3);
           std::pair<int, int> p(0, j);
-          //std::cout << "p = " << p.first << std::endl;
+          // std::cout << "p = " << p.first << std::endl;
           auto it = std::find(actOnParent.begin(), actOnParent.end(), p);
           if (it == actOnParent.end())
-          {
             actOnParent.push_back(p);
-          }
         }
 
         // action of E42
@@ -2063,12 +2087,10 @@ namespace u4
         {
           auto j = u4::findGelfand(g3_n13n12p1, gArr3);
           std::pair<int, int> p(1, j);
-          //std::cout << "p = " << p.first << std::endl;
+          // std::cout << "p = " << p.first << std::endl;
           auto it = std::find(actOnParent.begin(), actOnParent.end(), p);
           if (it == actOnParent.end())
-          {
             actOnParent.push_back(p);
-          }
         }
 
         u4::gelfand g3_n13n22p1 = gArr3[same_weight_gArr3[i]];
@@ -2078,12 +2100,10 @@ namespace u4
         {
           auto j = u4::findGelfand(g3_n13n22p1, gArr3);
           std::pair<int, int> p(1, j);
-          //std::cout << "p = " << p.first << std::endl;
+          // std::cout << "p = " << p.first << std::endl;
           auto it = std::find(actOnParent.begin(), actOnParent.end(), p);
           if (it == actOnParent.end())
-          {
             actOnParent.push_back(p);
-          }
         }
 
         u4::gelfand g3_n23n12p1 = gArr3[same_weight_gArr3[i]];
@@ -2093,12 +2113,10 @@ namespace u4
         {
           auto j = u4::findGelfand(g3_n23n12p1, gArr3);
           std::pair<int, int> p(1, j);
-          //std::cout << "p = " << p.first << std::endl;
+          // std::cout << "p = " << p.first << std::endl;
           auto it = std::find(actOnParent.begin(), actOnParent.end(), p);
           if (it == actOnParent.end())
-          {
             actOnParent.push_back(p);
-          }
         }
 
         u4::gelfand g3_n23n22p1 = gArr3[same_weight_gArr3[i]];
@@ -2108,12 +2126,10 @@ namespace u4
         {
           auto j = u4::findGelfand(g3_n23n22p1, gArr3);
           std::pair<int, int> p(1, j);
-          //std::cout << "p = " << p.first << std::endl;
+          // std::cout << "p = " << p.first << std::endl;
           auto it = std::find(actOnParent.begin(), actOnParent.end(), p);
           if (it == actOnParent.end())
-          {
             actOnParent.push_back(p);
-          }
         }
 
         u4::gelfand g3_n33n12p1 = gArr3[same_weight_gArr3[i]];
@@ -2123,12 +2139,10 @@ namespace u4
         {
           auto j = u4::findGelfand(g3_n33n12p1, gArr3);
           std::pair<int, int> p(1, j);
-          //std::cout << "p = " << p.first << std::endl;
+          // std::cout << "p = " << p.first << std::endl;
           auto it = std::find(actOnParent.begin(), actOnParent.end(), p);
           if (it == actOnParent.end())
-          {
             actOnParent.push_back(p);
-          }
         }
 
         u4::gelfand g3_n33n22p1 = gArr3[same_weight_gArr3[i]];
@@ -2138,12 +2152,10 @@ namespace u4
         {
           auto j = u4::findGelfand(g3_n33n22p1, gArr3);
           std::pair<int, int> p(1, j);
-          //std::cout << "p = " << p.first << std::endl;
+          // std::cout << "p = " << p.first << std::endl;
           auto it = std::find(actOnParent.begin(), actOnParent.end(), p);
           if (it == actOnParent.end())
-          {
             actOnParent.push_back(p);
-          }
         }
 
         // action of E41
@@ -2155,12 +2167,10 @@ namespace u4
         {
           auto j = u4::findGelfand(g3_n13n12n11p1, gArr3);
           std::pair<int, int> p(2, j);
-          //std::cout << "p = " << p.first << std::endl;
+          // std::cout << "p = " << p.first << std::endl;
           auto it = std::find(actOnParent.begin(), actOnParent.end(), p);
           if (it == actOnParent.end())
-          {
             actOnParent.push_back(p);
-          }
         }
 
         u4::gelfand g3_n13n22n11p1 = gArr3[same_weight_gArr3[i]];
@@ -2171,12 +2181,10 @@ namespace u4
         {
           auto j = u4::findGelfand(g3_n13n22n11p1, gArr3);
           std::pair<int, int> p(2, j);
-          //std::cout << "p = " << p.first << std::endl;
+          // std::cout << "p = " << p.first << std::endl;
           auto it = std::find(actOnParent.begin(), actOnParent.end(), p);
           if (it == actOnParent.end())
-          {
             actOnParent.push_back(p);
-          }
         }
 
         u4::gelfand g3_n23n12n11p1 = gArr3[same_weight_gArr3[i]];
@@ -2187,12 +2195,10 @@ namespace u4
         {
           auto j = u4::findGelfand(g3_n23n12n11p1, gArr3);
           std::pair<int, int> p(2, j);
-          //std::cout << "p = " << p.first << std::endl;
+          // std::cout << "p = " << p.first << std::endl;
           auto it = std::find(actOnParent.begin(), actOnParent.end(), p);
           if (it == actOnParent.end())
-          {
             actOnParent.push_back(p);
-          }
         }
 
         u4::gelfand g3_n23n22n11p1 = gArr3[same_weight_gArr3[i]];
@@ -2203,12 +2209,10 @@ namespace u4
         {
           auto j = u4::findGelfand(g3_n23n22n11p1, gArr3);
           std::pair<int, int> p(2, j);
-          //std::cout << "p = " << p.first << std::endl;
+          // std::cout << "p = " << p.first << std::endl;
           auto it = std::find(actOnParent.begin(), actOnParent.end(), p);
           if (it == actOnParent.end())
-          {
             actOnParent.push_back(p);
-          }
         }
 
         u4::gelfand g3_n33n12n11p1 = gArr3[same_weight_gArr3[i]];
@@ -2219,12 +2223,10 @@ namespace u4
         {
           auto j = u4::findGelfand(g3_n33n12n11p1, gArr3);
           std::pair<int, int> p(2, j);
-          //std::cout << "p = " << p.first << std::endl;
+          // std::cout << "p = " << p.first << std::endl;
           auto it = std::find(actOnParent.begin(), actOnParent.end(), p);
           if (it == actOnParent.end())
-          {
             actOnParent.push_back(p);
-          }
         }
 
         u4::gelfand g3_n33n22n11p1 = gArr3[same_weight_gArr3[i]];
@@ -2235,27 +2237,25 @@ namespace u4
         {
           auto j = u4::findGelfand(g3_n33n22n11p1, gArr3);
           std::pair<int, int> p(2, j);
-          //std::cout << "p = " << p.first << std::endl;
+          // std::cout << "p = " << p.first << std::endl;
           auto it = std::find(actOnParent.begin(), actOnParent.end(), p);
           if (it == actOnParent.end())
-          {
             actOnParent.push_back(p);
-          }
         }
       }
 
       // matrix b is independent of the outer multiplicity
       Eigen::MatrixXd b(actOnParent.size(), same_weight_gArr3.size());
 
-      // the lowering matrix from the action of E43, E42 and E41, which depends on
-      // the outer multiplicity
+      // the lowering matrix from the action of E43, E42 and E41, which depends
+      // on the outer multiplicity
       std::vector<Eigen::MatrixXd> E43E42E41(etamax);
 
       // set matrix elements to zero
       for (int e = 0; e < etamax; e++)
       {
         E43E42E41[e] = Eigen::MatrixXd(actOnParent.size(),
-                                    uncoupled_same_weight_gArr3.size());
+                                       uncoupled_same_weight_gArr3.size());
         E43E42E41[e].setZero();
       }
 
@@ -2263,40 +2263,42 @@ namespace u4
       // loop over daughter states to build these matrices
       for (int i = 0; i < actOnParent.size(); i++)
       {
-        int opt = actOnParent[i].first,
-            parent_g3 = actOnParent[i].second;
+        int opt = actOnParent[i].first, parent_g3 = actOnParent[i].second;
 
         if (opt == 0)
         {
-          E43(parent_g3, row, etamax, same_weight_gArr3, uncoupled_same_weight_gArr3,
-                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs, wigU3U2db);
+          E43(parent_g3, row, etamax, same_weight_gArr3,
+              uncoupled_same_weight_gArr3, gArr1, gArr2, gArr3, b, cgcs,
+              E43E42E41, coeffs, wigU3U2db);
         }
 
         else if (opt == 1)
         {
-          E42(parent_g3, row, etamax, same_weight_gArr3, uncoupled_same_weight_gArr3,
-                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs, wigU3U2db);
+          E42(parent_g3, row, etamax, same_weight_gArr3,
+              uncoupled_same_weight_gArr3, gArr1, gArr2, gArr3, b, cgcs,
+              E43E42E41, coeffs, wigU3U2db);
         }
 
         else if (opt == 2)
         {
-          E41(parent_g3, row, etamax, same_weight_gArr3, uncoupled_same_weight_gArr3,
-                gArr1, gArr2, gArr3, b, cgcs, E43E42E41, coeffs, wigU3U2db);
+          E41(parent_g3, row, etamax, same_weight_gArr3,
+              uncoupled_same_weight_gArr3, gArr1, gArr2, gArr3, b, cgcs,
+              E43E42E41, coeffs, wigU3U2db);
         }
       }
 
       Eigen::ColPivHouseholderQR<Eigen::MatrixXd> factorize;
       factorize.compute(b);
 
-      //std::cout << b << std::endl;
+      // std::cout << b << std::endl;
 
       std::vector<Eigen::MatrixXd> coeffs_temp(etamax);
 
       for (int e = 0; e < etamax; e++)
       {
-        //std::cout << E43E42E41[e] << std::endl;
+        // std::cout << E43E42E41[e] << std::endl;
         coeffs_temp[e] = factorize.solve(E43E42E41[e]);
-        //std::cout << coeffs_temp[e] << std::endl;
+        // std::cout << coeffs_temp[e] << std::endl;
       }
 
       // get the reduced coefficients
@@ -2312,8 +2314,8 @@ namespace u4
               i2 = uncoupled_same_weight_gArr3[j].second;
 
           u3::irrep u3a(gArr1[i1].n13(), gArr1[i1].n23(), gArr1[i1].n33()),
-                    u3b(gArr2[i2].n13(), gArr2[i2].n23(), gArr2[i2].n33()),
-                    u3c(gArr3[i3].n13(), gArr3[i3].n23(), gArr3[i3].n33());
+              u3b(gArr2[i2].n13(), gArr2[i2].n23(), gArr2[i2].n33()),
+              u3c(gArr3[i3].n13(), gArr3[i3].n23(), gArr3[i3].n33());
 
           auto rhomax = u3::Rho(u3a, u3b, u3c);
 
@@ -2323,13 +2325,13 @@ namespace u4
 
             if (missing == false)
               continue;
-            
+
             std::vector<Eigen::RowVectorXd> A_rows, B_rows;
 
             // vary U(2) and U(1) labels
             for (int k = j; k < uncoupled_same_weight_gArr3.size(); k++)
             {
-              int i1_ = uncoupled_same_weight_gArr3[k].first, 
+              int i1_ = uncoupled_same_weight_gArr3[k].first,
                   i2_ = uncoupled_same_weight_gArr3[k].second;
 
               int jj1 = gArr1[i1_].Lambdax2(), mm1 = gArr1[i1_].MLambdax2(),
@@ -2340,18 +2342,16 @@ namespace u4
                   gArr1[i1_].n33() == gArr1[i1].n33() &&
                   gArr2[i2_].n13() == gArr2[i2].n13() &&
                   gArr2[i2_].n23() == gArr2[i2].n23() &&
-                  gArr2[i2_].n33() == gArr2[i2].n33() &&
-                  (mm1 + mm2) == mm3 && jj3 <= (jj1 + jj2)
-                  && jj3 >= std::fabs(jj1 - jj2))
-              { 
+                  gArr2[i2_].n33() == gArr2[i2].n33() && (mm1 + mm2) == mm3 &&
+                  jj3 <= (jj1 + jj2) && jj3 >= std::fabs(jj1 - jj2))
+              {
                 auto [allowU3, accU3] = wigU3U2db.get(
-                  gArr1[i1_].n13(), gArr1[i1_].n23(), gArr1[i1_].n33(),
-                  gArr1[i1_].n12(), gArr1[i1_].n22(), 
-                  gArr2[i2_].n13(), gArr2[i2_].n23(), gArr2[i2_].n33(),
-                  gArr2[i2_].n12(), gArr2[i2_].n22(), 
-                  gArr3[i3].n13(), gArr3[i3].n23(), gArr3[i3].n33(),
-                  gArr3[i3].n12(), gArr3[i3].n22());
-                  
+                    gArr1[i1_].n13(), gArr1[i1_].n23(), gArr1[i1_].n33(),
+                    gArr1[i1_].n12(), gArr1[i1_].n22(), gArr2[i2_].n13(),
+                    gArr2[i2_].n23(), gArr2[i2_].n33(), gArr2[i2_].n12(),
+                    gArr2[i2_].n22(), gArr3[i3].n13(), gArr3[i3].n23(),
+                    gArr3[i3].n33(), gArr3[i3].n12(), gArr3[i3].n22());
+
                 if (allowU3 == false)
                   continue;
 
@@ -2360,14 +2360,15 @@ namespace u4
                 Eigen::RowVectorXd A_row = accU3 * cgc;
                 Eigen::RowVectorXd B_row(etamax);
                 for (int e = 0; e < etamax; e++)
-                  B_row(e) = coeffs_temp[e](i,k);
-/*
-                std::cout << gArr1[i1_] << " ; " << gArr2[i2_] << " | " << gArr3[i3] << " -> "
-                          << B_row << std::endl;
-*/
+                  B_row(e) = coeffs_temp[e](i, k);
+                /*
+                                std::cout << gArr1[i1_] << " ; " << gArr2[i2_]
+                   << " | " << gArr3[i3] << " -> "
+                                          << B_row << std::endl;
+                */
                 // not consider vanishing rows in A (otherwise not invertible)
-                 if (A_row.norm() <= 1e-14)
-                   continue;
+                if (A_row.norm() <= 1e-14)
+                  continue;
 
                 // only add independent row
                 bool shouldAdd = true;
@@ -2384,7 +2385,7 @@ namespace u4
                   }
                 }
 
-                if (shouldAdd == true) 
+                if (shouldAdd == true)
                 {
                   A_rows.push_back(A_row);
                   B_rows.push_back(B_row);
@@ -2393,7 +2394,7 @@ namespace u4
             }
 
             Eigen::MatrixXd A(A_rows.size(), rhomax), B(A_rows.size(), etamax);
-            for (int i = 0; i < A_rows.size(); ++i) 
+            for (int i = 0; i < A_rows.size(); ++i)
             {
               A.row(i) = A_rows[i];
               B.row(i) = B_rows[i];
@@ -2401,33 +2402,34 @@ namespace u4
 
             Eigen::ColPivHouseholderQR<Eigen::MatrixXd> factorize;
             factorize.compute(A);
-            coeffs_ = factorize.solve(B);  
+            coeffs_ = factorize.solve(B);
             for (int m = 0; m < coeffs_.rows(); m++)
               for (int n = 0; n < coeffs_.cols(); n++)
-                if (std::fabs(coeffs_(m,n)) < 1e-14)
-                  coeffs_(m,n) = 0.0;   
+                if (std::fabs(coeffs_(m, n)) < 1e-14)
+                  coeffs_(m, n) = 0.0;
 
-            //std::cout << A << ";\n" << B << ";\n" << coeffs_ << "\n" << std::endl;   
+            // std::cout << A << ";\n" << B << ";\n" << coeffs_ << "\n" <<
+            // std::endl;
           }
         }
-      } 
+      }
     }
 
     return;
   }
 
   // all reduced coupling coefficients
-  inline auto WigU4U3(const u4::irrep& u4A, const u4::irrep& u4B, 
-                      const u4::irrep& u4C, int etamax, int w3min, 
+  inline auto WigU4U3(const u4::irrep& u4A, const u4::irrep& u4B,
+                      const u4::irrep& u4C, int etamax, int w3min,
                       const std::vector<u4::gelfand>& gArrA,
-                      const std::vector<u4::gelfand>& gArrB, 
+                      const std::vector<u4::gelfand>& gArrB,
                       const std::vector<u4::gelfand>& gArrC,
-                      u34utils::SO3_CGC& cgcs, 
-                      u3::WigU3U2_db& wigU3U2db)
+                      u34utils::SO3_CGC& cgcs, u3::WigU3U2_db& wigU3U2db)
   {
     WigU4U3_coeffs coeffs(u4A, u4B, u4C, etamax);
 
-    u4::HighestWeightReducedCoeffs(gArrA, gArrB, gArrC, etamax, cgcs, coeffs, wigU3U2db);
+    u4::HighestWeightReducedCoeffs(gArrA, gArrB, gArrC, etamax, cgcs, coeffs,
+                                   wigU3U2db);
 
 #ifdef U4LIB_TIME_LOG
     auto t0 = std::chrono::high_resolution_clock::now();
@@ -2441,7 +2443,8 @@ namespace u4
 
       for (int w3 = w3max - 1; w3 >= w3min; w3--)
       {
-        u4::LowerWeightReducedCoeffs(gArrA, gArrB, gArrC, etamax, w3, cgcs, coeffs, wigU3U2db);
+        u4::LowerWeightReducedCoeffs(gArrA, gArrB, gArrC, etamax, w3, cgcs,
+                                     coeffs, wigU3U2db);
       }
     }
 
@@ -2457,7 +2460,7 @@ namespace u4
     return coeffs;
   }
 
-//#define U4LIB_ENABLE_WIGU4U3_CACHE
+  // #define U4LIB_ENABLE_WIGU4U3_CACHE
   class WigU4U3_db
   {
     u34utils::SO3_CGC& cgcs_;
