@@ -2493,9 +2493,9 @@ namespace u4
       irrep u4b(n14b - n44b, n24b - n44b, n34b - n44b, 0);
       irrep u4c(n14c - n44c, n24c - n44c, n34c - n44c, 0);
 
-      u3::irrep u3a(n13a - n33a, n23a - n33a, 0);
-      u3::irrep u3b(n13b - n33b, n23b - n33b, 0);
-      u3::irrep u3c(n13c - n33c, n23c - n33c, 0);
+      u3::irrep u3a(n13a - n44a, n23a - n44a, n33a - n44a);
+      u3::irrep u3b(n13b - n44b, n23b - n44b, n33b - n44b);
+      u3::irrep u3c(n13c - n44c, n23c - n44c, n33c - n44c);
 
       int etamax = Eta(u4a, u4b, u4c);
       int rhomax = u3::Rho(u3a, u3b, u3c);
