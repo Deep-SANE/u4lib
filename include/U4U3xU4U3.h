@@ -2457,6 +2457,59 @@ namespace u4
     return coeffs;
   }
 
+//#define U4LIB_ENABLE_WIGU4U3_CACHE
+  class WigU4U3_db
+  {
+    u34utils::SO3_CGC& cgcs_;
+    u3::WigU3U2_db& wigU3U2db_;
+
+    auto calculate(const irrep& u4a, const irrep& u4b, const irrep& u4c)
+    {
+      auto etamax = Eta(u4a, u4b, u4c);
+
+      auto gArrA = u4::gelfandBasis(u4a);
+      auto gArrB = u4::gelfandBasis(u4b);
+      auto gArrC = u4::gelfandBasis(u4c);
+
+      return WigU4U3(u4a, u4b, u4c, etamax, -1, gArrA, gArrB, gArrC, cgcs_,
+                     wigU3U2db_);
+    }
+
+  public:
+    WigU4U3_db(u34utils::SO3_CGC& cgcs, u3::WigU3U2_db& wigU3U2db)
+        : cgcs_(cgcs), wigU3U2db_(wigU3U2db)
+    { }
+
+    auto get(int n14a, int n24a, int n34a, int n44a, int n13a, int n23a,
+             int n33a, int n14b, int n24b, int n34b, int n44b, int n13b,
+             int n23b, int n33b, int n14c, int n24c, int n34c, int n44c,
+             int n13c, int n23c, int n33c)
+    {
+      // normalized irreps:
+      irrep u4a(n14a - n44a, n24a - n44a, n34a - n44a, 0);
+      irrep u4b(n14b - n44b, n24b - n44b, n34b - n44b, 0);
+      irrep u4c(n14c - n44c, n24c - n44c, n34c - n44c, 0);
+
+      u3::irrep u3a(n13a - n33a, n23a - n33a, 0);
+      u3::irrep u3b(n13b - n33b, n23b - n33b, 0);
+      u3::irrep u3c(n13c - n33c, n23c - n33c, 0);
+
+      int etamax = Eta(u4a, u4b, u4c);
+      int rhomax = u3::Rho(u3a, u3b, u3c);
+
+      Eigen::MatrixXd matrix;
+
+      auto coeffs = calculate(u4a, u4b, u4c);
+      auto [inserted, block] = coeffs.push(u3a, u3b, u3c);
+
+      assert(block.rows() == rhomax);
+      assert(block.cols() == etamax);
+
+      matrix = block;
+
+      return matrix;
+    }
+  };
 } // namespace u4
 
 #endif
