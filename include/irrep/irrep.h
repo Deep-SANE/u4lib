@@ -40,6 +40,9 @@ namespace u4
       int P2() const { return n24() - n34(); }
       int P3() const { return n34() - n44(); }
 
+      // total quanta
+      int quanta() const { return n14() + n24() + n34() + n44(); }
+
       // dimension
       int dim() const
       {
