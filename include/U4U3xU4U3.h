@@ -119,7 +119,7 @@ namespace u4
     }
 
     auto access(const u3::irrep& u3a, const u3::irrep& u3b,
-                const u3::irrep& u3c)
+                const u3::irrep& u3c) const
     {
       bool exist = false;
       Eigen::MatrixXd X;
@@ -2460,9 +2460,14 @@ namespace u4
     return coeffs;
   }
 
-  // #define U4LIB_ENABLE_WIGU4U3_CACHE
+//#define U4LIB_ENABLE_WIGU4U3_CACHE
   class WigU4U3_db
   {
+#ifdef U4LIB_ENABLE_WIGU4U3_CACHE
+    using key_type = std::array<int, 9>;
+    std::map<key_type, WigU4U3_coeffs> map_;
+#endif
+
     u34utils::SO3_CGC& cgcs_;
     u3::WigU3U2_db& wigU3U2db_;
 
@@ -2500,17 +2505,36 @@ namespace u4
       int etamax = Eta(u4a, u4b, u4c);
       int rhomax = u3::Rho(u3a, u3b, u3c);
 
+      bool exist = false;
+
       Eigen::MatrixXd matrix;
 
-      auto coeffs = calculate(u4a, u4b, u4c);
-      auto [exist, block] = coeffs.access(u3a, u3b, u3c);
-
-      if (exist)
+      if (etamax > 0)
       {
-        assert(block.rows() == rhomax);
-        assert(block.cols() == etamax);
+#ifdef U4LIB_ENABLE_WIGU4U3_CACHE
+        key_type key = {u4a.n14(), u4a.n24(), u4a.n34(), u4b.n14(), u4b.n24(),
+                        u4b.n34(), u4c.n14(), u4c.n24(), u4c.n34()};
 
-        matrix = block;
+        auto iter = map_.find(key);
+        if (iter == map_.end())
+        {
+          auto p = map_.try_emplace(key, calculate(u4a, u4b, u4c));
+          assert(p.second);
+          iter = p.first;
+        }
+
+        const auto& coeffs_ref = iter->second;
+#else
+        auto coeffs = calculate(u4a, u4b, u4c);
+        const auto& coeffs_ref = coeffs;
+#endif
+        std::tie(exist, matrix) = coeffs_ref.access(u3a, u3b, u3c);
+
+        if (exist)
+        {
+          assert(matrix.rows() == rhomax);
+          assert(matrix.cols() == etamax);
+        }
       }
 
       return std::pair(exist, matrix);
