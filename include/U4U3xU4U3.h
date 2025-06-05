@@ -2503,14 +2503,17 @@ namespace u4
       Eigen::MatrixXd matrix;
 
       auto coeffs = calculate(u4a, u4b, u4c);
-      auto [inserted, block] = coeffs.push(u3a, u3b, u3c);
+      auto [exist, block] = coeffs.access(u3a, u3b, u3c);
 
-      assert(block.rows() == rhomax);
-      assert(block.cols() == etamax);
+      if (exist)
+      {
+        assert(block.rows() == rhomax);
+        assert(block.cols() == etamax);
 
-      matrix = block;
+        matrix = block;
+      }
 
-      return matrix;
+      return std::pair(exist, matrix);
     }
   };
 } // namespace u4
