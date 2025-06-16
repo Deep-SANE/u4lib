@@ -33,7 +33,7 @@ namespace u4
        int etaABmax, int etaCDmax, int etaAB_CDmax,
        int etaACmax, int etaBDmax, int etaAC_BDmax,
        u34utils::SO3_CGC& cgcs, u34utils::SO3_Racah& racahs,
-       u3::WigU3U2_db& wigU3U2db)
+       u3::WigU3U2_db& wigU3U2db, u4::WigU4U3_db& wigU4U3db)
   {
     std::vector<double> U(etaACmax * etaBDmax * etaAB_CDmax * etaABmax *
                               etaCDmax * etaAC_BDmax, 0.0);
@@ -41,7 +41,7 @@ namespace u4
     // couple u4AB and u4C
     auto [u4AB_C, etamaxsAB_C] = u4::decomposition(u4AB, u4C);
 
-    // an array to store the couple I-II-III irreps
+    /* an array to store the couple I-II-III irreps
     std::vector<u4::irrep> u4ABC;
     std::vector<int> etaAB_Cmax, etaAC_Bmax;    
 
@@ -53,32 +53,36 @@ namespace u4
         u4ABC.push_back(u4AB_C[i]);
         etaAB_Cmax.push_back(etamaxsAB_C[i]);
         etaAC_Bmax.push_back(etamaxAC_B);
-        break;
       }
-    }
+    } */
 
-    for (int i = 0; i < u4ABC.size(); i++)
+    //for (int i = 0; i < u4ABC.size(); i++)
+    for (int i = 0; i < u4AB_C.size(); i++)
     {
-      std::vector<u4::gelfand> gArrABC = u4::gelfandBasis(u4ABC[i]);
+      int etamaxAC_B = u4::Eta(u4AC, u4B, u4AB_C[i]);
+      if (etamaxAC_B == 0)
+        continue;
 
-      int etaABC_Dmax = u4::Eta(u4ABC[i], u4D, u4ABCD);
+      int etaABC_Dmax = u4::Eta(u4AB_C[i], u4D, u4ABCD);
       if (etaABC_Dmax == 0)
         continue;
 
+      std::vector<u4::gelfand> gArrABC = u4::gelfandBasis(u4AB_C[i]);
+
       std::vector<double> U6_1 =
           u4::U6(u4AC, gArrAC, u4B, gArrB, u4ABCD, gArrABCD, u4D, gArrD,
-                 u4ABC[i], gArrABC, etaAC_Bmax[i], etaABC_Dmax, u4BD, gArrBD,
-                 etaBDmax, etaAC_BDmax, cgcs, racahs, wigU3U2db);
+                 u4AB_C[i], gArrABC, etamaxAC_B, etaABC_Dmax, u4BD, gArrBD,
+                 etaBDmax, etaAC_BDmax, cgcs, racahs, wigU3U2db, wigU4U3db);
 
       std::vector<double> U6_2 =
           u4::U6(u4AB, gArrAB, u4C, gArrC, u4ABCD, gArrABCD, u4D, gArrD,
-                 u4ABC[i], gArrABC, etaAB_Cmax[i], etaABC_Dmax, u4CD, gArrCD,
-                 etaCDmax, etaAB_CDmax, cgcs, racahs, wigU3U2db);
+                 u4AB_C[i], gArrABC, etamaxsAB_C[i], etaABC_Dmax, u4CD, gArrCD,
+                 etaCDmax, etaAB_CDmax, cgcs, racahs, wigU3U2db, wigU4U3db);
 
       std::vector<double> Z6 =
-          u4::Z6(u4B, gArrB, u4A, gArrA, u4ABC[i], gArrABC, u4C, gArrC, u4AB,
-                 gArrAB, etaABmax, etaAB_Cmax[i], u4AC, gArrAC, etaACmax,
-                 etaAC_Bmax[i], cgcs, racahs, wigU3U2db);
+          u4::Z6(u4B, gArrB, u4A, gArrA, u4AB_C[i], gArrABC, u4C, gArrC, u4AB,
+                 gArrAB, etaABmax, etamaxsAB_C[i], u4AC, gArrAC, etaACmax,
+                 etamaxAC_B, cgcs, racahs, wigU3U2db, wigU4U3db);
 
       for (int eAC = 0; eAC < etaACmax; eAC++)
       {
@@ -92,9 +96,9 @@ namespace u4
               {
                 for (int eAC_BD = 0; eAC_BD < etaAC_BDmax; eAC_BD++)
                 {
-                  for (int eAC_B = 0; eAC_B < etaAC_Bmax[i]; eAC_B++)
+                  for (int eAC_B = 0; eAC_B < etamaxAC_B; eAC_B++)
                   {
-                    for (int eAB_C = 0; eAB_C < etaAB_Cmax[i]; eAB_C++)
+                    for (int eAB_C = 0; eAB_C < etamaxsAB_C[i]; eAB_C++)
                     {
                       for (int eABC_D = 0; eABC_D < etaABC_Dmax; eABC_D++)
                       {
@@ -102,8 +106,8 @@ namespace u4
                         etaABmax + eAB) * etaCDmax + eCD) * etaAC_BDmax + eAC_BD] 
                         += U6_1[((eAC_B * etaABC_Dmax + eABC_D) * etaBDmax +
                                   eBD) * etaAC_BDmax + eAC_BD] 
-                         * Z6[((eAB * etaAB_Cmax[i] + eAB_C) * etaACmax +
-                                eAC) * etaAC_Bmax[i] + eAC_B] 
+                         * Z6[((eAB * etamaxsAB_C[i] + eAB_C) * etaACmax +
+                                eAC) * etamaxAC_B + eAC_B] 
                          * U6_2[((eAB_C * etaABC_Dmax + eABC_D) * etaCDmax +
                                   eCD) * etaAB_CDmax + eAB_CD];
                       }

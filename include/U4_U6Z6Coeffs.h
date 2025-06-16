@@ -20,40 +20,40 @@ namespace u4
 {
 
   // input by users: u4a, u4b, u4abc, u4c, u4ab, u4bc, all normalized
-  inline std::vector<double> 
-    U6(const u4::irrep& u4A, const std::vector<u4::gelfand>& gArrA,  
-       const u4::irrep& u4B, const std::vector<u4::gelfand>& gArrB,
-       const u4::irrep& u4ABC, const std::vector<u4::gelfand>& gArrABC,
-       const u4::irrep& u4C, const std::vector<u4::gelfand>& gArrC,
-       const u4::irrep& u4AB, const std::vector<u4::gelfand>& gArrAB, 
-       int etaABmax, int etaAB_Cmax,
-       const u4::irrep& u4BC, const std::vector<u4::gelfand>& gArrBC, 
-       int etaBCmax, int etaA_BCmax,
-       u34utils::SO3_CGC& cgcs, u34utils::SO3_Racah& racahs,
-       u3::WigU3U2_db& wigU3U2db)
+  inline std::vector<double>
+  U6(const u4::irrep& u4A, const std::vector<u4::gelfand>& gArrA,
+     const u4::irrep& u4B, const std::vector<u4::gelfand>& gArrB,
+     const u4::irrep& u4ABC, const std::vector<u4::gelfand>& gArrABC,
+     const u4::irrep& u4C, const std::vector<u4::gelfand>& gArrC,
+     const u4::irrep& u4AB, const std::vector<u4::gelfand>& gArrAB,
+     int etaABmax, int etaAB_Cmax, const u4::irrep& u4BC,
+     const std::vector<u4::gelfand>& gArrBC, int etaBCmax, int etaA_BCmax,
+     u34utils::SO3_CGC& cgcs, u34utils::SO3_Racah& racahs,
+     u3::WigU3U2_db& wigU3U2db, u4::WigU4U3_db& wigU4U3db)
   {
-    // coupling <gA;hwBC|hwABC> rhoA_BC etaA_BC
-    auto coeffsA_BC = u4::WigU4U3(u4A, u4BC, u4ABC, etaA_BCmax,     
-                      u4ABC.n14() + u4ABC.n24() + u4ABC.n34(), 
-                      gArrA, gArrBC, gArrABC, cgcs, wigU3U2db);
+    /*
+        // coupling <gA;hwBC|hwABC> rhoA_BC etaA_BC
+        auto coeffsA_BC = u4::WigU4U3(u4A, u4BC, u4ABC, etaA_BCmax,
+                          u4ABC.n14() + u4ABC.n24() + u4ABC.n34(),
+                          gArrA, gArrBC, gArrABC, cgcs, wigU3U2db);
 
-    // coupling <gAB;gC|hwABC> rhoAB_C etaAB_C
-    auto coeffsAB_C = u4::WigU4U3(u4AB, u4C, u4ABC, etaAB_Cmax,     
-                      u4ABC.n14() + u4ABC.n24() + u4ABC.n34(), 
-                      gArrAB, gArrC, gArrABC, cgcs, wigU3U2db);
+        // coupling <gAB;gC|hwABC> rhoAB_C etaAB_C
+        auto coeffsAB_C = u4::WigU4U3(u4AB, u4C, u4ABC, etaAB_Cmax,
+                          u4ABC.n14() + u4ABC.n24() + u4ABC.n34(),
+                          gArrAB, gArrC, gArrABC, cgcs, wigU3U2db);
 
-    // coupling <gB;gC|hwBC> rhoBC etaBC
-    auto coeffsBC = u4::WigU4U3(u4B, u4C, u4BC, etaBCmax,     
-                      u4BC.n14() + u4BC.n24() + u4BC.n34(), 
-                      gArrB, gArrC, gArrBC, cgcs, wigU3U2db);
+        // coupling <gB;gC|hwBC> rhoBC etaBC
+        auto coeffsBC = u4::WigU4U3(u4B, u4C, u4BC, etaBCmax,
+                          u4BC.n14() + u4BC.n24() + u4BC.n34(),
+                          gArrB, gArrC, gArrBC, cgcs, wigU3U2db);
 
-    // coupling <gA;gB|gAB> rhoAB etaAB
-    auto coeffsAB = u4::WigU4U3(u4A, u4B, u4AB, etaABmax, -1, 
-                      gArrA, gArrB, gArrAB, cgcs, wigU3U2db);
-
+        // coupling <gA;gB|gAB> rhoAB etaAB
+        auto coeffsAB = u4::WigU4U3(u4A, u4B, u4AB, etaABmax, -1,
+                          gArrA, gArrB, gArrAB, cgcs, wigU3U2db);
+    */
     Eigen::MatrixXd A(etaA_BCmax, etaA_BCmax);
     Eigen::MatrixXd B(etaA_BCmax, etaABmax * etaAB_Cmax * etaBCmax);
-    B.setZero(); 
+    B.setZero();
 
     int r = 0;
     bool done = false;
@@ -63,21 +63,30 @@ namespace u4
       {
         for (int n33A = u4A.n34(); n33A >= u4A.n44() && !done; n33A--)
         {
-          u3::irrep u3A(n13A, n23A, n33A), 
+          /* u3::irrep u3A(n13A, n23A, n33A),
                     u3BC(u4BC.n14(), u4BC.n24(), u4BC.n34()),
                     u3ABC(u4ABC.n14(), u4ABC.n24(), u4ABC.n34());
-          auto [existA_BC, accA_BC] = coeffsA_BC.access(u3A,u3BC,u3ABC);
+          auto [existA_BC, accA_BC] = coeffsA_BC.access(u3A,u3BC,u3ABC); */
+
+          auto [existA_BC, accA_BC] = wigU4U3db.get(
+              u4A.n14(), u4A.n24(), u4A.n34(), u4A.n44(), n13A, n23A, n33A,
+              u4BC.n14(), u4BC.n24(), u4BC.n34(), u4BC.n44(), u4BC.n14(),
+              u4BC.n24(), u4BC.n34(), u4ABC.n14(), u4ABC.n24(), u4ABC.n34(),
+              u4ABC.n44(), u4ABC.n14(), u4ABC.n24(), u4ABC.n34());
+
           if (existA_BC == true)
           {
-            //std::cout << "accA_BC = " << accA_BC << std::endl;
-            u3::irrep u3a = u3A, u3bc = u3BC, u3abc = u3ABC;
-            u3a.normalize();
-            u3bc.normalize();
-            u3abc.normalize();
+            // std::cout << "accA_BC = " << accA_BC << std::endl;
+            u3::irrep u3a(n13A - n33A, n23A - n33A, 0),
+                u3bc(u4BC.n14() - u4BC.n34(), u4BC.n24() - u4BC.n34(), 0),
+                u3abc(u4ABC.n14() - u4ABC.n34(), u4ABC.n24() - u4ABC.n34(), 0);
+            // u3a.normalize();
+            // u3bc.normalize();
+            // u3abc.normalize();
 
             std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                  gArr3bc = u3::gelfandBasis(u3bc),
-                                  gArr3abc = u3::gelfandBasis(u3abc);
+                                     gArr3bc = u3::gelfandBasis(u3bc),
+                                     gArr3abc = u3::gelfandBasis(u3abc);
 
             for (int rA_BC = 0; rA_BC < accA_BC.rows(); rA_BC++)
             {
@@ -89,69 +98,120 @@ namespace u4
                 {
                   for (int n33B = u4B.n34(); n33B >= u4B.n44(); n33B--)
                   {
-                    u3::irrep u3B(n13B, n23B, n33B);
+                    // u3::irrep u3B(n13B, n23B, n33B);
 
                     for (int n13AB = u4AB.n14(); n13AB >= u4AB.n24(); n13AB--)
                     {
                       for (int n23AB = u4AB.n24(); n23AB >= u4AB.n34(); n23AB--)
                       {
-                        for (int n33AB = u4AB.n34(); n33AB >= u4AB.n44(); n33AB--)
+                        for (int n33AB = u4AB.n34(); n33AB >= u4AB.n44();
+                             n33AB--)
                         {
-                          u3::irrep u3AB(n13AB, n23AB, n33AB);
-                          auto [existAB, accAB] = coeffsAB.access(u3A,u3B,u3AB);
+                          // u3::irrep u3AB(n13AB, n23AB, n33AB);
+                          // auto [existAB, accAB] =
+                          // coeffsAB.access(u3A,u3B,u3AB);
+
+                          auto [existAB, accAB] = wigU4U3db.get(
+                              u4A.n14(), u4A.n24(), u4A.n34(), u4A.n44(), n13A,
+                              n23A, n33A, u4B.n14(), u4B.n24(), u4B.n34(),
+                              u4B.n44(), n13B, n23B, n33B, u4AB.n14(),
+                              u4AB.n24(), u4AB.n34(), u4AB.n44(), n13AB, n23AB,
+                              n33AB);
+
                           if (existAB == true)
                           {
-                            //std::cout << "accAB = " << accAB << std::endl;
-                            u3::irrep u3b = u3B, u3ab = u3AB;
-                            u3b.normalize();
-                            u3ab.normalize();
+                            // std::cout << "accAB = " << accAB << std::endl;
+                            u3::irrep u3b(n13B - n33B, n23B - n33B, 0),
+                                u3ab(n13AB - n33AB, n23AB - n33AB, 0);
+                            // u3b.normalize();
+                            // u3ab.normalize();
 
-                            std::vector<u3::gelfand> gArr3b = u3::gelfandBasis(u3b),
-                                                    gArr3ab = u3::gelfandBasis(u3ab);
+                            std::vector<u3::gelfand> gArr3b =
+                                                         u3::gelfandBasis(u3b),
+                                                     gArr3ab =
+                                                         u3::gelfandBasis(u3ab);
 
-                            for (int n13C = u4C.n14(); n13C >= u4C.n24(); n13C--)
+                            for (int n13C = u4C.n14(); n13C >= u4C.n24();
+                                 n13C--)
                             {
-                              for (int n23C = u4C.n24(); n23C >= u4C.n34(); n23C--)
+                              for (int n23C = u4C.n24(); n23C >= u4C.n34();
+                                   n23C--)
                               {
-                                for (int n33C = u4C.n34(); n33C >= u4C.n44(); n33C--)
+                                for (int n33C = u4C.n34(); n33C >= u4C.n44();
+                                     n33C--)
                                 {
-                                  u3::irrep u3C(n13C, n23C, n33C);
+                                  // u3::irrep u3C(n13C, n23C, n33C);
 
-                                  auto [existAB_C, accAB_C] = 
-                                                coeffsAB_C.access(u3AB, u3C, u3ABC);
+                                  // auto [existAB_C, accAB_C] =
+                                  // coeffsAB_C.access(u3AB, u3C, u3ABC);
 
-                                  auto [existBC, accBC] = 
-                                                    coeffsBC.access(u3B, u3C, u3BC);            
+                                  auto [existAB_C, accAB_C] = wigU4U3db.get(
+                                      u4AB.n14(), u4AB.n24(), u4AB.n34(),
+                                      u4AB.n44(), n13AB, n23AB, n33AB,
+                                      u4C.n14(), u4C.n24(), u4C.n34(),
+                                      u4C.n44(), n13C, n23C, n33C, u4ABC.n14(),
+                                      u4ABC.n24(), u4ABC.n34(), u4ABC.n44(),
+                                      u4ABC.n14(), u4ABC.n24(), u4ABC.n34());
+
+                                  // auto [existBC, accBC] =
+                                  // coeffsBC.access(u3B, u3C, u3BC);
+
+                                  auto [existBC, accBC] = wigU4U3db.get(
+                                      u4B.n14(), u4B.n24(), u4B.n34(),
+                                      u4B.n44(), n13B, n23B, n33B, u4C.n14(),
+                                      u4C.n24(), u4C.n34(), u4C.n44(), n13C,
+                                      n23C, n33C, u4BC.n14(), u4BC.n24(),
+                                      u4BC.n34(), u4BC.n44(), u4BC.n14(),
+                                      u4BC.n24(), u4BC.n34());
 
                                   if (existAB_C == true && existBC == true)
                                   {
-                                    //std::cout << u3AB << ";" << u3C << "|||" << u3ABC 
-                                    //          << " -> accAB_C = " << accAB_C << std::endl;
-                                    //std::cout << u3B << ";" << u3C << "|||" << u3BC 
-                                    //          << " -> accBC = " << accBC << std::endl;
-                                    u3::irrep u3c = u3C;
-                                    u3c.normalize();
-                                    std::vector<u3::gelfand> gArr3c = u3::gelfandBasis(u3c);
+                                    // std::cout << u3AB << ";" << u3C << "|||"
+                                    // << u3ABC
+                                    //           << " -> accAB_C = " << accAB_C
+                                    //           << std::endl;
+                                    // std::cout << u3B << ";" << u3C << "|||"
+                                    // << u3BC
+                                    //           << " -> accBC = " << accBC <<
+                                    //           std::endl;
+                                    u3::irrep u3c(n13C - n33C, n23C - n33C, 0);
+                                    // u3c.normalize();
+                                    std::vector<u3::gelfand> gArr3c =
+                                        u3::gelfandBasis(u3c);
 
                                     std::vector<double> U6_coeffs = u3::U6(
-                                      u3a, gArr3a, u3b, gArr3b, 
-                                      u3abc, gArr3abc, u3c, gArr3c, 
-                                      u3ab, gArr3ab, accAB.rows(), accAB_C.rows(), 
-                                      u3bc, gArr3bc, accBC.rows(), accA_BC.rows(), 
-                                      cgcs, racahs, wigU3U2db);
+                                        u3a, gArr3a, u3b, gArr3b, u3abc,
+                                        gArr3abc, u3c, gArr3c, u3ab, gArr3ab,
+                                        accAB.rows(), accAB_C.rows(), u3bc,
+                                        gArr3bc, accBC.rows(), accA_BC.rows(),
+                                        cgcs, racahs, wigU3U2db);
 
                                     for (int eAB = 0; eAB < etaABmax; eAB++)
-                                      for (int eAB_C = 0; eAB_C < etaAB_Cmax; eAB_C++)
+                                      for (int eAB_C = 0; eAB_C < etaAB_Cmax;
+                                           eAB_C++)
                                         for (int eBC = 0; eBC < etaBCmax; eBC++)
-                                          for (int rAB = 0; rAB < accAB.rows(); rAB++)
-                                            for (int rAB_C = 0; rAB_C < accAB_C.rows(); rAB_C++)
-                                              for (int rBC = 0; rBC < accBC.rows(); rBC++)
-                                                B(r, (eAB * etaAB_Cmax + eAB_C) * etaBCmax + eBC) 
-                                                += accAB(rAB, eAB) * accAB_C(rAB_C, eAB_C) 
-                                                * accBC(rBC, eBC) 
-                                                * U6_coeffs[((rAB * accAB_C.rows() + rAB_C) *
-                                                            accBC.rows() + rBC) * 
-                                                            accA_BC.rows() + rA_BC];
+                                          for (int rAB = 0; rAB < accAB.rows();
+                                               rAB++)
+                                            for (int rAB_C = 0;
+                                                 rAB_C < accAB_C.rows();
+                                                 rAB_C++)
+                                              for (int rBC = 0;
+                                                   rBC < accBC.rows(); rBC++)
+                                                B(r,
+                                                  (eAB * etaAB_Cmax + eAB_C) *
+                                                          etaBCmax +
+                                                      eBC) +=
+                                                    accAB(rAB, eAB) *
+                                                    accAB_C(rAB_C, eAB_C) *
+                                                    accBC(rBC, eBC) *
+                                                    U6_coeffs
+                                                        [((rAB *
+                                                               accAB_C.rows() +
+                                                           rAB_C) *
+                                                              accBC.rows() +
+                                                          rBC) *
+                                                             accA_BC.rows() +
+                                                         rA_BC];
                                   }
                                 }
                               }
@@ -163,13 +223,13 @@ namespace u4
                   }
                 }
               }
-              
+
               r++;
 
               if (r == etaA_BCmax)
               {
                 done = true;
-                break; 
+                break;
               }
             }
           }
@@ -201,40 +261,40 @@ namespace u4
   }
 
   // input by users: u4a, u4b, u4abc, u4c, u4ab, u4bc, all normalized
-  inline std::vector<double> 
-    Z6(const u4::irrep& u4B, const std::vector<u4::gelfand>& gArrB,
-       const u4::irrep& u4A, const std::vector<u4::gelfand>& gArrA,         
-       const u4::irrep& u4ABC, const std::vector<u4::gelfand>& gArrABC,
-       const u4::irrep& u4C, const std::vector<u4::gelfand>& gArrC,
-       const u4::irrep& u4AB, const std::vector<u4::gelfand>& gArrAB, 
-       int etaABmax, int etaAB_Cmax,
-       const u4::irrep& u4AC, const std::vector<u4::gelfand>& gArrAC, 
-       int etaACmax, int etaAC_Bmax,
-       u34utils::SO3_CGC& cgcs, u34utils::SO3_Racah& racahs,
-       u3::WigU3U2_db& wigU3U2db)
+  inline std::vector<double>
+  Z6(const u4::irrep& u4B, const std::vector<u4::gelfand>& gArrB,
+     const u4::irrep& u4A, const std::vector<u4::gelfand>& gArrA,
+     const u4::irrep& u4ABC, const std::vector<u4::gelfand>& gArrABC,
+     const u4::irrep& u4C, const std::vector<u4::gelfand>& gArrC,
+     const u4::irrep& u4AB, const std::vector<u4::gelfand>& gArrAB,
+     int etaABmax, int etaAB_Cmax, const u4::irrep& u4AC,
+     const std::vector<u4::gelfand>& gArrAC, int etaACmax, int etaAC_Bmax,
+     u34utils::SO3_CGC& cgcs, u34utils::SO3_Racah& racahs,
+     u3::WigU3U2_db& wigU3U2db, u4::WigU4U3_db& wigU4U3db)
   {
-    // coupling <hwAC;gB|hwABC> rhoAC_B etaAC_B
-    auto coeffsAC_B = u4::WigU4U3(u4AC, u4B, u4ABC, etaAC_Bmax, 
-                      u4ABC.n14() + u4ABC.n24() + u4ABC.n34(),
-                      gArrAC, gArrB, gArrABC, cgcs, wigU3U2db);
+    /*
+        // coupling <hwAC;gB|hwABC> rhoAC_B etaAC_B
+        auto coeffsAC_B = u4::WigU4U3(u4AC, u4B, u4ABC, etaAC_Bmax,
+                          u4ABC.n14() + u4ABC.n24() + u4ABC.n34(),
+                          gArrAC, gArrB, gArrABC, cgcs, wigU3U2db);
 
-    // coupling <gAB;gC|hwABC> rhoAB_C etaAB_C
-    auto coeffsAB_C = u4::WigU4U3(u4AB, u4C, u4ABC, etaAB_Cmax, 
-                      u4ABC.n14() + u4ABC.n24() + u4ABC.n34(),
-                      gArrAB, gArrC, gArrABC, cgcs, wigU3U2db);
+        // coupling <gAB;gC|hwABC> rhoAB_C etaAB_C
+        auto coeffsAB_C = u4::WigU4U3(u4AB, u4C, u4ABC, etaAB_Cmax,
+                          u4ABC.n14() + u4ABC.n24() + u4ABC.n34(),
+                          gArrAB, gArrC, gArrABC, cgcs, wigU3U2db);
 
-    // coupling <gA;gC|hwAC> rhoAC etaAC
-    auto coeffsAC = u4::WigU4U3(u4A, u4C, u4AC, etaACmax, 
-                    u4AC.n14() + u4AC.n24() + u4AC.n34(), 
-                    gArrA, gArrC, gArrAC, cgcs, wigU3U2db);
+        // coupling <gA;gC|hwAC> rhoAC etaAC
+        auto coeffsAC = u4::WigU4U3(u4A, u4C, u4AC, etaACmax,
+                        u4AC.n14() + u4AC.n24() + u4AC.n34(),
+                        gArrA, gArrC, gArrAC, cgcs, wigU3U2db);
 
-    // coupling <gA;gB|gAB> rhoAB etaAB
-    auto coeffsAB = u4::WigU4U3(u4A, u4B, u4AB, etaABmax, -1, 
-                    gArrA, gArrB, gArrAB, cgcs, wigU3U2db);
-
+        // coupling <gA;gB|gAB> rhoAB etaAB
+        auto coeffsAB = u4::WigU4U3(u4A, u4B, u4AB, etaABmax, -1,
+                        gArrA, gArrB, gArrAB, cgcs, wigU3U2db);
+    */
     Eigen::MatrixXd A(etaAC_Bmax, etaAC_Bmax);
     Eigen::MatrixXd B(etaAC_Bmax, etaABmax * etaAB_Cmax * etaACmax);
-    B.setZero(); 
+    B.setZero();
 
     int r = 0;
     bool done = false;
@@ -244,22 +304,31 @@ namespace u4
       {
         for (int n33B = u4B.n34(); n33B >= u4B.n44() && !done; n33B--)
         {
-          u3::irrep u3B(n13B, n23B, n33B), 
+          /* u3::irrep u3B(n13B, n23B, n33B),
                     u3AC(u4AC.n14(), u4AC.n24(), u4AC.n34()),
                     u3ABC(u4ABC.n14(), u4ABC.n24(), u4ABC.n34());
-          auto [existAC_B, accAC_B] = coeffsAC_B.access(u3AC,u3B,u3ABC);
+          auto [existAC_B, accAC_B] = coeffsAC_B.access(u3AC,u3B,u3ABC); */
+
+          auto [existAC_B, accAC_B] = wigU4U3db.get(
+              u4AC.n14(), u4AC.n24(), u4AC.n34(), u4AC.n44(), u4AC.n14(),
+              u4AC.n24(), u4AC.n34(), u4B.n14(), u4B.n24(), u4B.n34(),
+              u4B.n44(), n13B, n23B, n33B, u4ABC.n14(), u4ABC.n24(),
+              u4ABC.n34(), u4ABC.n44(), u4ABC.n14(), u4ABC.n24(), u4ABC.n34());
+
           if (existAC_B == true)
           {
-            //std::cout << "accAC_B = " << accAC_B << std::endl;
-            u3::irrep u3b = u3B, u3ac = u3AC, u3abc = u3ABC;
-            u3b.normalize();
-            u3ac.normalize();
-            u3abc.normalize();
+            // std::cout << "accAC_B = " << accAC_B << std::endl;
+            u3::irrep u3b(n13B - n33B, n23B - n33B, 0),
+                u3ac(u4AC.n14() - u4AC.n34(), u4AC.n24() - u4AC.n34(), 0),
+                u3abc(u4ABC.n14() - u4ABC.n34(), u4ABC.n24() - u4ABC.n34(), 0);
+            // u3b.normalize();
+            // u3ac.normalize();
+            // u3abc.normalize();
 
             std::vector<u3::gelfand> gArr3b = u3::gelfandBasis(u3b),
-                                  gArr3ac = u3::gelfandBasis(u3ac),
-                                  gArr3abc = u3::gelfandBasis(u3abc);  
-            
+                                     gArr3ac = u3::gelfandBasis(u3ac),
+                                     gArr3abc = u3::gelfandBasis(u3abc);
+
             for (int rAC_B = 0; rAC_B < accAC_B.rows(); rAC_B++)
             {
               A.row(r) = accAC_B.row(rAC_B);
@@ -270,69 +339,120 @@ namespace u4
                 {
                   for (int n33A = u4A.n34(); n33A >= u4A.n44(); n33A--)
                   {
-                    u3::irrep u3A(n13A, n23A, n33A);
+                    // u3::irrep u3A(n13A, n23A, n33A);
 
                     for (int n13AB = u4AB.n14(); n13AB >= u4AB.n24(); n13AB--)
                     {
                       for (int n23AB = u4AB.n24(); n23AB >= u4AB.n34(); n23AB--)
                       {
-                        for (int n33AB = u4AB.n34(); n33AB >= u4AB.n44(); n33AB--)
+                        for (int n33AB = u4AB.n34(); n33AB >= u4AB.n44();
+                             n33AB--)
                         {
-                          u3::irrep u3AB(n13AB, n23AB, n33AB);
-                          auto [existAB, accAB] = coeffsAB.access(u3A,u3B,u3AB);
+                          // u3::irrep u3AB(n13AB, n23AB, n33AB);
+                          // auto [existAB, accAB] =
+                          // coeffsAB.access(u3A,u3B,u3AB);
+
+                          auto [existAB, accAB] = wigU4U3db.get(
+                              u4A.n14(), u4A.n24(), u4A.n34(), u4A.n44(), n13A,
+                              n23A, n33A, u4B.n14(), u4B.n24(), u4B.n34(),
+                              u4B.n44(), n13B, n23B, n33B, u4AB.n14(),
+                              u4AB.n24(), u4AB.n34(), u4AB.n44(), n13AB, n23AB,
+                              n33AB);
+
                           if (existAB == true)
                           {
-                            //std::cout << "accAB = " << accAB << std::endl;
-                            u3::irrep u3a = u3A, u3ab = u3AB;
-                            u3a.normalize();
-                            u3ab.normalize();
+                            // std::cout << "accAB = " << accAB << std::endl;
+                            u3::irrep u3a(n13A - n33A, n23A - n33A, 0),
+                                u3ab(n13AB - n33AB, n23AB - n33AB, 0);
+                            // u3a.normalize();
+                            // u3ab.normalize();
 
-                            std::vector<u3::gelfand> gArr3a = u3::gelfandBasis(u3a),
-                                                    gArr3ab = u3::gelfandBasis(u3ab);
+                            std::vector<u3::gelfand> gArr3a =
+                                                         u3::gelfandBasis(u3a),
+                                                     gArr3ab =
+                                                         u3::gelfandBasis(u3ab);
 
-                            for (int n13C = u4C.n14(); n13C >= u4C.n24(); n13C--)
-                          {
-                            for (int n23C = u4C.n24(); n23C >= u4C.n34(); n23C--)
+                            for (int n13C = u4C.n14(); n13C >= u4C.n24();
+                                 n13C--)
                             {
-                              for (int n33C = u4C.n34(); n33C >= u4C.n44(); n33C--)
+                              for (int n23C = u4C.n24(); n23C >= u4C.n34();
+                                   n23C--)
                               {
-                                u3::irrep u3C(n13C, n23C, n33C);
-
-                                auto [existAB_C, accAB_C] = 
-                                                coeffsAB_C.access(u3AB, u3C, u3ABC);
-
-                                auto [existAC, accAC] = 
-                                                coeffsAC.access(u3A, u3C, u3AC);            
-
-                                if (existAB_C == true && existAC == true)
+                                for (int n33C = u4C.n34(); n33C >= u4C.n44();
+                                     n33C--)
                                 {
-                                  //std::cout << u3AB << ";" << u3C << "|||" << u3ABC 
-                                            //<< " -> accAB_C = " << accAB_C << std::endl;
-                                  //std::cout << u3A << ";" << u3C << "|||" << u3AC 
-                                            //<< " -> accAC = " << accAC << std::endl;
-                                  u3::irrep u3c = u3C;
-                                  u3c.normalize();
-                                  std::vector<u3::gelfand> gArr3c = u3::gelfandBasis(u3c);
+                                  // u3::irrep u3C(n13C, n23C, n33C);
 
-                                  std::vector<double> Z6_coeffs = u3::Z6(
-                                    u3b, gArr3b, u3a, gArr3a, 
-                                    u3abc, gArr3abc, u3c, gArr3c, 
-                                    u3ab, gArr3ab, accAB.rows(), accAB_C.rows(), 
-                                    u3ac, gArr3ac, accAC.rows(), accAC_B.rows(), 
-                                    cgcs, racahs, wigU3U2db);
+                                  // auto [existAB_C, accAB_C] =
+                                  // coeffsAB_C.access(u3AB, u3C, u3ABC);
 
-                                  for (int eAB = 0; eAB < etaABmax; eAB++)
-                                    for (int eAB_C = 0; eAB_C < etaAB_Cmax; eAB_C++)
-                                      for (int eAC = 0; eAC < etaACmax; eAC++)
-                                        for (int rAB = 0; rAB < accAB.rows(); rAB++)
-                                          for (int rAB_C = 0; rAB_C < accAB_C.rows(); rAB_C++)
-                                            for (int rAC = 0; rAC < accAC.rows(); rAC++)
-                                              B(r, (eAB * etaAB_Cmax + eAB_C) * etaACmax + eAC) 
-                                              += accAB(rAB, eAB) * accAB_C(rAB_C, eAB_C) 
-                                              * accAC(rAC, eAC) 
-                                              * Z6_coeffs[((rAB * accAB_C.rows() + rAB_C) *
-                                                          accAC.rows() + rAC) * 
-                                                          accAC_B.rows() + rAC_B];
+                                  auto [existAB_C, accAB_C] = wigU4U3db.get(
+                                      u4AB.n14(), u4AB.n24(), u4AB.n34(),
+                                      u4AB.n44(), n13AB, n23AB, n33AB,
+                                      u4C.n14(), u4C.n24(), u4C.n34(),
+                                      u4C.n44(), n13C, n23C, n33C, u4ABC.n14(),
+                                      u4ABC.n24(), u4ABC.n34(), u4ABC.n44(),
+                                      u4ABC.n14(), u4ABC.n24(), u4ABC.n34());
+
+                                  // auto [existAC, accAC] =
+                                  // coeffsAC.access(u3A, u3C, u3AC);
+
+                                  auto [existAC, accAC] = wigU4U3db.get(
+                                      u4A.n14(), u4A.n24(), u4A.n34(),
+                                      u4A.n44(), n13A, n23A, n33A, u4C.n14(),
+                                      u4C.n24(), u4C.n34(), u4C.n44(), n13C,
+                                      n23C, n33C, u4AC.n14(), u4AC.n24(),
+                                      u4AC.n34(), u4AC.n44(), u4AC.n14(),
+                                      u4AC.n24(), u4AC.n34());
+
+                                  if (existAB_C == true && existAC == true)
+                                  {
+                                    // std::cout << u3AB << ";" << u3C << "|||"
+                                    // << u3ABC
+                                    //<< " -> accAB_C = " << accAB_C <<
+                                    //std::endl;
+                                    // std::cout << u3A << ";" << u3C << "|||"
+                                    // << u3AC
+                                    //<< " -> accAC = " << accAC << std::endl;
+                                    u3::irrep u3c(n13C - n33C, n23C - n33C, 0);
+                                    // u3c.normalize();
+                                    std::vector<u3::gelfand> gArr3c =
+                                        u3::gelfandBasis(u3c);
+
+                                    std::vector<double> Z6_coeffs = u3::Z6(
+                                        u3b, gArr3b, u3a, gArr3a, u3abc,
+                                        gArr3abc, u3c, gArr3c, u3ab, gArr3ab,
+                                        accAB.rows(), accAB_C.rows(), u3ac,
+                                        gArr3ac, accAC.rows(), accAC_B.rows(),
+                                        cgcs, racahs, wigU3U2db);
+
+                                    for (int eAB = 0; eAB < etaABmax; eAB++)
+                                      for (int eAB_C = 0; eAB_C < etaAB_Cmax;
+                                           eAB_C++)
+                                        for (int eAC = 0; eAC < etaACmax; eAC++)
+                                          for (int rAB = 0; rAB < accAB.rows();
+                                               rAB++)
+                                            for (int rAB_C = 0;
+                                                 rAB_C < accAB_C.rows();
+                                                 rAB_C++)
+                                              for (int rAC = 0;
+                                                   rAC < accAC.rows(); rAC++)
+                                                B(r,
+                                                  (eAB * etaAB_Cmax + eAB_C) *
+                                                          etaACmax +
+                                                      eAC) +=
+                                                    accAB(rAB, eAB) *
+                                                    accAB_C(rAB_C, eAB_C) *
+                                                    accAC(rAC, eAC) *
+                                                    Z6_coeffs
+                                                        [((rAB *
+                                                               accAB_C.rows() +
+                                                           rAB_C) *
+                                                              accAC.rows() +
+                                                          rAC) *
+                                                             accAC_B.rows() +
+                                                         rAC_B];
+                                  }
                                 }
                               }
                             }
@@ -343,17 +463,16 @@ namespace u4
                   }
                 }
               }
-              }
-              
+
               r++;
 
               if (r == etaAC_Bmax)
               {
                 done = true;
-                break; 
+                break;
               }
             }
-          }  
+          }
         }
       }
     }
