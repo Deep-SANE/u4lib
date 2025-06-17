@@ -2460,7 +2460,7 @@ namespace u4
     return coeffs;
   }
 
-//#define U4LIB_ENABLE_WIGU4U3_CACHE
+#define U4LIB_ENABLE_WIGU4U3_CACHE
   class WigU4U3_db
   {
 #ifdef U4LIB_ENABLE_WIGU4U3_CACHE
