@@ -163,7 +163,7 @@ int main(int argc, char* argv[])
  
   if (pArrA.empty() || pArrB.empty() || pArrC.empty())
   {
-    std::cout << "Your spin and isospin values are valid" << std::endl;
+    std::cout << "Your spin and isospin values are invalid" << std::endl;
     return 1;
   } 
 
@@ -173,9 +173,10 @@ int main(int argc, char* argv[])
   std::vector<std::tuple<int, int, int>> tArr;
   u34utils::SO3_CGC cgcs;
   u3::WigU3U2_db wigU3U2db(cgcs);
+  u4::WigU4U3_db wigU4U3db(cgcs, wigU3U2db);
 
-  auto coeffs =  
-    u4::WigU4SU2SU2(etamax, pArrA, pArrB, pArrC, tArr, cgcs, wigU3U2db);
+  auto coeffs = u4::WigU4SU2SU2(etamax, pArrA, pArrB, pArrC, tArr, 
+                                      cgcs, wigU3U2db, wigU4U3db);
 
   // End time measurement
   auto t1 = std::chrono::high_resolution_clock::now();

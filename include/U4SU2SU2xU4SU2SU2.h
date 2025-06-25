@@ -24,7 +24,8 @@ namespace u4
     std::vector<u4::physicalvector>& pArrB,
     std::vector<u4::physicalvector>& pArrC,
     std::vector<std::tuple<int, int, int>>& tArr,
-    u34utils::SO3_CGC& cgcs, u3::WigU3U2_db& wigU3U2db)
+    u34utils::SO3_CGC& cgcs, u3::WigU3U2_db& wigU3U2db,
+    u4::WigU4U3_db& wigU4U3db)
   {
     // build Gelfand basis
     std::vector<u4::gelfand> gArrA = u4::gelfandBasis(pArrA[0].toprow),
@@ -53,10 +54,10 @@ namespace u4
     }
 
     // find all the reduced canonical coupling coefficients
-    int w3min = -1;//*std::min_element(w3mins.begin(), w3mins.end());
-    auto canoCoeffs =
-        u4::WigU4U3(pArrA[0].toprow, pArrB[0].toprow, pArrC[0].toprow, 
-                    etamax, w3min, gArrA, gArrB, gArrC, cgcs, wigU3U2db);
+    //int w3min = -1;//*std::min_element(w3mins.begin(), w3mins.end());
+    //auto canoCoeffs =
+    //    u4::WigU4U3(pArrA[0].toprow, pArrB[0].toprow, pArrC[0].toprow, 
+    //                etamax, w3min, gArrA, gArrB, gArrC, cgcs, wigU3U2db);
     // note that u4C and all gelfand states are not normalized here
 
     std::vector<Eigen::MatrixXd> coeffs;
@@ -141,10 +142,21 @@ namespace u4
                 {
                   int gC = canoBasisC[k][iC];
 
-                  u3::irrep u3A(gArrA[gA].n13(), gArrA[gA].n23(), gArrA[gA].n33()),
-                            u3B(gArrB[gB].n13(), gArrB[gB].n23(), gArrB[gB].n33()),
-                            u3C(gArrC[gC].n13(), gArrC[gC].n23(), gArrC[gC].n33());
-                  auto [exist, accU4] = canoCoeffs.access(u3A,u3B,u3C);
+                  //u3::irrep u3A(gArrA[gA].n13(), gArrA[gA].n23(), gArrA[gA].n33()),
+                  //          u3B(gArrB[gB].n13(), gArrB[gB].n23(), gArrB[gB].n33()),
+                  //          u3C(gArrC[gC].n13(), gArrC[gC].n23(), gArrC[gC].n33());
+                  //auto [exist, accU4] = canoCoeffs.access(u3A,u3B,u3C);
+
+                  auto [exist, accU4] = wigU4U3db.get(
+                    pArrA[0].toprow.n14(), pArrA[0].toprow.n24(), 
+                    pArrA[0].toprow.n34(), pArrA[0].toprow.n44(),
+                    gArrA[gA].n13(), gArrA[gA].n23(), gArrA[gA].n33(),
+                    pArrB[0].toprow.n14(), pArrB[0].toprow.n24(), 
+                    pArrB[0].toprow.n34(), pArrB[0].toprow.n44(),
+                    gArrB[gB].n13(), gArrB[gB].n23(), gArrB[gB].n33(),
+                    pArrC[0].toprow.n14(), pArrC[0].toprow.n24(), 
+                    pArrC[0].toprow.n34(), pArrC[0].toprow.n44(),
+                    gArrC[gC].n13(), gArrC[gC].n23(), gArrC[gC].n33());
 
                   int jj1 = gArrA[gA].Lambdax2(), mm1 = gArrA[gA].MLambdax2(),
                       jj2 = gArrB[gB].Lambdax2(), mm2 = gArrB[gB].MLambdax2(),
