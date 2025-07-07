@@ -210,6 +210,88 @@ namespace u4
     return coeffs;
   }
 
+#define U4LIB_ENABLE_WIGU4SU2SU2_CACHE
+  class WigU4SU2SU2_db
+  {
+#ifdef U4LIB_ENABLE_WIGU4SU2SU2_CACHE
+    using key_type = std::array<int, 15>;
+    std::map<key_type, Eigen::MatrixXd> map_;
+#endif
+
+    u34utils::SO3_CGC& cgcs_;
+    u3::WigU3U2_db& wigU3U2db_;
+    u4::WigU4U3_db& wigU4U3db_;
+
+    auto calculate(const irrep& u4a, int SSa, int TTa, 
+                   const irrep& u4b, int SSb, int TTb, 
+                   const irrep& u4c, int SSc, int TTc,
+                   int etamax)
+    {
+      std::vector<u4::physicalvector> 
+        pArrA(1, u4::physicalvector(u4a, SSa, TTa)),
+        pArrB(1, u4::physicalvector(u4b, SSb, TTb)), 
+        pArrC(1, u4::physicalvector(u4c, SSc, TTc)); 
+
+      std::vector<std::tuple<int, int, int>> tArr;
+
+      /* return one coefficient matrix
+        row = (za * max(zb) + zb) * max(zc) + zc
+        column = eta
+      */
+      return WigU4SU2SU2(etamax, pArrA, pArrB, pArrC, tArr, 
+        cgcs_, wigU3U2db_, wigU4U3db_)[0];
+    }
+
+  public:
+    WigU4SU2SU2_db(u34utils::SO3_CGC& cgcs, 
+                   u3::WigU3U2_db& wigU3U2db, 
+                   u4::WigU4U3_db& wigU4U3db) 
+      : cgcs_(cgcs), wigU3U2db_(wigU3U2db), wigU4U3db_(wigU4U3db)
+    { }
+
+    auto get(int P1a, int P2a, int P3a, int SSa, int TTa, 
+             int P1b, int P2b, int P3b, int SSb, int TTb,
+             int P1c, int P2c, int P3c, int SSc, int TTc)
+    {
+      // normalized irreps:
+      irrep u4a(P1a, P2a, P3a);
+      irrep u4b(P1b, P2b, P3b);
+      irrep u4c(P1c, P2c, P3c);
+      int etamax = Eta(u4a, u4b, u4c);
+
+      bool flag = false;
+      Eigen::MatrixXd m;
+
+      if (etamax > 0 && 
+          std::fabs(SSa - SSb) <= SSc && (SSa + SSb) >= SSc &&
+          std::fabs(TTa - TTb) <= TTc && (TTa + TTb) >= TTc)
+      {
+#ifdef U4LIB_ENABLE_WIGU4SU2SU2_CACHE
+        key_type key = {P1a, P2a, P3a, SSa, TTa,
+                        P1b, P2b, P3b, SSb, TTb,
+                        P1c, P2c, P3c, SSc, TTc};
+
+        auto iter = map_.find(key);
+        if (iter == map_.end())
+        {
+          auto p = map_.try_emplace(
+            key, calculate(u4a, SSa, TTa, u4b, SSb, TTb, u4c, SSc, TTc, etamax));
+          assert(p.second);
+          iter = p.first;
+        }
+
+        m = iter->second;
+#else
+        m = calculate(u4a, SSa, TTa, u4b, SSb, TTb, u4c, SSc, TTc, etamax);
+#endif
+        flag = true;
+        
+      }
+
+      return std::make_pair(flag, m);
+    }
+  };
+
 } // namespace u4
 
 #endif
