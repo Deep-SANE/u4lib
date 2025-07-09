@@ -229,11 +229,11 @@ namespace u4
   }
 
   // Multiplicity of (S,T)
-  inline int Zeta(int SS, int TT, int n1, int n2, int n3, int n4)
+  inline int Zeta(const u4::irrep& u4, int SS, int TT)
   {
-    return Omega(SS, TT, n1 - n3, n2 - n4) -
-           Omega(SS, TT, n1 - n4 + 1, n2 - n3 - 1) -
-           Omega(SS, TT, n1 - n2 - 1, n3 - n4 - 1);
+    return Omega(SS, TT, u4.n14() - u4.n34(), u4.n24() - u4.n44()) -
+           Omega(SS, TT, u4.n14() - u4.n44() + 1, u4.n24() - u4.n34() - 1) -
+           Omega(SS, TT, u4.n14() - u4.n24() - 1, u4.n34() - u4.n44() - 1);
   }
 
   struct physicalvector
@@ -249,7 +249,7 @@ namespace u4
     physicalvector(u4::irrep u4, int ss, int tt)
     {
       toprow = u4;
-      zeta = Zeta(ss, tt, u4.n14(), u4.n24(), u4.n34(), u4.n44());
+      zeta = Zeta(u4, ss, tt);
       SS = ss;
       TT = tt;
     }
