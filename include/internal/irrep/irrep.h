@@ -1,9 +1,10 @@
-#ifndef U4LIB_IRREP_GELFAND_H
-#define U4LIB_IRREP_GELFAND_H
+#ifndef U4LIB_INTERNAL_IRREP_GELFAND_H
+#define U4LIB_INTERNAL_IRREP_GELFAND_H
 
 #include <ostream>
 
 #include "int_rep.h"
+#include "uint16_t_rep.h"
 
 namespace u4
 {
@@ -72,6 +73,7 @@ namespace u4
 
     // type aliases:
     using irrep_int_rep_t = irrep<irrep_int_rep>;
+    using irrep_uint16_t_rep_t = irrep<irrep_uint16_t_rep>;
 
   } // namespace internal
 } // namespace u4

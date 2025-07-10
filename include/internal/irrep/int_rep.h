@@ -1,5 +1,5 @@
-#ifndef U4LIB_IRREP_INT_REP_H
-#define U4LIB_IRREP_INT_REP_H
+#ifndef U4LIB_INTERNAL_IRREP_INT_REP_H
+#define U4LIB_INTERNAL_IRREP_INT_REP_H
 
 #include <tuple>
 

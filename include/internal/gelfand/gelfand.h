@@ -1,5 +1,5 @@
-#ifndef U4LIB_GELFAND_GELFAND_H
-#define U4LIB_GELFAND_GELFAND_H
+#ifndef U4LIB_INTERNAL_GELFAND_GELFAND_H
+#define U4LIB_INTERNAL_GELFAND_GELFAND_H
 
 #include <cassert>
 #include <cstdint>

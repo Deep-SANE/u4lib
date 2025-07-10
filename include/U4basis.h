@@ -7,7 +7,8 @@
 #include <iostream>
 #include <vector>
 
-#include "config.h"
+#include "U4gelfand.h"
+#include "U4irrep.h"
 
 namespace u4
 {
