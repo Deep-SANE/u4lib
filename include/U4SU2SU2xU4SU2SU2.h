@@ -19,13 +19,13 @@ namespace u4
 {
   // generate all Wigner U(4)->SU(2)xSU(2) coefficients for multiple
   // values of ss1, tt1, ss2, tt2, ss3, tt3
-  inline std::vector<Eigen::MatrixXd>  WigU4SU2SU2(int& etamax, 
-    std::vector<u4::physicalvector>& pArrA,
-    std::vector<u4::physicalvector>& pArrB,
-    std::vector<u4::physicalvector>& pArrC,
-    std::vector<std::tuple<int, int, int>>& tArr,
-    u34utils::SO3_CGC& cgcs, u3::WigU3U2_db& wigU3U2db,
-    u4::WigU4U3_db& wigU4U3db)
+  inline std::vector<Eigen::MatrixXd>
+  WigU4SU2SU2(int& etamax, std::vector<u4::physicalvector>& pArrA,
+              std::vector<u4::physicalvector>& pArrB,
+              std::vector<u4::physicalvector>& pArrC,
+              std::vector<std::tuple<int, int, int>>& tArr,
+              qcx_utils::SO3_CGC& cgcs, u3::WigU3U2_db& wigU3U2db,
+              u4::WigU4U3_db& wigU4U3db)
   {
     // build Gelfand basis
     std::vector<u4::gelfand> gArrA = u4::gelfandBasis(pArrA[0].toprow),
@@ -218,7 +218,7 @@ namespace u4
     std::map<key_type, Eigen::MatrixXd> map_;
 #endif
 
-    u34utils::SO3_CGC& cgcs_;
+    qcx_utils::SO3_CGC& cgcs_;
     u3::WigU3U2_db& wigU3U2db_;
     u4::WigU4U3_db& wigU4U3db_;
 
@@ -243,10 +243,9 @@ namespace u4
     }
 
   public:
-    WigU4SU2SU2_db(u34utils::SO3_CGC& cgcs, 
-                   u3::WigU3U2_db& wigU3U2db, 
-                   u4::WigU4U3_db& wigU4U3db) 
-      : cgcs_(cgcs), wigU3U2db_(wigU3U2db), wigU4U3db_(wigU4U3db)
+    WigU4SU2SU2_db(qcx_utils::SO3_CGC& cgcs, u3::WigU3U2_db& wigU3U2db,
+                   u4::WigU4U3_db& wigU4U3db)
+        : cgcs_(cgcs), wigU3U2db_(wigU3U2db), wigU4U3db_(wigU4U3db)
     { }
 
     auto get(int P1a, int P2a, int P3a, int SSa, int TTa, 

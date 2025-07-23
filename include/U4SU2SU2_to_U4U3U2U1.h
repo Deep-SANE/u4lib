@@ -355,9 +355,10 @@ namespace u4
     //std::cout << STproj << std::endl;
     // and solve its null space
 #ifdef U4LIB_USE_SLEPC
-    Eigen::MatrixXd transformation = u34utils::null_space_slepc(STproj, physvec.zeta);
+    Eigen::MatrixXd transformation =
+        qcx_utils::null_space_slepc(STproj, physvec.zeta);
 #else
-    Eigen::MatrixXd transformation = u34utils::null_space(STproj);
+    Eigen::MatrixXd transformation = qcx_utils::null_space(STproj);
 #endif
 
     // ensure the nullspace is solved correctly

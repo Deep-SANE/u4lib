@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
                            gArrB = u4::gelfandBasis(u4b),
                            gArrC = u4::gelfandBasis(u4cs[index]);
   
-  u34utils::SO3_CGC cgcs; 
+  qcx_utils::SO3_CGC cgcs; 
   u3::WigU3U2_db wigU3U2db(cgcs);
                            
   auto coeffs = u4::WigU4U3(u4a, u4b, u4cs[index], etamaxs[index], -1,    

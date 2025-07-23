@@ -461,7 +461,7 @@ namespace u4
   inline void HighestWeightReducedCoeffs(const std::vector<u4::gelfand>& gArr1,
                                          const std::vector<u4::gelfand>& gArr2,
                                          const std::vector<u4::gelfand>& gArr3,
-                                         int etamax, u34utils::SO3_CGC& cgcs,
+                                         int etamax, qcx_utils::SO3_CGC& cgcs,
                                          u4::WigU4U3_coeffs& coeffs,
                                          u3::WigU3U2_db& wigU3U2db)
   {
@@ -490,9 +490,9 @@ namespace u4
 #endif
 
 #ifdef U4LIB_USE_SLEPC
-    Eigen::MatrixXd nullspace = u34utils::null_space_slepc(mat, etamax);
+    Eigen::MatrixXd nullspace = qcx_utils::null_space_slepc(mat, etamax);
 #else
-    Eigen::MatrixXd nullspace = u34utils::null_space(mat);
+    Eigen::MatrixXd nullspace = qcx_utils::null_space(mat);
 #endif
 
 #ifdef U4LIB_NULLSPACE_LOG
@@ -630,7 +630,7 @@ namespace u4
       const std::vector<u4::gelfand>& gArr1,
       const std::vector<u4::gelfand>& gArr2,
       const std::vector<u4::gelfand>& gArr3, Eigen::MatrixXd& b,
-      u34utils::SO3_CGC& cgcs, std::vector<Eigen::MatrixXd>& E43E42E41,
+      qcx_utils::SO3_CGC& cgcs, std::vector<Eigen::MatrixXd>& E43E42E41,
       u4::WigU4U3_coeffs& coeffs, u3::WigU3U2_db& wigU3U2db)
   {
     int jj3 = gArr3[parent_g3].Lambdax2(), mm3 = gArr3[parent_g3].MLambdax2();
@@ -902,7 +902,7 @@ namespace u4
       const std::vector<u4::gelfand>& gArr1,
       const std::vector<u4::gelfand>& gArr2,
       const std::vector<u4::gelfand>& gArr3, Eigen::MatrixXd& b,
-      u34utils::SO3_CGC& cgcs, std::vector<Eigen::MatrixXd>& E43E42E41,
+      qcx_utils::SO3_CGC& cgcs, std::vector<Eigen::MatrixXd>& E43E42E41,
       u4::WigU4U3_coeffs& coeffs, u3::WigU3U2_db& wigU3U2db)
   {
     int jj3 = gArr3[parent_g3].Lambdax2(), mm3 = gArr3[parent_g3].MLambdax2();
@@ -1435,7 +1435,7 @@ namespace u4
       const std::vector<u4::gelfand>& gArr1,
       const std::vector<u4::gelfand>& gArr2,
       const std::vector<u4::gelfand>& gArr3, Eigen::MatrixXd& b,
-      u34utils::SO3_CGC& cgcs, std::vector<Eigen::MatrixXd>& E43E42E41,
+      qcx_utils::SO3_CGC& cgcs, std::vector<Eigen::MatrixXd>& E43E42E41,
       u4::WigU4U3_coeffs& coeffs, u3::WigU3U2_db& wigU3U2db)
   {
     int jj3 = gArr3[parent_g3].Lambdax2(), mm3 = gArr3[parent_g3].MLambdax2();
@@ -1989,7 +1989,7 @@ namespace u4
                                        const std::vector<u4::gelfand>& gArr2,
                                        const std::vector<u4::gelfand>& gArr3,
                                        int etamax, int w3,
-                                       u34utils::SO3_CGC& cgcs,
+                                       qcx_utils::SO3_CGC& cgcs,
                                        WigU4U3_coeffs& coeffs,
                                        u3::WigU3U2_db wigU3U2db)
   {
@@ -2424,7 +2424,7 @@ namespace u4
                       const std::vector<u4::gelfand>& gArrA,
                       const std::vector<u4::gelfand>& gArrB,
                       const std::vector<u4::gelfand>& gArrC,
-                      u34utils::SO3_CGC& cgcs, u3::WigU3U2_db& wigU3U2db)
+                      qcx_utils::SO3_CGC& cgcs, u3::WigU3U2_db& wigU3U2db)
   {
     WigU4U3_coeffs coeffs(u4A, u4B, u4C, etamax);
 
@@ -2468,7 +2468,7 @@ namespace u4
     std::map<key_type, WigU4U3_coeffs> map_;
 #endif
 
-    u34utils::SO3_CGC& cgcs_;
+    qcx_utils::SO3_CGC& cgcs_;
     u3::WigU3U2_db& wigU3U2db_;
 
     auto calculate(const irrep& u4a, const irrep& u4b, const irrep& u4c)
@@ -2484,7 +2484,7 @@ namespace u4
     }
 
   public:
-    WigU4U3_db(u34utils::SO3_CGC& cgcs, u3::WigU3U2_db& wigU3U2db)
+    WigU4U3_db(qcx_utils::SO3_CGC& cgcs, u3::WigU3U2_db& wigU3U2db)
         : cgcs_(cgcs), wigU3U2db_(wigU3U2db)
     { }
 

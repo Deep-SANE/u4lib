@@ -171,7 +171,7 @@ int main(int argc, char* argv[])
   auto t0 = std::chrono::high_resolution_clock::now();
 
   std::vector<std::tuple<int, int, int>> tArr;
-  u34utils::SO3_CGC cgcs;
+  qcx_utils::SO3_CGC cgcs;
   u3::WigU3U2_db wigU3U2db(cgcs);
   u4::WigU4U3_db wigU4U3db(cgcs, wigU3U2db);
 

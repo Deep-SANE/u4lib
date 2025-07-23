@@ -21,22 +21,22 @@ namespace u4
   // input by users: u4a, u4b, u4c, u4d, u4ab, u4cd, u4ac, u4bd, u4abcd
   // all normalized
   inline std::vector<double>
-    U9(const u4::irrep& u4A, const std::vector<u4::gelfand>& gArrA,
-       const u4::irrep& u4B, const std::vector<u4::gelfand>& gArrB,
-       const u4::irrep& u4C, const std::vector<u4::gelfand>& gArrC,
-       const u4::irrep& u4D, const std::vector<u4::gelfand>& gArrD,
-       const u4::irrep& u4AB, const std::vector<u4::gelfand>& gArrAB,
-       const u4::irrep& u4CD, const std::vector<u4::gelfand>& gArrCD,
-       const u4::irrep& u4AC, const std::vector<u4::gelfand>& gArrAC,
-       const u4::irrep& u4BD, const std::vector<u4::gelfand>& gArrBD,
-       const u4::irrep& u4ABCD, const std::vector<u4::gelfand>& gArrABCD,
-       int etaABmax, int etaCDmax, int etaAB_CDmax,
-       int etaACmax, int etaBDmax, int etaAC_BDmax,
-       u34utils::SO3_CGC& cgcs, u34utils::SO3_Racah& racahs,
-       u3::WigU3U2_db& wigU3U2db, u4::WigU4U3_db& wigU4U3db)
+  U9(const u4::irrep& u4A, const std::vector<u4::gelfand>& gArrA,
+     const u4::irrep& u4B, const std::vector<u4::gelfand>& gArrB,
+     const u4::irrep& u4C, const std::vector<u4::gelfand>& gArrC,
+     const u4::irrep& u4D, const std::vector<u4::gelfand>& gArrD,
+     const u4::irrep& u4AB, const std::vector<u4::gelfand>& gArrAB,
+     const u4::irrep& u4CD, const std::vector<u4::gelfand>& gArrCD,
+     const u4::irrep& u4AC, const std::vector<u4::gelfand>& gArrAC,
+     const u4::irrep& u4BD, const std::vector<u4::gelfand>& gArrBD,
+     const u4::irrep& u4ABCD, const std::vector<u4::gelfand>& gArrABCD,
+     int etaABmax, int etaCDmax, int etaAB_CDmax, int etaACmax, int etaBDmax,
+     int etaAC_BDmax, qcx_utils::SO3_CGC& cgcs, qcx_utils::SO3_Racah& racahs,
+     u3::WigU3U2_db& wigU3U2db, u4::WigU4U3_db& wigU4U3db)
   {
     std::vector<double> U(etaACmax * etaBDmax * etaAB_CDmax * etaABmax *
-                              etaCDmax * etaAC_BDmax, 0.0);
+                              etaCDmax * etaAC_BDmax,
+                          0.0);
 
     // couple u4AB and u4C
     auto [u4AB_C, etamaxsAB_C] = u4::decomposition(u4AB, u4C);

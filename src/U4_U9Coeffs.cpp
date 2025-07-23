@@ -156,8 +156,8 @@ int main(int argc, char* argv[])
     std::vector<u4::gelfand> gArrBD = u4::gelfandBasis(u4bd[i_bd]);
     std::vector<u4::gelfand> gArrABCD = u4::gelfandBasis(u4ab_cd[i_ab_cd]);
 
-    u34utils::SO3_CGC cgcs;
-    u34utils::SO3_Racah racahs;
+    qcx_utils::SO3_CGC cgcs;
+    qcx_utils::SO3_Racah racahs;
     u3::WigU3U2_db wigU3U2db(cgcs);
     u4::WigU4U3_db wigU4U3db(cgcs,wigU3U2db);
 

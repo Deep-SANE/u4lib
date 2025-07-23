@@ -28,7 +28,7 @@ namespace u4
      const u4::irrep& u4AB, const std::vector<u4::gelfand>& gArrAB,
      int etaABmax, int etaAB_Cmax, const u4::irrep& u4BC,
      const std::vector<u4::gelfand>& gArrBC, int etaBCmax, int etaA_BCmax,
-     u34utils::SO3_CGC& cgcs, u34utils::SO3_Racah& racahs,
+     qcx_utils::SO3_CGC& cgcs, qcx_utils::SO3_Racah& racahs,
      u3::WigU3U2_db& wigU3U2db, u4::WigU4U3_db& wigU4U3db)
   {
     /*
@@ -269,7 +269,7 @@ namespace u4
      const u4::irrep& u4AB, const std::vector<u4::gelfand>& gArrAB,
      int etaABmax, int etaAB_Cmax, const u4::irrep& u4AC,
      const std::vector<u4::gelfand>& gArrAC, int etaACmax, int etaAC_Bmax,
-     u34utils::SO3_CGC& cgcs, u34utils::SO3_Racah& racahs,
+     qcx_utils::SO3_CGC& cgcs, qcx_utils::SO3_Racah& racahs,
      u3::WigU3U2_db& wigU3U2db, u4::WigU4U3_db& wigU4U3db)
   {
     /*
