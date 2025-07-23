@@ -12,7 +12,6 @@
 
 namespace u4
 {
-
   // compare two gelfand patterns of the same irrep
   inline bool E11(const u4::gelfand& i, const u4::gelfand& f)
   {
@@ -235,6 +234,12 @@ namespace u4
     return Omega(SS, TT, u4.n14() - u4.n34(), u4.n24() - u4.n44()) -
            Omega(SS, TT, u4.n14() - u4.n44() + 1, u4.n24() - u4.n34() - 1) -
            Omega(SS, TT, u4.n14() - u4.n24() - 1, u4.n34() - u4.n44() - 1);
+  }
+
+  // alternative called 'mult':
+  inline int mult(const u4::irrep& u4, int SS, int TT)
+  {
+    return u4::Zeta(u4, SS, TT);
   }
 
   struct physicalvector

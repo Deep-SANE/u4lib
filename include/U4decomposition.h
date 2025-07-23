@@ -10,7 +10,7 @@
 namespace u4
 {
 
-  inline std::pair<std::vector<u4::irrep>, std::vector<int>> 
+  inline std::pair<std::vector<u4::irrep>, std::vector<int>>
   decomposition(const u4::irrep& u41, const u4::irrep& u42)
   {
     std::vector<u4::irrep> u4cs;
@@ -112,12 +112,12 @@ namespace u4
 
   // compute the outer multiplicity directly
   // input irreps are normalized
-  inline int Eta(const u4::irrep& u4a, const u4::irrep& u4b, const u4::irrep& u4c)
+  inline int Eta(const u4::irrep& u4a, const u4::irrep& u4b,
+                 const u4::irrep& u4c)
   {
     u4::irrep u4c_temp = u4c;
-    int x = u4a.n14() + u4a.n24() + u4a.n34() +
-            u4b.n14() + u4b.n24() + u4b.n34() - 
-            u4c.n14() - u4c.n24() - u4c.n34(); 
+    int x = u4a.n14() + u4a.n24() + u4a.n34() + u4b.n14() + u4b.n24() +
+            u4b.n34() - u4c.n14() - u4c.n24() - u4c.n34();
 
     assert(x % 4 == 0);
     x /= 4;
@@ -196,6 +196,12 @@ namespace u4
     return eta;
   }
 
+  // alternative called 'mult':
+  inline int mult(const u4::irrep& u4a, const u4::irrep& u4b,
+                  const u4::irrep& u4c)
+  {
+    return u4::Eta(u4a, u4b, u4c);
+  }
 } // namespace u4
 
 #endif
