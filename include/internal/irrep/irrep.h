@@ -62,6 +62,11 @@ namespace u4
         n34(n34() - n44());
         n44(0);
       }
+
+      bool zero() const
+      {
+        return (n14() == 0) && (n24() == 0) && (n34() == 0) && (n44() == 0);
+      }
     };
 
     // print u4irrep
