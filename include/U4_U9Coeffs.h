@@ -128,6 +128,113 @@ namespace u4
     return U;
   }
 
+#define U4LIB_ENABLE_U4U9_CACHE
+  class U4U9_db
+  {
+#ifdef U4LIB_ENABLE_U4U9_CACHE
+    using key_type = std::array<int, 27>;
+    std::map<key_type, std::vector<double>> map_;
+#endif
+
+    qcx_utils::SO3_CGC& cgcs_;
+    qcx_utils::SO3_Racah& racahs_;
+    u3::WigU3U2_db& wigU3U2db_;
+    u4::WigU4U3_db& wigU4U3db_;
+
+    auto calculate(const u4::irrep& u4A, const u4::irrep& u4B, 
+                   const u4::irrep& u4C, const u4::irrep& u4D,
+                   const u4::irrep& u4AB, const u4::irrep& u4CD,
+                   const u4::irrep& u4AC, const u4::irrep& u4BD, 
+                   const u4::irrep& u4ABCD, 
+                   int etaABmax, int etaCDmax, int etaAB_CDmax, 
+                   int etaACmax, int etaBDmax, int etaAC_BDmax)
+    {
+      std::vector<u4::gelfand> gArrA = u4::gelfandBasis(u4A),
+                               gArrB = u4::gelfandBasis(u4B),
+                               gArrC = u4::gelfandBasis(u4C),
+                               gArrD = u4::gelfandBasis(u4D),
+                               gArrAB = u4::gelfandBasis(u4AB),
+                               gArrCD = u4::gelfandBasis(u4CD),
+                               gArrAC = u4::gelfandBasis(u4AC),
+                               gArrBD = u4::gelfandBasis(u4BD),
+                               gArrABCD = u4::gelfandBasis(u4ABCD);
+
+      return U9(u4A,gArrA,u4B,gArrB,u4C,gArrC,u4D,gArrD,
+                u4AB,gArrAB,u4CD,gArrCD,u4AC,gArrAC,u4BD,gArrBD,u4ABCD,gArrABCD,
+                etaABmax,etaCDmax,etaAB_CDmax,etaACmax,etaBDmax,etaAC_BDmax,
+                cgcs_,racahs_,wigU3U2db_,wigU4U3db_);
+    }
+
+  public:
+    U4U9_db(qcx_utils::SO3_CGC& cgcs, qcx_utils::SO3_Racah& racahs,
+            u3::WigU3U2_db& wigU3U2db, u4::WigU4U3_db& wigU4U3db) 
+      : cgcs_(cgcs), racahs_(racahs), 
+        wigU3U2db_(wigU3U2db), wigU4U3db_(wigU4U3db)
+    {}
+
+    auto get(int n14a, int n24a, int n34a, int n44a, 
+             int n14b, int n24b, int n34b, int n44b, 
+             int n14c, int n24c, int n34c, int n44c,
+             int n14d, int n24d, int n34d, int n44d,
+             int n14ab, int n24ab, int n34ab, int n44ab,
+             int n14cd, int n24cd, int n34cd, int n44cd,
+             int n14ac, int n24ac, int n34ac, int n44ac,
+             int n14bd, int n24bd, int n34bd, int n44bd,
+             int n14abcd, int n24abcd, int n34abcd, int n44abcd)
+    {
+      u4::irrep u4A(n14a - n44a, n24a - n44a, n34a - n44a, 0), 
+                u4B(n14b - n44b, n24b - n44b, n34b - n44b, 0), 
+                u4C(n14c - n44c, n24c - n44c, n34c - n44c, 0), 
+                u4D(n14d - n44d, n24d - n44d, n34d - n44d, 0), 
+                u4AB(n14ab - n44ab, n24ab - n44ab, n34ab - n44ab, 0), 
+                u4CD(n14cd - n44cd, n24cd - n44cd, n34cd - n44cd, 0), 
+                u4AC(n14ac - n44ac, n24ac - n44ac, n34ac - n44ac, 0),
+                u4BD(n14bd - n44bd, n24bd - n44bd, n34bd - n44bd, 0),
+                u4ABCD(n14abcd - n44abcd, n24abcd - n44abcd, n34abcd - n44abcd, 0);
+
+      int etaABmax = Eta(u4A,u4B,u4AB), etaCDmax = Eta(u4C,u4D,u4CD),
+          etaACmax = Eta(u4A,u4C,u4AC), etaBDmax = Eta(u4B,u4D,u4BD),
+          etaAB_CDmax = Eta(u4AB,u4CD,u4ABCD), 
+          etaAC_BDmax = Eta(u4AC,u4BD,u4ABCD);
+
+      bool flag = false;
+      std::vector<double> c;
+
+      if (etaABmax > 0 && etaCDmax > 0 && etaACmax > 0 && etaBDmax > 0
+          && etaAB_CDmax > 0 && etaAC_BDmax > 0)
+      {
+#ifdef U4LIB_ENABLE_U4U9_CACHE
+        key_type key = {u4A.n14(), u4A.n24(), u4A.n34(),
+                        u4B.n14(), u4B.n24(), u4B.n34(),
+                        u4C.n14(), u4C.n24(), u4C.n34(),
+                        u4D.n14(), u4D.n24(), u4D.n34(),
+                        u4AB.n14(), u4AB.n24(), u4AB.n34(),
+                        u4CD.n14(), u4CD.n24(), u4CD.n34(),
+                        u4AC.n14(), u4AC.n24(), u4AC.n34(),
+                        u4BD.n14(), u4BD.n24(), u4BD.n34(),
+                        u4ABCD.n14(), u4ABCD.n24(), u4ABCD.n34()};
+        auto iter = map_.find(key);
+        if (iter == map_.end())
+        {
+          auto p = map_.try_emplace(key, 
+            calculate(u4A, u4B, u4C, u4D, u4AB, u4CD, u4AC, u4BD, u4ABCD, 
+              etaABmax,etaCDmax,etaAB_CDmax,etaACmax,etaBDmax,etaAC_BDmax));
+          assert(p.second);
+          iter = p.first;
+        }
+
+        c = iter->second;
+#else
+        c = calculate(u4A, u4B, u4C, u4D, u4AB, u4CD, u4AC, u4BD, u4ABCD, 
+              etaABmax,etaCDmax,etaAB_CDmax,etaACmax,etaBDmax,etaAC_BDmax);
+#endif
+        flag = true;
+      }
+
+      return std::make_pair(flag, c);
+    }
+  };
+
 } // namespace u4
 
 #endif

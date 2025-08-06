@@ -260,7 +260,95 @@ namespace u4
     return U;
   }
 
-  // input by users: u4a, u4b, u4abc, u4c, u4ab, u4bc, all normalized
+#define U4LIB_ENABLE_U4U6_CACHE
+  class U4U6_db
+  {
+#ifdef U4LIB_ENABLE_U4U6_CACHE
+    using key_type = std::array<int, 18>;
+    std::map<key_type, std::vector<double>> map_;
+#endif
+
+    qcx_utils::SO3_CGC& cgcs_;
+    qcx_utils::SO3_Racah& racahs_;
+    u3::WigU3U2_db& wigU3U2db_;
+    u4::WigU4U3_db& wigU4U3db_;
+
+    auto calculate(const u4::irrep& u4A, const u4::irrep& u4B, 
+                   const u4::irrep& u4ABC, const u4::irrep& u4C,
+                   const u4::irrep& u4AB, int etaABmax, int etaAB_Cmax,
+                   const u4::irrep& u4BC, int etaBCmax, int etaA_BCmax)
+    {
+      std::vector<u4::gelfand> gArrA = u4::gelfandBasis(u4A),
+                               gArrB = u4::gelfandBasis(u4B),
+                               gArrC = u4::gelfandBasis(u4C),
+                               gArrAB = u4::gelfandBasis(u4AB),
+                               gArrBC = u4::gelfandBasis(u4BC),
+                               gArrABC = u4::gelfandBasis(u4ABC);
+
+      return U6(u4A,gArrA,u4B,gArrB,u4ABC,gArrABC,u4C,gArrC,
+                u4AB,gArrAB,etaABmax,etaAB_Cmax,
+                u4BC,gArrBC,etaBCmax,etaA_BCmax,
+                cgcs_,racahs_,wigU3U2db_,wigU4U3db_);
+    }
+
+  public:
+    U4U6_db(qcx_utils::SO3_CGC& cgcs, qcx_utils::SO3_Racah& racahs,
+            u3::WigU3U2_db& wigU3U2db, u4::WigU4U3_db& wigU4U3db) 
+      : cgcs_(cgcs), racahs_(racahs), 
+        wigU3U2db_(wigU3U2db), wigU4U3db_(wigU4U3db)
+    {}
+
+    auto get(int n14a, int n24a, int n34a, int n44a, 
+             int n14b, int n24b, int n34b, int n44b, 
+             int n14abc, int n24abc, int n34abc, int n44abc, 
+             int n14c, int n24c, int n34c, int n44c, 
+             int n14ab, int n24ab, int n34ab, int n44ab, 
+             int n14bc, int n24bc, int n34bc, int n44bc)
+    {
+      u4::irrep u4A(n14a - n44a, n24a - n44a, n34a - n44a, 0), 
+                u4B(n14b - n44b, n24b - n44b, n34b - n44b, 0), 
+                u4C(n14c - n44c, n24c - n44c, n34c - n44c, 0), 
+                u4AB(n14ab - n44ab, n24ab - n44ab, n34ab - n44ab, 0), 
+                u4BC(n14bc - n44bc, n24bc - n44bc, n34bc - n44bc, 0), 
+                u4ABC(n14abc - n44abc, n24abc - n44abc, n34abc - n44abc, 0);
+
+      int etaABmax = Eta(u4A,u4B,u4AB), etaAB_Cmax = Eta(u4AB,u4C,u4ABC),
+          etaBCmax = Eta(u4B,u4C,u4BC), etaA_BCmax = Eta(u4A,u4BC,u4ABC);
+
+      bool flag = false;
+      std::vector<double> c;
+
+      if (etaABmax > 0 && etaAB_Cmax > 0 && etaBCmax > 0 && etaA_BCmax > 0)
+      {
+#ifdef U4LIB_ENABLE_U4U6_CACHE
+        key_type key = {u4A.n14(), u4A.n24(), u4A.n34(),
+                        u4B.n14(), u4B.n24(), u4B.n34(),
+                        u4ABC.n14(), u4ABC.n24(), u4ABC.n34(),
+                        u4C.n14(), u4C.n24(), u4C.n34(),
+                        u4AB.n14(), u4AB.n24(), u4AB.n34(),
+                        u4BC.n14(), u4BC.n24(), u4BC.n34()};
+        auto iter = map_.find(key);
+        if (iter == map_.end())
+        {
+          auto p = map_.try_emplace(key, calculate(u4A, u4B, u4ABC, u4C, 
+                    u4AB, etaABmax, etaAB_Cmax, u4BC, etaBCmax, etaA_BCmax));
+          assert(p.second);
+          iter = p.first;
+        }
+
+        c = iter->second;
+#else
+        c = calculate(u4A, u4B, u4ABC, u4C, u4AB, etaABmax, etaAB_Cmax,
+                                            u4BC, etaBCmax, etaA_BCmax);
+#endif
+        flag = true;
+      }
+
+      return std::make_pair(flag, c);
+    }
+  };
+
+  // input by users: u4b, u4a, u4abc, u4c, u4ab, u4bc, all normalized
   inline std::vector<double>
   Z6(const u4::irrep& u4B, const std::vector<u4::gelfand>& gArrB,
      const u4::irrep& u4A, const std::vector<u4::gelfand>& gArrA,
@@ -499,5 +587,93 @@ namespace u4
 
     return Z;
   }
+
+#define U4LIB_ENABLE_U4Z6_CACHE
+  class U4Z6_db
+  {
+#ifdef U4LIB_ENABLE_U4Z6_CACHE
+    using key_type = std::array<int, 18>;
+    std::map<key_type, std::vector<double>> map_;
+#endif
+
+    qcx_utils::SO3_CGC& cgcs_;
+    qcx_utils::SO3_Racah& racahs_;
+    u3::WigU3U2_db& wigU3U2db_;
+    u4::WigU4U3_db& wigU4U3db_;
+
+    auto calculate(const u4::irrep& u4B, const u4::irrep& u4A, 
+                   const u4::irrep& u4ABC, const u4::irrep& u4C,
+                   const u4::irrep& u4AB, int etaABmax, int etaAB_Cmax,
+                   const u4::irrep& u4AC, int etaACmax, int etaAC_Bmax)
+    {
+      std::vector<u4::gelfand> gArrA = u4::gelfandBasis(u4A),
+                               gArrB = u4::gelfandBasis(u4B),
+                               gArrC = u4::gelfandBasis(u4C),
+                               gArrAB = u4::gelfandBasis(u4AB),
+                               gArrAC = u4::gelfandBasis(u4AC),
+                               gArrABC = u4::gelfandBasis(u4ABC);
+
+      return U6(u4B,gArrB,u4A,gArrA,u4ABC,gArrABC,u4C,gArrC,
+                u4AB,gArrAB,etaABmax,etaAB_Cmax,
+                u4AC,gArrAC,etaACmax,etaAC_Bmax,
+                cgcs_,racahs_,wigU3U2db_,wigU4U3db_);
+    }
+
+  public:
+    U4Z6_db(qcx_utils::SO3_CGC& cgcs, qcx_utils::SO3_Racah& racahs,
+            u3::WigU3U2_db& wigU3U2db, u4::WigU4U3_db& wigU4U3db) 
+      : cgcs_(cgcs), racahs_(racahs), 
+        wigU3U2db_(wigU3U2db), wigU4U3db_(wigU4U3db)
+    {}
+
+    auto get(int n14b, int n24b, int n34b, int n44b,
+             int n14a, int n24a, int n34a, int n44a, 
+             int n14abc, int n24abc, int n34abc, int n44abc, 
+             int n14c, int n24c, int n34c, int n44c, 
+             int n14ab, int n24ab, int n34ab, int n44ab, 
+             int n14ac, int n24ac, int n34ac, int n44ac)
+    {
+      u4::irrep u4A(n14a - n44a, n24a - n44a, n34a - n44a, 0), 
+                u4B(n14b - n44b, n24b - n44b, n34b - n44b, 0), 
+                u4C(n14c - n44c, n24c - n44c, n34c - n44c, 0), 
+                u4AB(n14ab - n44ab, n24ab - n44ab, n34ab - n44ab, 0), 
+                u4AC(n14ac - n44ac, n24ac - n44ac, n34ac - n44ac, 0), 
+                u4ABC(n14abc - n44abc, n24abc - n44abc, n34abc - n44abc, 0);
+
+      int etaABmax = Eta(u4A,u4B,u4AB), etaAB_Cmax = Eta(u4AB,u4C,u4ABC),
+          etaACmax = Eta(u4A,u4C,u4AC), etaAC_Bmax = Eta(u4AC,u4B,u4ABC);
+
+      bool flag = false;
+      std::vector<double> c;
+
+      if (etaABmax > 0 && etaAB_Cmax > 0 && etaACmax > 0 && etaAC_Bmax > 0)
+      {
+#ifdef U4LIB_ENABLE_U4Z6_CACHE
+        key_type key = {u4B.n14(), u4B.n24(), u4B.n34(),
+                        u4A.n14(), u4A.n24(), u4A.n34(),
+                        u4ABC.n14(), u4ABC.n24(), u4ABC.n34(),
+                        u4C.n14(), u4C.n24(), u4C.n34(),
+                        u4AB.n14(), u4AB.n24(), u4AB.n34(),
+                        u4AC.n14(), u4AC.n24(), u4AC.n34()};
+        auto iter = map_.find(key);
+        if (iter == map_.end())
+        {
+          auto p = map_.try_emplace(key, calculate(u4B, u4A, u4ABC, u4C, 
+                    u4AB, etaABmax, etaAB_Cmax, u4AC, etaACmax, etaAC_Bmax));
+          assert(p.second);
+          iter = p.first;
+        }
+
+        c = iter->second;
+#else
+        c = calculate(u4B, u4A, u4ABC, u4C, u4AB, etaABmax, etaAB_Cmax,
+                                            u4AC, etaACmax, etaAC_Bmax);
+#endif
+        flag = true;
+      }
+
+      return std::make_pair(flag, c);
+    }
+  };
 } // namespace u4
 #endif
