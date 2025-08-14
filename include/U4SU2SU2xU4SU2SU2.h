@@ -248,6 +248,11 @@ namespace u4
         : cgcs_(cgcs), wigU3U2db_(wigU3U2db), wigU4U3db_(wigU4U3db)
     { }
 
+#ifdef U4LIB_ENABLE_WIGU4SU2SU2_CACHE
+    WigU4SU2SU2_db(const WigU4SU2SU2_db&) = delete;
+    WigU4SU2SU2_db& operator=(const WigU4SU2SU2_db&) = delete;
+#endif
+
     auto get(int P1a, int P2a, int P3a, int SSa, int TTa, 
              int P1b, int P2b, int P3b, int SSb, int TTb,
              int P1c, int P2c, int P3c, int SSc, int TTc)

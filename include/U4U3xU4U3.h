@@ -1991,7 +1991,7 @@ namespace u4
                                        int etamax, int w3,
                                        qcx_utils::SO3_CGC& cgcs,
                                        WigU4U3_coeffs& coeffs,
-                                       u3::WigU3U2_db wigU3U2db)
+                                       u3::WigU3U2_db& wigU3U2db)
   {
 
     // trace states with same [w3,w2,w1] (z-weight)
@@ -2487,6 +2487,11 @@ namespace u4
     WigU4U3_db(qcx_utils::SO3_CGC& cgcs, u3::WigU3U2_db& wigU3U2db)
         : cgcs_(cgcs), wigU3U2db_(wigU3U2db)
     { }
+
+#ifdef U4LIB_ENABLE_WIGU4U3_CACHE
+    WigU4U3_db(const WigU4U3_db&) = delete;
+    WigU4U3_db& operator=(const WigU4U3_db&) = delete;
+#endif
 
     auto get(int n14a, int n24a, int n34a, int n44a, int n13a, int n23a,
              int n33a, int n14b, int n24b, int n34b, int n44b, int n13b,
