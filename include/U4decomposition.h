@@ -116,8 +116,7 @@ namespace u4
                  const u4::irrep& u4c)
   {
     u4::irrep u4c_temp = u4c;
-    int x = u4a.n14() + u4a.n24() + u4a.n34() + u4b.n14() + u4b.n24() +
-            u4b.n34() - u4c.n14() - u4c.n24() - u4c.n34();
+    int x = u4a.quanta() + u4b.quanta() - u4c.quanta();
 
     assert(x % 4 == 0);
     x /= 4;
