@@ -2,6 +2,7 @@
 #define U4LIB_DECOMPOSITION_H
 
 #include <algorithm>
+#include <cassert>
 #include <utility>
 #include <vector>
 
@@ -46,49 +47,74 @@ namespace u4
                     b23 = n23 - n22, b33 = n33, b12 = n12 - n11, b22 = n22,
                     b11 = n11;
 
-                u4::irrep u4c = u4b;
+                assert(b14 >= 0);
+                assert(b24 >= 0);
+                assert(b34 >= 0);
+                assert(b44 >= 0);
+                assert(b13 >= 0);
+                assert(b23 >= 0);
+                assert(b33 >= 0);
+                assert(b12 >= 0);
+                assert(b22 >= 0);
+                assert(b11 >= 0);
 
-                u4c.n44(u4c.n44() + b14);
-                if (!u4c.check())
+                // u4::irrep u4c = u4b;
+                int n14 = u4b.n14();
+                int n24 = u4b.n24();
+                int n34 = u4b.n34();
+                int n44 = u4b.n44();
+
+                // u4c.n44(u4c.n44() + b14);
+                n44 += b14;
+                if (n44 > n34)
                   continue;
 
-                u4c.n34(u4c.n34() + b13);
-                if (!u4c.check())
+                // u4c.n34(u4c.n34() + b13);
+                n34 += b13;
+                if (n34 > n24)
                   continue;
 
-                u4c.n24(u4c.n24() + b12);
-                if (!u4c.check())
+                // u4c.n24(u4c.n24() + b12);
+                n24 += b12;
+                if (n24 > n14)
                   continue;
 
-                u4c.n14(u4c.n14() + b11);
-                if (!u4c.check())
+                // u4c.n14(u4c.n14() + b11);
+                n14 += b11;
+
+                // u4c.n44(u4c.n44() + b24);
+                n44 += b24;
+                if (n44 > n34)
                   continue;
 
-                u4c.n44(u4c.n44() + b24);
-                if (!u4c.check())
+                // u4c.n34(u4c.n34() + b23);
+                n34 += b23;
+                if (n34 > n24)
                   continue;
 
-                u4c.n34(u4c.n34() + b23);
-                if (!u4c.check())
+                // u4c.n24(u4c.n24() + b22);
+                n24 += b22;
+                if (n24 > n14)
                   continue;
 
-                u4c.n24(u4c.n24() + b22);
-                if (!u4c.check())
+                // u4c.n44(u4c.n44() + b34);
+                n44 += b34;
+                if (n44 > n34)
                   continue;
 
-                u4c.n44(u4c.n44() + b34);
-                if (!u4c.check())
+                // u4c.n34(u4c.n34() + b33);
+                n34 += b33;
+                if (n34 > n24)
                   continue;
 
-                u4c.n34(u4c.n34() + b33);
-                if (!u4c.check())
+                // u4c.n44(u4c.n44() + b44);
+                n44 += b44;
+                if (n44 > n34)
                   continue;
 
-                u4c.n44(u4c.n44() + b44);
-                if (!u4c.check())
-                  continue;
-
+                u4::irrep u4c(n14, n24, n34, n44);
                 u4c.normalize();
+
                 auto iter = std::find(u4cs.begin(), u4cs.end(), u4c);
                 if (iter == u4cs.end())
                 {
@@ -115,15 +141,20 @@ namespace u4
   inline int Eta(const u4::irrep& u4a, const u4::irrep& u4b,
                  const u4::irrep& u4c)
   {
-    u4::irrep u4c_temp = u4c;
     int x = u4a.quanta() + u4b.quanta() - u4c.quanta();
 
     assert(x % 4 == 0);
     x /= 4;
+
+    /*
+    u4::irrep u4c_temp = u4c;
     u4c_temp.n14(u4c_temp.n14() + x);
     u4c_temp.n24(u4c_temp.n24() + x);
     u4c_temp.n34(u4c_temp.n34() + x);
     u4c_temp.n44(u4c_temp.n44() + x);
+    */
+    u4::irrep u4c_temp(u4c.n14() + x, u4c.n24() + x, u4c.n34() + x,
+                       u4c.n44() + x);
 
     int eta = 0, n11 = u4c_temp.n14() - u4b.n14();
 
@@ -142,47 +173,72 @@ namespace u4
                   b23 = n23 - n22, b33 = n33, b12 = n12 - n11, b22 = n22,
                   b11 = n11;
 
-              u4::irrep u4C = u4b;
+              assert(b14 >= 0);
+              assert(b24 >= 0);
+              assert(b34 >= 0);
+              assert(b44 >= 0);
+              assert(b13 >= 0);
+              assert(b23 >= 0);
+              assert(b33 >= 0);
+              assert(b12 >= 0);
+              assert(b22 >= 0);
+              assert(b11 >= 0);
 
-              u4C.n44(u4C.n44() + b14);
-              if (!u4C.check())
+              // u4::irrep u4C = u4b;
+              int n14 = u4b.n14();
+              int n24 = u4b.n24();
+              int n34 = u4b.n34();
+              int n44 = u4b.n44();
+
+              // u4C.n44(u4C.n44() + b14);
+              n44 += b14;
+              if (n44 > n34)
                 continue;
 
-              u4C.n34(u4C.n34() + b13);
-              if (!u4C.check())
+              // u4C.n34(u4C.n34() + b13);
+              n34 += b13;
+              if (n34 > n24)
                 continue;
 
-              u4C.n24(u4C.n24() + b12);
-              if (!u4C.check())
+              // u4C.n24(u4C.n24() + b12);
+              n24 += b12;
+              if (n24 > n14)
                 continue;
 
-              u4C.n14(u4C.n14() + b11);
-              if (!u4C.check())
+              // u4C.n14(u4C.n14() + b11);
+              n14 += b11;
+
+              // u4C.n44(u4C.n44() + b24);
+              n44 += b24;
+              if (n44 > n34)
                 continue;
 
-              u4C.n44(u4C.n44() + b24);
-              if (!u4C.check())
+              // u4C.n34(u4C.n34() + b23);
+              n34 += b23;
+              if (n34 > n24)
                 continue;
 
-              u4C.n34(u4C.n34() + b23);
-              if (!u4C.check())
+              // u4C.n24(u4C.n24() + b22);
+              n24 += b22;
+              if (n24 > n14)
                 continue;
 
-              u4C.n24(u4C.n24() + b22);
-              if (!u4C.check())
+              // u4C.n44(u4C.n44() + b34);
+              n44 += b34;
+              if (n44 > n34)
                 continue;
 
-              u4C.n44(u4C.n44() + b34);
-              if (!u4C.check())
+              // u4C.n34(u4C.n34() + b33);
+              n34 += b33;
+              if (n34 > n24)
                 continue;
 
-              u4C.n34(u4C.n34() + b33);
-              if (!u4C.check())
+              // u4C.n44(u4C.n44() + b44);
+              n44 += b44;
+              if (n44 > n34)
                 continue;
 
-              u4C.n44(u4C.n44() + b44);
-              if (!u4C.check())
-                continue;
+              u4::irrep u4C(n14, n24, n34, n44);
 
               if (u4C == u4c_temp)
                 eta++;
