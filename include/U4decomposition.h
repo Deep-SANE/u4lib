@@ -141,11 +141,16 @@ namespace u4
   inline int Eta(const u4::irrep& u4a, const u4::irrep& u4b,
                  const u4::irrep& u4c)
   {
+    //std::cout << u4a << u4b << u4c << std::endl;
     int x = u4a.quanta() + u4b.quanta() - u4c.quanta();
 
-    assert(x % 4 == 0);
+    if(x % 4 != 0)
+      return 0;
+    
     x /= 4;
 
+    if ((u4c.n44() + x) < 0)
+      x = - (u4c.n44() + x);
     /*
     u4::irrep u4c_temp = u4c;
     u4c_temp.n14(u4c_temp.n14() + x);
