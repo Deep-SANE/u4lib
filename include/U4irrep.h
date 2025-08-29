@@ -3,9 +3,11 @@
 
 #include <cassert>
 #include <cstdint>
+#include <istream>
 #include <ostream>
 
 #include <qcx_convert.h>
+#include <qcx_readwrite.h>
 
 #ifdef HAVE_FMT
 #include <fmt/format.h>
@@ -77,6 +79,24 @@ namespace u4
     bool zero() const
     {
       return (n14_ == 0) && (n24_ == 0) && (n34_ == 0) && (n44_ == 0);
+    }
+
+    // write to binary file:
+    void writeBinary(std::ostream& s) const
+    {
+      qcx_utils::write(s, n14_);
+      qcx_utils::write(s, n24_);
+      qcx_utils::write(s, n34_);
+      qcx_utils::write(s, n44_);
+    }
+
+    // read from binary file:
+    void readBinary(std::istream& s)
+    {
+      qcx_utils::read(s, n14_);
+      qcx_utils::read(s, n24_);
+      qcx_utils::read(s, n34_);
+      qcx_utils::read(s, n44_);
     }
   };
 
