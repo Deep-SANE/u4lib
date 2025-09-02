@@ -4,6 +4,8 @@
 
 #include <cmath>
 #include <iostream>
+#include <span>
+#include <utility>
 #include <vector>
 
 #include <Eigen/Dense>
@@ -129,10 +131,11 @@ namespace u4
     return U;
   }
 
+  template <typename T>
   class U4U9
   {
-    std::vector<double> coeffs_;
-    qcx_utils::NDIndex ndi_;
+    T coeffs_;
+    qcx_utils::NDIndex6 ndi_;
 
   public:
     U4U9()
@@ -141,9 +144,9 @@ namespace u4
       assert(coeffs_.size() == ndi_.cardinality());
     }
 
-    U4U9(const std::vector<double>& coeffs, size_t etaACmax, size_t etaBDmax,
+    U4U9(T&& coeffs, size_t etaACmax, size_t etaBDmax,
          size_t etaABCDmax, size_t etaABmax, size_t etaCDmax, size_t etaACBDmax)
-        : coeffs_(coeffs)
+        : coeffs_(std::move(coeffs))
     {
       ndi_.add_dimensions(etaACmax, etaBDmax, etaABCDmax, etaABmax, etaCDmax,
                           etaACBDmax);
@@ -183,7 +186,9 @@ namespace u4
     using key_type = std::array<int, 27>;
     std::map<key_type, std::vector<double>> map_;
 
-    std::vector<double> empty_;
+    using return_type = std::span<const double>;
+#else
+    using return_type = std::vector<double>;
 #endif
 
     qcx_utils::SO3_CGC& cgcs_;
@@ -223,16 +228,17 @@ namespace u4
           wigU4U3db_(wigU4U3db)
     { }
 
-    U4U9 get_U4U9(u4::irrep u4A, u4::irrep u4B, u4::irrep u4C, u4::irrep u4D,
-                  u4::irrep u4AB, u4::irrep u4CD, u4::irrep u4AC,
-                  u4::irrep u4BD, u4::irrep u4ABCD, int etaACmax, int etaBDmax,
-                  int etaABCDmax, int etaABmax, int etaCDmax, int etaACBDmax)
+    U4U9<return_type> get_U4U9(u4::irrep u4A, u4::irrep u4B, u4::irrep u4C,
+                               u4::irrep u4D, u4::irrep u4AB, u4::irrep u4CD,
+                               u4::irrep u4AC, u4::irrep u4BD, u4::irrep u4ABCD,
+                               int etaACmax, int etaBDmax, int etaABCDmax,
+                               int etaABmax, int etaCDmax, int etaACBDmax)
     {
-      decltype(auto) coeffs =
+      auto coeffs =
           get(u4A, u4B, u4C, u4D, u4AB, u4CD, u4AC, u4BD, u4ABCD, etaABmax,
               etaCDmax, etaABCDmax, etaACmax, etaBDmax, etaACBDmax);
 
-      return {coeffs,
+      return {std::move(coeffs),
               static_cast<size_t>(etaACmax),
               static_cast<size_t>(etaBDmax),
               static_cast<size_t>(etaABCDmax),
@@ -240,15 +246,12 @@ namespace u4
               static_cast<size_t>(etaCDmax),
               static_cast<size_t>(etaACBDmax)};
     }
-#ifdef U4LIB_ENABLE_U4U9_CACHE
-    const std::vector<double>&
-#else
-    std::vector<double>
-#endif
-    get(u4::irrep u4A, u4::irrep u4B, u4::irrep u4C, u4::irrep u4D,
-        u4::irrep u4AB, u4::irrep u4CD, u4::irrep u4AC, u4::irrep u4BD,
-        u4::irrep u4ABCD, int etaACmax, int etaBDmax, int etaABCDmax,
-        int etaABmax, int etaCDmax, int etaACBDmax)
+
+    return_type get(u4::irrep u4A, u4::irrep u4B, u4::irrep u4C, u4::irrep u4D,
+                    u4::irrep u4AB, u4::irrep u4CD, u4::irrep u4AC,
+                    u4::irrep u4BD, u4::irrep u4ABCD, int etaACmax,
+                    int etaBDmax, int etaABCDmax, int etaABmax, int etaCDmax,
+                    int etaACBDmax)
     {
       u4A.normalize();
       u4B.normalize();
@@ -270,42 +273,38 @@ namespace u4
       bool flag = etaABmax > 0 && etaCDmax > 0 && etaACmax > 0 &&
                   etaBDmax > 0 && etaABCDmax > 0 && etaACBDmax > 0;
 
-#ifdef U4LIB_ENABLE_U4U9_CACHE
-      if (flag)
-      {
-        key_type key = {u4A.n14(),    u4A.n24(),    u4A.n34(),   u4B.n14(),
-                        u4B.n24(),    u4B.n34(),    u4C.n14(),   u4C.n24(),
-                        u4C.n34(),    u4D.n14(),    u4D.n24(),   u4D.n34(),
-                        u4AB.n14(),   u4AB.n24(),   u4AB.n34(),  u4CD.n14(),
-                        u4CD.n24(),   u4CD.n34(),   u4AC.n14(),  u4AC.n24(),
-                        u4AC.n34(),   u4BD.n14(),   u4BD.n24(),  u4BD.n34(),
-                        u4ABCD.n14(), u4ABCD.n24(), u4ABCD.n34()};
-
-        auto iter = map_.find(key);
-        if (iter == map_.end())
-        {
-          auto p = map_.try_emplace(
-              key, calculate(u4A, u4B, u4C, u4D, u4AB, u4CD, u4AC, u4BD, u4ABCD,
-                             etaABmax, etaCDmax, etaABCDmax, etaACmax,
-                             etaBDmax, etaACBDmax));
-          assert(p.second);
-          iter = p.first;
-        }
-
-        return iter->second;
-      }
-      else
-        return empty_;
-#else
-      if (flag)
-        return calculate(u4A, u4B, u4C, u4D, u4AB, u4CD, u4AC, u4BD, u4ABCD,
-                         etaABmax, etaCDmax, etaABCDmax, etaACmax, etaBDmax,
-                         etaACBDmax);
-      else
+      if (!flag)
         return {};
+
+#ifdef U4LIB_ENABLE_U4U9_CACHE
+      key_type key = {u4A.n14(),    u4A.n24(),    u4A.n34(),   u4B.n14(),
+                      u4B.n24(),    u4B.n34(),    u4C.n14(),   u4C.n24(),
+                      u4C.n34(),    u4D.n14(),    u4D.n24(),   u4D.n34(),
+                      u4AB.n14(),   u4AB.n24(),   u4AB.n34(),  u4CD.n14(),
+                      u4CD.n24(),   u4CD.n34(),   u4AC.n14(),  u4AC.n24(),
+                      u4AC.n34(),   u4BD.n14(),   u4BD.n24(),  u4BD.n34(),
+                      u4ABCD.n14(), u4ABCD.n24(), u4ABCD.n34()};
+
+      auto iter = map_.find(key);
+      if (iter == map_.end())
+      {
+        auto p = map_.try_emplace(key, calculate(u4A, u4B, u4C, u4D, u4AB, u4CD,
+                                                 u4AC, u4BD, u4ABCD, etaABmax,
+                                                 etaCDmax, etaABCDmax, etaACmax,
+                                                 etaBDmax, etaACBDmax));
+        assert(p.second);
+        iter = p.first;
+      }
+
+      return iter->second;
+#else
+      return calculate(u4A, u4B, u4C, u4D, u4AB, u4CD, u4AC, u4BD, u4ABCD,
+                       etaABmax, etaCDmax, etaABCDmax, etaACmax, etaBDmax,
+                       etaACBDmax);
 #endif
     }
 
+    // TO BE REMOVED IN THE FUTURE:
     auto get(int n14a, int n24a, int n34a, int n44a, int n14b, int n24b,
              int n34b, int n44b, int n14c, int n24c, int n34c, int n44c,
              int n14d, int n24d, int n34d, int n44d, int n14ab, int n24ab,
