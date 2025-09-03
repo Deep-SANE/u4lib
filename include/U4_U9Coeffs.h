@@ -234,6 +234,10 @@ namespace u4
                                int etaACmax, int etaBDmax, int etaABCDmax,
                                int etaABmax, int etaCDmax, int etaACBDmax)
     {
+      if ((etaACmax == 0) || (etaBDmax == 0) || (etaABCDmax == 0) ||
+          (etaABmax == 0) || (etaCDmax == 0) || (etaACBDmax == 0))
+        return {};
+
       auto coeffs =
           get(u4A, u4B, u4C, u4D, u4AB, u4CD, u4AC, u4BD, u4ABCD, etaABmax,
               etaCDmax, etaABCDmax, etaACmax, etaBDmax, etaACBDmax);
@@ -270,10 +274,8 @@ namespace u4
       assert(etaBDmax == Eta(u4B, u4D, u4BD));
       assert(etaACBDmax == Eta(u4AC, u4BD, u4ABCD));
 
-      bool flag = etaABmax > 0 && etaCDmax > 0 && etaACmax > 0 &&
-                  etaBDmax > 0 && etaABCDmax > 0 && etaACBDmax > 0;
-
-      if (!flag)
+      if ((etaABmax == 0) || (etaCDmax == 0) || (etaABCDmax == 0) ||
+          (etaACmax == 0) || (etaBDmax == 0) || (etaACBDmax == 0))
         return {};
 
 #ifdef U4LIB_ENABLE_U4U9_CACHE
