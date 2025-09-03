@@ -253,8 +253,8 @@ namespace u4
 
     return_type get(u4::irrep u4A, u4::irrep u4B, u4::irrep u4C, u4::irrep u4D,
                     u4::irrep u4AB, u4::irrep u4CD, u4::irrep u4AC,
-                    u4::irrep u4BD, u4::irrep u4ABCD, int etaACmax,
-                    int etaBDmax, int etaABCDmax, int etaABmax, int etaCDmax,
+                    u4::irrep u4BD, u4::irrep u4ABCD, int etaABmax,
+                    int etaCDmax, int etaABCDmax, int etaACmax, int etaBDmax,
                     int etaACBDmax)
     {
       u4A.normalize();
