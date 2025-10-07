@@ -141,6 +141,8 @@ namespace u4
       return std::pair(exist, X);
     }
 
+    int size() const { return map_.size(); }
+
     const auto& matrix() const { return coeffs_; }
   };
 
