@@ -122,8 +122,8 @@ public:
   template <typename Context>
   constexpr auto format(const u4::irrep& i, Context& ctx) const
   {
-    return format_to(ctx.out(), "[{},{},{},{}]", i.n14(), i.n24(), i.n34(),
-                     i.n44());
+    return fmt::format_to(ctx.out(), "[{},{},{},{}]", i.n14(), i.n24(), i.n34(),
+                          i.n44());
   }
 };
 
