@@ -81,6 +81,17 @@ namespace u4
       return (n14_ == 0) && (n24_ == 0) && (n34_ == 0) && (n44_ == 0);
     }
 
+    // second-order Casimir
+    double C2() const
+    {
+      // O(6) quantum numbers
+      double p1 = (n14_ + n24_ - n34_ - n44_) / 2.0,
+             p2 = (n14_ - n24_ + n34_ - n44_) / 2.0,
+             p3 = (n14_ - n24_ - n34_ + n44_) / 2.0;
+
+      return p1 * (p1 + 4.0) + p2 * (p2 + 2.0) + p3 * p3;
+    }
+
     // write to binary file:
     void writeBinary(std::ostream& s) const
     {
