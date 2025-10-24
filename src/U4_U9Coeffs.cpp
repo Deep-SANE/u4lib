@@ -10,13 +10,13 @@
 #include <U4_U9Coeffs.h>
 #include <U4basis.h>
 
-#ifdef U4LIB_USE_SLEPC
+#ifdef USE_SLEPC
 #include <slepcsys.h>
 #endif 
 
 int main(int argc, char* argv[])
 {
-#ifdef U4LIB_USE_SLEPC
+#ifdef USE_SLEPC
   SlepcInitialize(&argc, &argv, NULL, NULL);
 #endif
 
@@ -212,7 +212,7 @@ int main(int argc, char* argv[])
     std::cout << "Recoupling does not exist" << std::endl;
   }
 
-#ifdef U4LIB_USE_SLEPC 
+#ifdef USE_SLEPC 
   SlepcFinalize();
 #endif
 
