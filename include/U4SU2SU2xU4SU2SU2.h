@@ -262,11 +262,14 @@ namespace u4
       irrep u4b(P1b, P2b, P3b);
       irrep u4c(P1c, P2c, P3c);
       int etamax = Eta(u4a, u4b, u4c);
+      int zetamaxa = u4::Zeta(u4a,SSa,TTa);
+      int zetamaxb = u4::Zeta(u4b,SSb,TTb);
+      int zetamaxc = u4::Zeta(u4c,SSc,TTc);
 
       bool flag = false;
       Eigen::MatrixXd m;
 
-      if (etamax > 0 && 
+      if (etamax > 0 && zetamaxa > 0 && zetamaxb > 0 && zetamaxc > 0 &&
           std::fabs(SSa - SSb) <= SSc && (SSa + SSb) >= SSc &&
           std::fabs(TTa - TTb) <= TTc && (TTa + TTb) >= TTc)
       {
