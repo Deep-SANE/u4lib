@@ -91,6 +91,7 @@ int main(int argc, char* argv[])
                                 P1c, P2c, P3c, pC.SS, pC.TT,
                                 0, 0, 1, 1, 1, 
                                 P1a, P2a, P3a, pA.SS, pA.TT);
+          assert(flag_conj);
 
   	  	  int phix2 = (3 * P1a + 4 * P2a + 3 * P3a) - pA.SS - pA.TT
                     - (3 * P1c + 4 * P2c + 3 * P3c) + pC.SS + pC.TT + 3;
@@ -99,12 +100,14 @@ int main(int argc, char* argv[])
   	  	  	std::sqrt((pA.SS + 1.0) * (pA.TT + 1.0) * dimC 
                     / (pC.SS + 1.0) / (pC.TT + 1.0) / dimA);
 
+          auto d = diff(pA.zeta, cgcU4, pC.zeta, phase * factor * cgcU4_conj);
+
   	  	  std::cout << "\nSS1 = " << pA.SS << ", TT1 = " << pA.TT 
                     << "; SS3 = " << pC.SS << ", TT3 = " << pC.TT 
   	  	  			    << "\nCoupling:\n" << cgcU4 
   	  	  			    << "\nConjugate coupling:\n" << cgcU4_conj 
-  	  	  			    << "\nDifference with factor:\n" << diff(
-  	  	  					  pA.zeta, cgcU4, pC.zeta, phase * factor * cgcU4_conj)
+  	  	  			    << "\nDifference with factor: " << ((d.norm() > 1e-10) ? "Violated" : "")
+                    //<< "\nDifference with factor: " << ((d.norm() > 1e-6) ? d : Eigen::MatrixXd(0,0))
   	  	  			    << std::endl;
   	  	}
   	  }
