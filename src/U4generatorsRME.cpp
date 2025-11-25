@@ -29,8 +29,8 @@ int main()
   std::cout << "The physical basis states are: " << std::endl;
   for (int i = 0; i < physbasis.size(); i++)
   {
-    std::cout << "(" << i << "): |(" << physbasis[i].toprow.P1() << ","
-              << physbasis[i].toprow.P2() << "," << physbasis[i].toprow.P3()
+    std::cout << "(" << i << "): |(" << physbasis[i].P1() << ","
+              << physbasis[i].P2() << "," << physbasis[i].P3()
               << "), zeta_max=" << physbasis[i].zeta
               << ", SS=" << physbasis[i].SS << ", TT=" << physbasis[i].TT << ">"
               << std::endl;
@@ -54,7 +54,7 @@ int main()
   std::cin >> i_ket;
 
   std::vector<int> bra_zeta, ket_zeta;
-  Eigen::Matrix<double, Eigen::Dynamic, Eigen::Dynamic> RME;
+  Eigen::MatrixXd RME;
 
   if (option == 0)
     RME = u4::RME_S(physbasis[i_bra], physbasis[i_ket], bra_zeta, ket_zeta);

@@ -111,70 +111,72 @@ namespace u4
       // factor of sqrt((2S'+1)(2T'+1))
 
       // Expanding in canonical basis
-      std::vector<u4::gelfand> bra_gArr = u4::gelfandBasis(bra.toprow);
-      std::vector<int> bra_indices;
-      Eigen::MatrixXd bra_coeffs =
-        u4::phys_to_cano(bra, bra.SS, bra.TT, bra_indices, bra_gArr);
+      std::vector<u4::gelfand> bra_gArr = u4::gelfandBasis(bra.irr);
+      auto [bra_indices, bra_coeffs] =
+        u4::phys_to_cano(bra, bra.SS, bra.TT, bra_gArr);
 
-      std::vector<u4::gelfand> ket_gArr = u4::gelfandBasis(ket.toprow);
-      std::vector<int> ket_indices;
-      Eigen::MatrixXd ket_coeffs =
-        u4::phys_to_cano(ket, ket.SS, ket.TT, ket_indices, ket_gArr);
+      std::vector<u4::gelfand> ket_gArr = u4::gelfandBasis(ket.irr);
+      auto [ket_indices, ket_coeffs] =
+        u4::phys_to_cano(ket, ket.SS, ket.TT, ket_gArr);
 
       double c = std::sqrt((bra.SS + 1.0) * (bra.TT + 1.0));
 
       // running through the gelfand states
       for (int k = 0; k < ket_indices.size(); k++)
       {
+        const auto& ket_g = ket_gArr[ket_indices[k]];
+
         for (int b = 0; b < bra_indices.size(); b++)
         {
-          if (u4::E14_13_12(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
+          const auto& bra_g = bra_gArr[bra_indices[b]];
+
+          if (u4::E14_13_12(ket_g, bra_g))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
               for (int j = 0; j < ket.zeta; j++)
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_gArr[ket_indices[k]].e14_13_12();
+                             ket_g.e14_13_12();
           }
-          else if (u4::E14_13_22(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
+          else if (u4::E14_13_22(ket_g, bra_g))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
               for (int j = 0; j < ket.zeta; j++)
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_gArr[ket_indices[k]].e14_13_22();
+                             ket_g.e14_13_22();
           }
-          else if (u4::E14_23_12(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
+          else if (u4::E14_23_12(ket_g, bra_g))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
               for (int j = 0; j < ket.zeta; j++)
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_gArr[ket_indices[k]].e14_23_12();
+                             ket_g.e14_23_12();
           }
-          else if (u4::E14_23_22(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
+          else if (u4::E14_23_22(ket_g, bra_g))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
               for (int j = 0; j < ket.zeta; j++)
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_gArr[ket_indices[k]].e14_23_22();
+                             ket_g.e14_23_22();
           }
-          else if (u4::E14_33_12(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
+          else if (u4::E14_33_12(ket_g, bra_g))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
               for (int j = 0; j < ket.zeta; j++)
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_gArr[ket_indices[k]].e14_33_12();
+                             ket_g.e14_33_12();
           }
-          else if (u4::E14_33_22(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
+          else if (u4::E14_33_22(ket_g, bra_g))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
               for (int j = 0; j < ket.zeta; j++)
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_gArr[ket_indices[k]].e14_33_22();
+                             ket_g.e14_33_22();
           }
         }
       }
@@ -188,15 +190,13 @@ namespace u4
       // factor of sqrt((2S'+1)(2T'+1))
 
       // Expanding in canonical basis
-      std::vector<u4::gelfand> bra_gArr = u4::gelfandBasis(bra.toprow);
-      std::vector<int> bra_indices;
-      Eigen::MatrixXd bra_coeffs =
-        u4::phys_to_cano(bra, bra.SS, bra.TT, bra_indices, bra_gArr);
+      std::vector<u4::gelfand> bra_gArr = u4::gelfandBasis(bra.irr);
+      auto [bra_indices, bra_coeffs] =
+        u4::phys_to_cano(bra, bra.SS, bra.TT, bra_gArr);
 
-      std::vector<u4::gelfand> ket_gArr = u4::gelfandBasis(ket.toprow);
-      std::vector<int> ket_indices;
-      Eigen::MatrixXd ket_coeffs =
-        u4::phys_to_cano(ket, ket.SS, ket.TT, ket_indices, ket_gArr);
+      std::vector<u4::gelfand> ket_gArr = u4::gelfandBasis(ket.irr);
+      auto [ket_indices, ket_coeffs] =
+        u4::phys_to_cano(ket, ket.SS, ket.TT, ket_gArr);
 
       double c = std::sqrt((bra.SS + 1.0) * (bra.TT + 1.0) *
                            (ket.TT / 2.0 + 1.0) / ket.TT);
@@ -204,74 +204,77 @@ namespace u4
       // running through the gelfand states
       for (int k = 0; k < ket_indices.size(); k++)
       {
+        const auto& ket_g = ket_gArr[ket_indices[k]];
+
         for (int b = 0; b < bra_indices.size(); b++)
         {
+          const auto& bra_g = bra_gArr[bra_indices[b]];
           // E24
-          if (u4::E24_13_12(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
+          if (u4::E24_13_12(ket_g, bra_g))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
               for (int j = 0; j < ket.zeta; j++)
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_gArr[ket_indices[k]].e24_13_12();
+                             ket_g.e24_13_12();
           }
-          else if (u4::E24_13_22(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
+          else if (u4::E24_13_22(ket_g, bra_g))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
               for (int j = 0; j < ket.zeta; j++)
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_gArr[ket_indices[k]].e24_13_22();
+                             ket_g.e24_13_22();
           }
-          else if (u4::E24_23_12(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
+          else if (u4::E24_23_12(ket_g, bra_g))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
               for (int j = 0; j < ket.zeta; j++)
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_gArr[ket_indices[k]].e24_23_12();
+                             ket_g.e24_23_12();
           }
-          else if (u4::E24_23_22(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
+          else if (u4::E24_23_22(ket_g, bra_g))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
               for (int j = 0; j < ket.zeta; j++)
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_gArr[ket_indices[k]].e24_23_22();
+                             ket_g.e24_23_22();
           }
-          else if (u4::E24_33_12(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
+          else if (u4::E24_33_12(ket_g, bra_g))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
               for (int j = 0; j < ket.zeta; j++)
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_gArr[ket_indices[k]].e24_33_12();
+                             ket_g.e24_33_12();
           }
-          else if (u4::E24_33_22(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
+          else if (u4::E24_33_22(ket_g, bra_g))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
               for (int j = 0; j < ket.zeta; j++)
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_gArr[ket_indices[k]].e24_33_22();
+                             ket_g.e24_33_22();
           }
 
           //-E13
-          else if (u4::E13_12(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
+          else if (u4::E13_12(ket_g, bra_g))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
               for (int j = 0; j < ket.zeta; j++)
                 RME(i, j) -= c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_gArr[ket_indices[k]].e13_12();
+                             ket_g.e13_12();
           }
-          else if (u4::E13_22(ket_gArr[ket_indices[k]], bra_gArr[bra_indices[b]]))
+          else if (u4::E13_22(ket_g, bra_g))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
               for (int j = 0; j < ket.zeta; j++)
                 RME(i, j) -= c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_gArr[ket_indices[k]].e13_22();
+                             ket_g.e13_22();
           }
         }
       }
@@ -286,10 +289,9 @@ namespace u4
       // factor of sqrt((2S'+1)(2T'+1))
 
       // Expanding in canonical basis
-      std::vector<u4::gelfand> ket_gArr = u4::gelfandBasis(ket.toprow);
-      std::vector<int> ket_indices;
-      Eigen::MatrixXd ket_coeffs =
-        u4::phys_to_cano(ket, ket.SS, ket.TT, ket_indices, ket_gArr);
+      std::vector<u4::gelfand> ket_gArr = u4::gelfandBasis(ket.irr);
+      auto [ket_indices, ket_coeffs] =
+        u4::phys_to_cano(ket, ket.SS, ket.TT, ket_gArr);
 
       double c =
           std::sqrt((bra.SS + 1.0) * (bra.TT + 1.0) * (ket.SS / 2.0 + 1.0) *
@@ -298,14 +300,13 @@ namespace u4
       // running through the gelfand states
       for (int k = 0; k < ket_indices.size(); k++)
       {
+        const auto& g = ket_gArr[ket_indices[k]];
+
         // running through the multiplicity labels
         for (int i = 0; i < ket.zeta; i++)
           for (int j = 0; j < ket.zeta; j++)
             RME(i, j) += c * ket_coeffs(k, i) * ket_coeffs(k, j) *
-                         (ket_gArr[ket_indices[k]].e11() - 
-                          ket_gArr[ket_indices[k]].e22() -
-                          ket_gArr[ket_indices[k]].e33() + 
-                          ket_gArr[ket_indices[k]].e44());
+                         (g.e11() - g.e22() - g.e33() + g.e44());
       }
     }
 
@@ -317,15 +318,13 @@ namespace u4
       // factor of sqrt((2S'+1)(2T'+1))
 
       // Expanding in canonical basis
-      std::vector<u4::gelfand> bra_gArr = u4::gelfandBasis(bra.toprow);
-      std::vector<int> bra_indices;
-      Eigen::MatrixXd bra_coeffs =
-        u4::phys_to_cano(bra, bra.SS, bra.TT, bra_indices, bra_gArr);
+      std::vector<u4::gelfand> bra_gArr = u4::gelfandBasis(bra.irr);
+      auto [bra_indices, bra_coeffs] =
+        u4::phys_to_cano(bra, bra.SS, bra.TT, bra_gArr);
 
-      std::vector<u4::gelfand> ket_gArr = u4::gelfandBasis(ket.toprow);
-      std::vector<int> ket_indices;
-      Eigen::MatrixXd ket_coeffs =
-        u4::phys_to_cano(ket, ket.SS, ket.TT, ket_indices, ket_gArr);
+      std::vector<u4::gelfand> ket_gArr = u4::gelfandBasis(ket.irr);
+      auto [ket_indices, ket_coeffs] =
+        u4::phys_to_cano(ket, ket.SS, ket.TT, ket_gArr);
 
       double c = -std::sqrt((bra.SS + 1.0) * (bra.TT + 1.0) * (ket.SS + 1.0) /
                             (ket.SS - 1.0));
@@ -333,24 +332,28 @@ namespace u4
       // running through the gelfand states
       for (int k = 0; k < ket_indices.size(); k++)
       {
+        const auto& ket_g = ket_gArr[ket_indices[k]];
+
         for (int b = 0; b < bra_indices.size(); b++)
         {
+          const auto& bra_g = bra_gArr[bra_indices[b]];
+
           // E32
-          if (u4::E23_12(bra_gArr[bra_indices[b]],ket_gArr[ket_indices[k]]))
+          if (u4::E23_12(bra_g,ket_g))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
               for (int j = 0; j < ket.zeta; j++)
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_gArr[ket_indices[k]].e32_12();
+                             ket_g.e32_12();
           }
-          else if (u4::E23_22(bra_gArr[bra_indices[b]],ket_gArr[ket_indices[k]]))
+          else if (u4::E23_22(bra_g,ket_g))
           {
             // running through the multiplicity labels
             for (int i = 0; i < bra.zeta; i++)
               for (int j = 0; j < ket.zeta; j++)
                 RME(i, j) += c * bra_coeffs(b, i) * ket_coeffs(k, j) *
-                             ket_gArr[ket_indices[k]].e32_22();
+                             ket_g.e32_22();
           }
         }
       }
@@ -359,8 +362,8 @@ namespace u4
     else if ((ss == 2 && tt == -2) || (ss == 0 && tt == 2))
     {
 
-      u4::physicalvector new_bra(bra.toprow, bra.TT, bra.SS),
-          new_ket(ket.toprow, ket.TT, ket.SS);
+      u4::physicalvector new_bra(bra.irr, bra.TT, bra.SS),
+          new_ket(ket.irr, ket.TT, ket.SS);
       std::vector<int> new_bra_zeta, new_ket_zeta;
 
       RME = RME_U(new_bra, new_ket, new_bra_zeta, new_ket_zeta);
