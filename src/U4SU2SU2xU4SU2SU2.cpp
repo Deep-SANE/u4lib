@@ -170,13 +170,12 @@ int main(int argc, char* argv[])
   // Start time measurement
   auto t0 = std::chrono::high_resolution_clock::now();
 
-  std::vector<std::tuple<int, int, int>> tArr;
   qcx_utils::SO3_CGC cgcs;
   u3::WigU3U2_db wigU3U2db(cgcs);
   u4::WigU4U3_db wigU4U3db(cgcs, wigU3U2db);
 
-  auto coeffs = u4::WigU4SU2SU2(etamax, pArrA, pArrB, pArrC, tArr, 
-                                      cgcs, wigU3U2db, wigU4U3db);
+  auto [tArr, coeffs] = u4::WigU4SU2SU2(
+    etamax, pArrA, pArrB, pArrC, cgcs, wigU3U2db, wigU4U3db);
 
   // End time measurement
   auto t1 = std::chrono::high_resolution_clock::now();
@@ -196,7 +195,7 @@ int main(int argc, char* argv[])
               << "for eta = 1 ... " << etamax << std::endl;
     std::cout << "z1\tz2\tz3" << std::endl;
 
-    Eigen::MatrixXd coeffs_temp = coeffs[t];
+    const auto& coeffs_temp = coeffs[t];
 
     for (int z1 = 0; z1 < pArrA[i].zeta; z1++)
       for (int z2 = 0; z2 < pArrB[j].zeta; z2++)
