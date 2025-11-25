@@ -92,6 +92,13 @@ namespace u4
       return p1 * (p1 + 4.0) + p2 * (p2 + 2.0) + p3 * p3;
     }
 
+    // conjugation
+    auto conjugate() const { return u4::irrep(P3(), P2(), P1()); }
+    double conjugate_phase_power() const
+    {
+      return (3.0 * n14_ + n24_ - n34_ - 3.0 * n44_) / 2.0;
+    }
+
     // write to binary file:
     void writeBinary(std::ostream& s) const
     {

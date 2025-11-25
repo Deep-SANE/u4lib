@@ -244,7 +244,7 @@ namespace u4
 
   struct physicalvector
   {
-    u4::irrep toprow;
+    u4::irrep irr;
     int SS, TT;
     int zeta;
 
@@ -254,7 +254,7 @@ namespace u4
     // initialization
     physicalvector(u4::irrep u4, int ss, int tt)
     {
-      toprow = u4;
+      irr = u4;
       zeta = Zeta(u4, ss, tt);
       SS = ss;
       TT = tt;
@@ -263,19 +263,24 @@ namespace u4
     // assignment operator
     physicalvector& operator=(const physicalvector& physvec)
     {
-      toprow = physvec.toprow;
+      irr = physvec.irr;
       zeta = physvec.zeta;
       SS = physvec.SS;
       TT = physvec.TT;
       return *this;
     }
+
+    // SU(4) getters
+    auto P1() const { return irr.P1(); }
+    auto P2() const { return irr.P2(); }
+    auto P3() const { return irr.P3(); }
   };
 
   // print out a physical basis vector
   inline std::ostream& operator<<(std::ostream& s, physicalvector& physvec)
   {
-    return s << "(" << physvec.toprow.P1() << "," << physvec.toprow.P2() << ","
-             << physvec.toprow.P3() << "), zeta=" << physvec.zeta
+    return s << "(" << physvec.P1() << "," << physvec.P2() << ","
+             << physvec.P3() << "), zeta=" << physvec.zeta
              << ", SS=" << physvec.SS << ", TT=" << physvec.TT;
   }
 
