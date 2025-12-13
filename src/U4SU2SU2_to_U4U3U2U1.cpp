@@ -33,8 +33,8 @@ int main(int argc, char* argv[])
   {
     std::cout << "(" << i << "): |(" << pArr[i].P1() << ","
               << pArr[i].P2() << "," << pArr[i].P3()
-              << "), zeta_max=" << pArr[i].zeta << ", SS=" 
-              << pArr[i].SS << ", TT=" << pArr[i].TT << ">" << std::endl;
+              << "), zeta_max=" << pArr[i].zeta() << ", SS=" 
+              << pArr[i].SS() << ", TT=" << pArr[i].TT() << ">" << std::endl;
   }
 
   int index;
@@ -63,7 +63,7 @@ int main(int argc, char* argv[])
 
     std::cout
       << "The Gelfand states and the expansion coefficients for zeta = 1,...,"
-      << p.zeta << " are:" << std::endl;
+      << p.zeta() << " are:" << std::endl;
  
     for (int i = 0; i < canoBasis.size(); i++)
       std::cout << "|" << gArr[canoBasis[i]] << "> \t" << transformation.row(i) 
@@ -87,13 +87,13 @@ int main(int argc, char* argv[])
     // End time measurement
     auto t1 = std::chrono::high_resolution_clock::now();
 
-    for (int mms = p.SS; mms >= -p.SS; mms -= 2)
+    for (int mms = p.SS(); mms >= -p.SS(); mms -= 2)
     {
-      int indexS = (p.SS - mms) / 2;
+      int indexS = (p.SS() - mms) / 2;
 
-      for (int mmt = p.TT; mmt >= -p.TT; mmt -= 2)
+      for (int mmt = p.TT(); mmt >= -p.TT(); mmt -= 2)
       {
-        int indexT = (p.TT - mmt) / 2;
+        int indexT = (p.TT() - mmt) / 2;
 
         const auto& cano = canoBasis[indexS][indexT];
         const auto& trans = transformation[indexS][indexT];
@@ -101,7 +101,7 @@ int main(int argc, char* argv[])
         std::cout
           << "Gelfand states and expansion coefficients for MMS = " 
           << mms << " and MMT = " << mmt 
-          << " for zeta = 1,...," << p.zeta << " are:" << std::endl;
+          << " for zeta = 1,...," << p.zeta() << " are:" << std::endl;
 
         for (int i = 0; i < cano.size(); i++)
           std::cout << "|" << gArr[cano[i]] << "> \t" << trans.row(i)

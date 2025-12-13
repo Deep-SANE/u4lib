@@ -29,23 +29,23 @@ namespace u4
               u4::WigU4U3_db& wigU4U3db)
   {
     // build Gelfand basis
-    std::vector<u4::gelfand> gArrA = u4::gelfandBasis(pArrA[0].irr),
-                             gArrB = u4::gelfandBasis(pArrB[0].irr),
-                             gArrC = u4::gelfandBasis(pArrC[0].irr);
+    std::vector<u4::gelfand> gArrA = u4::gelfandBasis(pArrA[0].irr()),
+                             gArrB = u4::gelfandBasis(pArrB[0].irr()),
+                             gArrC = u4::gelfandBasis(pArrC[0].irr());
 
     // find transformation for physical states belong to the 1st irrep
     std::vector<std::vector<int>> canoBasisA(pArrA.size());
     std::vector<Eigen::MatrixXd> transformationA(pArrA.size());
     for (int i = 0; i < pArrA.size(); i++)
       std::tie(canoBasisA[i], transformationA[i]) =
-        u4::phys_to_cano(pArrA[i], pArrA[i].SS, pArrA[i].TT, gArrA);
+        u4::phys_to_cano(pArrA[i], pArrA[i].SS(), pArrA[i].TT(), gArrA);
 
     // find transformation for physical states belong to the 3rd irrep
     std::vector<std::vector<int>> canoBasisC(pArrC.size());
     std::vector<Eigen::MatrixXd> transformationC(pArrC.size());
     for (int i = 0; i < pArrC.size(); i++)
       std::tie(canoBasisC[i], transformationC[i]) =
-        u4::phys_to_cano(pArrC[i], pArrC[i].SS, pArrC[i].TT, gArrC);
+        u4::phys_to_cano(pArrC[i], pArrC[i].SS(), pArrC[i].TT(), gArrC);
 
     std::vector<std::tuple<int, int, int>> tArr;
     std::vector<Eigen::MatrixXd> coeffs;
@@ -54,36 +54,39 @@ namespace u4
     for (j = 0; j < pArrB.size(); j++)
     {
       const auto& pB = pArrB[j];
+      int SSB = pB.SS(), TTB = pB.TT(), ZB = pB.zeta();
 
       auto [canoBasisB, transformationB] = u4::phys_to_cano_allM(pB, gArrB);    
  
       for (i = 0; i < pArrA.size(); i++)
       {
         const auto& pA = pArrA[i];
+        int SSA = pA.SS(), TTA = pA.TT(), ZA = pA.zeta();
         const auto& canoA = canoBasisA[i];
         const auto& transA = transformationA[i];
 
         for (k = 0; k < pArrC.size(); k++)
         {
           const auto& pC = pArrC[k];
+          int SSC = pC.SS(), TTC = pC.TT(), ZC = pC.zeta();
           const auto& canoC = canoBasisC[k];
           const auto& transC = transformationC[k];
 
-          if (std::fabs(pA.SS - pB.SS) <= pC.SS && (pA.SS + pB.SS) >= pC.SS && 
-              std::fabs(pA.TT - pB.TT) <= pC.TT && (pA.TT + pB.TT) >= pC.TT)
+          if (std::fabs(SSA - SSB) <= SSC && (SSA + SSB) >= SSC && 
+              std::fabs(TTA - TTB) <= TTC && (TTA + TTB) >= TTC)
           {
             tArr.emplace_back(i,j,k);
 
-            Eigen::MatrixXd coeffs_temp(pA.zeta * pB.zeta * pC.zeta, etamax);
+            Eigen::MatrixXd coeffs_temp(ZA * ZB * ZC, etamax);
             coeffs_temp.setZero();
 
-            int mmsB = pC.SS - pA.SS, mmtB = pC.TT - pA.TT;
-            int indexS = (pB.SS - mmsB) / 2, indexT = (pB.TT - mmtB) / 2;
+            int mmsB = SSC - SSA, mmtB = TTC - TTA;
+            int indexS = (SSB - mmsB) / 2, indexT = (TTB - mmtB) / 2;
             const auto& canoB = canoBasisB[indexS][indexT];
             const auto& transB = transformationB[indexS][indexT];
 
-            double cgcS = cgcs.compute(pA.SS, pB.SS, pC.SS, pA.SS, mmsB, pC.SS),
-                   cgcT = cgcs.compute(pA.TT, pB.TT, pC.TT, pA.TT, mmtB, pC.TT);
+            double cgcS = cgcs.compute(SSA, SSB, SSC, SSA, mmsB, SSC),
+                   cgcT = cgcs.compute(TTA, TTB, TTC, TTA, mmtB, TTC);
 
             for (int iA = 0; iA < canoA.size(); iA++)
             {
@@ -122,15 +125,15 @@ namespace u4
                     if (allowU3 == false) continue;
 
                     for (int e = 0; e < etamax; e++)   
-                      for (int z1 = 0; z1 < pA.zeta; z1++)
-                        for (int z2 = 0; z2 < pB.zeta; z2++)
-                          for (int z3 = 0; z3 < pC.zeta; z3++)
+                      for (int z1 = 0; z1 < ZA; z1++)
+                        for (int z2 = 0; z2 < ZB; z2++)
+                          for (int z3 = 0; z3 < ZC; z3++)
                           {
                             double y = 0.0;
                             for (int r = 0; r < accU4.rows(); r++)
                               y += accU4(r,e) * accU3(r);
                             
-                            coeffs_temp((z1 * pB.zeta + z2) * pC.zeta + z3, e)
+                            coeffs_temp((z1 * ZB + z2) * ZC + z3, e)
                               += y * cgc * transA(iA, z1)
                                * transB(iB, z2) * transC(iC, z3);
                           }
@@ -169,24 +172,28 @@ namespace u4
       const u4::physicalvector& pB, const u4::physicalvector& pC)
     {
       // build Gelfand basis
-      std::vector<u4::gelfand> gArrA = u4::gelfandBasis(pA.irr),
-                               gArrB = u4::gelfandBasis(pB.irr),
-                               gArrC = u4::gelfandBasis(pC.irr);
+      std::vector<u4::gelfand> gArrA = u4::gelfandBasis(pA.irr()),
+                               gArrB = u4::gelfandBasis(pB.irr()),
+                               gArrC = u4::gelfandBasis(pC.irr());
+
+      int SSA = pA.SS(), TTA = pA.TT(), ZA = pA.zeta();
+      int SSB = pB.SS(), TTB = pB.TT(), ZB = pB.zeta();
+      int SSC = pC.SS(), TTC = pC.TT(), ZC = pC.zeta();
 
       // find transformation for physical states belong to the 1st irrep
-      auto [canoA, transA] = u4::phys_to_cano(pA, pA.SS, pA.TT, gArrA);
+      auto [canoA, transA] = u4::phys_to_cano(pA, SSA, TTA, gArrA);
 
       // find transformation for physical states belong to the 3rd irrep
-      auto [canoC, transC] = u4::phys_to_cano(pC, pC.SS, pC.TT, gArrC);
+      auto [canoC, transC] = u4::phys_to_cano(pC, SSC, TTC, gArrC);
 
       // find transformation for physical states belong to the 2nd irrep
-      int mmsB = pC.SS - pA.SS, mmtB = pC.TT - pA.TT;
+      int mmsB = SSC - SSA, mmtB = TTC - TTA;
       auto [canoB, transB] = u4::phys_to_cano(pB, mmsB, mmtB, gArrB);
 
-      double cgcS = cgcs_.compute(pA.SS, pB.SS, pC.SS, pA.SS, mmsB, pC.SS),
-             cgcT = cgcs_.compute(pA.TT, pB.TT, pC.TT, pA.TT, mmtB, pC.TT);
+      double cgcS = cgcs_.compute(SSA, SSB, SSC, SSA, mmsB, SSC),
+             cgcT = cgcs_.compute(TTA, TTB, TTC, TTA, mmtB, TTC);
 
-      Eigen::MatrixXd coeffs(pA.zeta * pB.zeta * pC.zeta, etamax);
+      Eigen::MatrixXd coeffs(ZA * ZB * ZC, etamax);
       coeffs.setZero();
 
       for (int iA = 0; iA < canoA.size(); iA++)
@@ -223,15 +230,15 @@ namespace u4
               if (allowU3 == false) continue;
 
               for (int e = 0; e < etamax; e++)   
-                for (int z1 = 0; z1 < pA.zeta; z1++)
-                  for (int z2 = 0; z2 < pB.zeta; z2++)
-                    for (int z3 = 0; z3 < pC.zeta; z3++)
+                for (int z1 = 0; z1 < ZA; z1++)
+                  for (int z2 = 0; z2 < ZB; z2++)
+                    for (int z3 = 0; z3 < ZC; z3++)
                     {
                       double y = 0.0;
                       for (int r = 0; r < accU4.rows(); r++)
                         y += accU4(r,e) * accU3(r);
                             
-                      coeffs((z1 * pB.zeta + z2) * pC.zeta + z3, e) += y * cgc 
+                      coeffs((z1 * ZB + z2) * ZC + z3, e) += y * cgc 
                             * transA(iA, z1) * transB(iB, z2) * transC(iC, z3);
                     }
             }
@@ -271,7 +278,7 @@ namespace u4
       bool flag = false;
       Eigen::MatrixXd m;
 
-      if (etamax > 0 && pA.zeta > 0 && pB.zeta > 0 && pC.zeta > 0 &&
+      if (etamax > 0 && pA.zeta() > 0 && pB.zeta() > 0 && pC.zeta() > 0 &&
           std::fabs(SSa - SSb) <= SSc && (SSa + SSb) >= SSc &&
           std::fabs(TTa - TTb) <= TTc && (TTa + TTb) >= TTc)
       {

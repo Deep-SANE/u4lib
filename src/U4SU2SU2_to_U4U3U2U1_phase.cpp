@@ -34,8 +34,8 @@ int main(int argc, char* argv[])
   {
     std::cout << "(" << i << "): |(" << pArr[i].P1() << ","
               << pArr[i].P2() << "," << pArr[i].P3()
-              << "), zeta_max=" << pArr[i].zeta << ", SS=" 
-              << pArr[i].SS << ", TT=" << pArr[i].TT << ">" << std::endl;
+              << "), zeta_max=" << pArr[i].zeta() << ", SS=" 
+              << pArr[i].SS() << ", TT=" << pArr[i].TT() << ">" << std::endl;
   }
 
   int index;
@@ -47,8 +47,8 @@ int main(int argc, char* argv[])
   std::cout << "Please enter projections 2MS <= 2S and 2MT <= 2T: ";
   std::cin >> MMS >> MMT;
 
-  u4::physicalvector p_conj(x_conj, p.SS, p.TT);
-  double p_phase = ((2 * (P1 + P2 + P3) - p.SS - p.TT + MMS + MMT) % 4 == 0) 
+  u4::physicalvector p_conj(x_conj, p.SS(), p.TT());
+  double p_phase = ((2 * (P1 + P2 + P3) - p.SS() - p.TT() + MMS + MMT) % 4 == 0) 
                  ? 1.0 : -1.0;
 
   // Start time measurement
@@ -64,7 +64,7 @@ int main(int argc, char* argv[])
 
   std::cout
       << "The Gelfand states and the expansion coefficients for zeta = 1,...,"
-      << p.zeta << " are:" << std::endl;
+      << p.zeta() << " are:" << std::endl;
  
   for (int i = 0; i < canoBasis.size(); i++)
   {

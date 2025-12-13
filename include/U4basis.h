@@ -172,8 +172,7 @@ namespace u4
     std::size_t i;
 
     for (i = 0; i < gArr.size(); i++)
-      if (u4::E11(g, gArr[i]))
-        break;
+      if (u4::E11(g, gArr[i])) break;
 
     return i;
   }
@@ -193,19 +192,24 @@ namespace u4
   /*This part of the code compute the multiplicity of (S,T) in the reduction of
   U(4) irrep using Racah's formula in Rev. Mod. Phys. in 1949 For an U(4) irrep
   [n14,n24,n34,n44], the multiplicity of (S,T) is computed as follows:
-  multi(S,T) = Omega(n14-n34,n24-n44) - Omega(n14-n44+1,n24-n34-1) -
-  Omega(n14-n24-1,n34-n44-1) where the function Omega(x,y) vanishes unless S,T
-  <= (x+y)/2. When Omega(x,y) is not vanishing and x >= y, Omega(x,y) =
-  Omega(y,x) = phi(y+2-|T-S|) - phi(y+1-T-S) + phi(T+S-x-1) -
-  phi(T+S-|T-S|-x+y+1)/2 where the phi function is defined as follows phi(x) =
-  [x^2/4], x > 0 = 0, otherwise
+  
+    multi(S,T) = Omega(n14-n34,n24-n44) - Omega(n14-n44+1,n24-n34-1) -
+                 Omega(n14-n24-1,n34-n44-1) 
+
+  where the function Omega(x,y) vanishes unless S,T <= (x+y)/2. 
+
+  When Omega(x,y) is not vanishing and x >= y, 
+    Omega(x,y) = Omega(y,x) = phi(y+2-|T-S|) - phi(y+1-T-S) 
+                            + phi(T+S-x-1) - phi(T+S-|T-S|-x+y+1)/2 
+
+  where the phi function is defined as follows phi(x) = [x^2/4], x > 0, = 0, otherwise
   */
   // phi function
   inline int phi(int x)
   {
-    if (x > 0)
+    if (x > 0) 
       return x * x / 4;
-    else
+    else 
       return 0;
   }
 
@@ -213,19 +217,14 @@ namespace u4
   inline int Omega(int SS, int TT, int x, int y)
   {
     if (x >= y && TT <= (x + y) && SS <= (x + y))
-    {
-      return phi(y + 2 - abs(TT - SS) / 2) - phi(y + 1 - (TT + SS) / 2) +
+      return phi(y + 2 - abs(TT - SS) / 2) - 
+             phi(y + 1 - (TT + SS) / 2) +
              phi((TT + SS) / 2 - x - 1) -
              phi((TT + SS) / 2 - abs(TT - SS) / 2 - x + y + 1) / 2;
-    }
     else if (x < y && TT <= (x + y) && SS <= (x + y))
-    {
       return Omega(SS, TT, y, x);
-    }
     else
-    {
       return 0;
-    }
   }
 
   // Multiplicity of (S,T)
@@ -242,46 +241,57 @@ namespace u4
     return u4::Zeta(u4, SS, TT);
   }
 
-  struct physicalvector
+  class physicalvector
   {
-    u4::irrep irr;
-    int SS, TT;
-    int zeta;
+  private:
+    u4::irrep irr_;
+    u4::uqn_t SS_, TT_;
+    u4::mult_t zeta_;
 
+  public:
     // Default constructor
-    physicalvector() : zeta(0), SS(0), TT(0) { }
+    physicalvector() : zeta_(0), SS_(0), TT_(0) { }
 
     // initialization
-    physicalvector(u4::irrep u4, int ss, int tt)
-    {
-      irr = u4;
-      zeta = Zeta(u4, ss, tt);
-      SS = ss;
-      TT = tt;
-    }
+    physicalvector(const u4::irrep& irr, u4::uqn_t SS, u4::uqn_t TT)
+      : irr_(irr), SS_(SS), TT_(TT), zeta_(Zeta(irr, SS, TT))
+    { }
 
     // assignment operator
     physicalvector& operator=(const physicalvector& physvec)
     {
-      irr = physvec.irr;
-      zeta = physvec.zeta;
-      SS = physvec.SS;
-      TT = physvec.TT;
+      irr_ = physvec.irr_;
+      zeta_ = physvec.zeta_;
+      SS_ = physvec.SS_;
+      TT_ = physvec.TT_;
       return *this;
     }
 
+    const auto& irr() const { return irr_; }
+
     // SU(4) getters
-    auto P1() const { return irr.P1(); }
-    auto P2() const { return irr.P2(); }
-    auto P3() const { return irr.P3(); }
+    auto P1() const { return irr_.P1(); }
+    auto P2() const { return irr_.P2(); }
+    auto P3() const { return irr_.P3(); }
+
+    // U(4) getters
+    auto n14() const { return irr_.n14(); }
+    auto n24() const { return irr_.n24(); }
+    auto n34() const { return irr_.n34(); }
+    auto n44() const { return irr_.n44(); }
+
+    // SU(2) getters
+    int SS() const { return static_cast<int>(SS_); }
+    int TT() const { return static_cast<int>(TT_); }
+    int zeta() const { return static_cast<int>(zeta_); } 
   };
 
   // print out a physical basis vector
   inline std::ostream& operator<<(std::ostream& s, physicalvector& physvec)
   {
     return s << "(" << physvec.P1() << "," << physvec.P2() << ","
-             << physvec.P3() << "), zeta=" << physvec.zeta
-             << ", SS=" << physvec.SS << ", TT=" << physvec.TT;
+             << physvec.P3() << "), zeta=" << physvec.zeta()
+             << ", SS=" << physvec.SS() << ", TT=" << physvec.TT();
   }
 
   // find all physical states associated with an irrep
@@ -305,10 +315,8 @@ namespace u4
         if ((ss + tt) >= ss_min && (ss + tt) <= sum_max)
         {
           u4::physicalvector physvec(u4, ss, tt);
-          if (physvec.zeta == 0)
-            continue;
-          else
-            basis.push_back(physvec);
+          if (physvec.zeta() == 0) continue;
+          else basis.push_back(physvec);
         }
       }
     }

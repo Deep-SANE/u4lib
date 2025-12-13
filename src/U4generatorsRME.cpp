@@ -21,18 +21,18 @@ int main()
   int P1, P2, P3;
   std::cout << "Please enter SU(4) quantum numbers (P1,P2,P3): ";
   std::cin >> P1 >> P2 >> P3;
-  u4::irrep u4top(P1, P2, P3);
+  u4::irrep ir(P1, P2, P3);
 
   // building the physical basis excluding those which have zero multiplicity
-  std::vector<u4::physicalvector> physbasis = u4::physicalBasis(u4top);
+  std::vector<u4::physicalvector> physbasis = u4::physicalBasis(ir);
 
   std::cout << "The physical basis states are: " << std::endl;
   for (int i = 0; i < physbasis.size(); i++)
   {
     std::cout << "(" << i << "): |(" << physbasis[i].P1() << ","
               << physbasis[i].P2() << "," << physbasis[i].P3()
-              << "), zeta_max=" << physbasis[i].zeta
-              << ", SS=" << physbasis[i].SS << ", TT=" << physbasis[i].TT << ">"
+              << "), zeta_max=" << physbasis[i].zeta()
+              << ", SS=" << physbasis[i].SS() << ", TT=" << physbasis[i].TT() << ">"
               << std::endl;
   }
 

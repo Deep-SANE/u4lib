@@ -66,51 +66,42 @@ namespace u4
 
                 // u4c.n44(u4c.n44() + b14);
                 n44 += b14;
-                if (n44 > n34)
-                  continue;
+                if (n44 > n34) continue;
 
                 // u4c.n34(u4c.n34() + b13);
                 n34 += b13;
-                if (n34 > n24)
-                  continue;
+                if (n34 > n24) continue;
 
                 // u4c.n24(u4c.n24() + b12);
                 n24 += b12;
-                if (n24 > n14)
-                  continue;
+                if (n24 > n14) continue;
 
                 // u4c.n14(u4c.n14() + b11);
                 n14 += b11;
 
                 // u4c.n44(u4c.n44() + b24);
                 n44 += b24;
-                if (n44 > n34)
-                  continue;
+                if (n44 > n34) continue;
 
                 // u4c.n34(u4c.n34() + b23);
                 n34 += b23;
-                if (n34 > n24)
-                  continue;
+                if (n34 > n24) continue;
 
                 // u4c.n24(u4c.n24() + b22);
                 n24 += b22;
-                if (n24 > n14)
-                  continue;
+                if (n24 > n14) continue;
 
                 // u4c.n44(u4c.n44() + b34);
                 n44 += b34;
-                if (n44 > n34)
-                  continue;
+                if (n44 > n34) continue;
 
                 // u4c.n34(u4c.n34() + b33);
                 n34 += b33;
-                if (n34 > n24)
-                  continue;
+                if (n34 > n24) continue;
 
                 // u4c.n44(u4c.n44() + b44);
                 n44 += b44;
-                if (n44 > n34)
-                  continue;
+                if (n44 > n34) continue;
 
                 u4::irrep u4c(n14, n24, n34, n44);
                 u4c.normalize();
@@ -144,13 +135,11 @@ namespace u4
     //std::cout << u4a << u4b << u4c << std::endl;
     int x = u4a.quanta() + u4b.quanta() - u4c.quanta();
 
-    if(x % 4 != 0)
-      return 0;
+    if(x % 4 != 0) return 0;
     
     x /= 4;
 
-    if ((u4c.n44() + x) < 0)
-      x = - (u4c.n44() + x);
+    if ((u4c.n44() + x) < 0) x = - (u4c.n44() + x);
     /*
     u4::irrep u4c_temp = u4c;
     u4c_temp.n14(u4c_temp.n14() + x);
@@ -197,51 +186,42 @@ namespace u4
 
               // u4C.n44(u4C.n44() + b14);
               n44 += b14;
-              if (n44 > n34)
-                continue;
+              if (n44 > n34) continue;
 
               // u4C.n34(u4C.n34() + b13);
               n34 += b13;
-              if (n34 > n24)
-                continue;
+              if (n34 > n24) continue;
 
               // u4C.n24(u4C.n24() + b12);
               n24 += b12;
-              if (n24 > n14)
-                continue;
+              if (n24 > n14) continue;
 
               // u4C.n14(u4C.n14() + b11);
               n14 += b11;
 
               // u4C.n44(u4C.n44() + b24);
               n44 += b24;
-              if (n44 > n34)
-                continue;
+              if (n44 > n34) continue;
 
               // u4C.n34(u4C.n34() + b23);
               n34 += b23;
-              if (n34 > n24)
-                continue;
+              if (n34 > n24) continue;
 
               // u4C.n24(u4C.n24() + b22);
               n24 += b22;
-              if (n24 > n14)
-                continue;
+              if (n24 > n14) continue;
 
               // u4C.n44(u4C.n44() + b34);
               n44 += b34;
-              if (n44 > n34)
-                continue;
+              if (n44 > n34) continue;
 
               // u4C.n34(u4C.n34() + b33);
               n34 += b33;
-              if (n34 > n24)
-                continue;
+              if (n34 > n24) continue;
 
               // u4C.n44(u4C.n44() + b44);
               n44 += b44;
-              if (n44 > n34)
-                continue;
+              if (n44 > n34) continue;
 
               u4::irrep u4C(n14, n24, n34, n44);
 

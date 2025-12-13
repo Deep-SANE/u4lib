@@ -64,19 +64,16 @@ int main(int argc, char* argv[])
       SS1.push_back(ss1);
 
     // Stop condition
-    if (ss1 == -1 || ss1 == -2)
-      break;
+    if (ss1 == -1 || ss1 == -2) break;
   }
   std::cout << "tt1: ";
   while (true)
   {
     std::cin >> tt1;
-    if (tt1 >= 0)
-      TT1.push_back(tt1);
+    if (tt1 >= 0) TT1.push_back(tt1);
 
     // Stop condition
-    if (tt1 == -1 || tt1 == -2)
-      break;
+    if (tt1 == -1 || tt1 == -2) break;
   }
   if (ss1 == -2 && tt1 == -2)
     pArrA = u4::physicalBasis(u4A);
@@ -86,8 +83,7 @@ int main(int argc, char* argv[])
       for (int j = 0; j < TT1.size(); j++)
       {
         u4::physicalvector pA(u4A, SS1[i], TT1[j]);
-        if (pA.zeta != 0)
-          pArrA.push_back(pA);
+        if (pA.zeta() != 0) pArrA.push_back(pA);
       }
   }
   // second states
@@ -95,23 +91,19 @@ int main(int argc, char* argv[])
   while (true)
   {
     std::cin >> ss2;
-    if (ss2 >= 0)
-      SS2.push_back(ss2);
+    if (ss2 >= 0) SS2.push_back(ss2);
 
     // Stop condition
-    if (ss2 == -1 || ss2 == -2)
-      break;
+    if (ss2 == -1 || ss2 == -2) break;
   }
   std::cout << "tt2: ";
   while (true)
   {
     std::cin >> tt2;
-    if (tt2 >= 0)
-      TT2.push_back(tt2);
+    if (tt2 >= 0) TT2.push_back(tt2);
 
     // Stop condition
-    if (tt2 == -1 || tt2 == -2)
-      break;
+    if (tt2 == -1 || tt2 == -2) break;
   }
   if (ss2 == -2 && tt2 == -2)
     pArrB = u4::physicalBasis(u4B);
@@ -121,8 +113,7 @@ int main(int argc, char* argv[])
       for (int j = 0; j < TT2.size(); j++)
       {
         u4::physicalvector pB(u4B, SS2[i], TT2[j]);
-        if (pB.zeta != 0)
-          pArrB.push_back(pB);
+        if (pB.zeta() != 0) pArrB.push_back(pB);
       }
   }
   // third states
@@ -130,23 +121,19 @@ int main(int argc, char* argv[])
   while (true)
   {
     std::cin >> ss3;
-    if (ss3 >= 0)
-      SS3.push_back(ss3);
+    if (ss3 >= 0) SS3.push_back(ss3);
 
     // Stop condition
-    if (ss3 == -1 || ss3 == -2)
-      break;
+    if (ss3 == -1 || ss3 == -2) break;
   }
   std::cout << "tt3: ";
   while (true)
   {
     std::cin >> tt3;
-    if (tt3 >= 0)
-      TT3.push_back(tt3);
+    if (tt3 >= 0) TT3.push_back(tt3);
 
     // Stop condition
-    if (tt3 == -1 || tt3 == -2)
-      break;
+    if (tt3 == -1 || tt3 == -2) break;
   }
   if (ss3 == -2 && tt3 == -2)
     pArrC = u4::physicalBasis(u4C);
@@ -156,8 +143,7 @@ int main(int argc, char* argv[])
       for (int j = 0; j < TT3.size(); j++)
       {
         u4::physicalvector pC(u4C, SS3[i], TT3[j]);
-        if (pC.zeta != 0)
-          pArrC.push_back(pC);
+        if (pC.zeta() != 0) pArrC.push_back(pC);
       }
   }
  
@@ -187,21 +173,21 @@ int main(int argc, char* argv[])
         k = std::get<2>(tArr[t]);
 
     std::cout << "Reduced coupling coefficients: < (" << P1a << "," << P2a << "," 
-              << P3a << ") z1 " << pArrA[i].SS << " " << pArrA[i].TT 
+              << P3a << ") z1 " << pArrA[i].SS() << " " << pArrA[i].TT()
               << " ; (" << P1b << "," << P2b << "," << P3b << ") z2 " 
-              << pArrB[j].SS << " " << pArrB[j].TT << " || "
+              << pArrB[j].SS() << " " << pArrB[j].TT() << " || "
               << "(" << u4C.P1() << "," << u4C.P2() << "," << u4C.P3() 
-              << ") z3 " << pArrC[k].SS << " " << pArrC[k].TT << " > "
+              << ") z3 " << pArrC[k].SS() << " " << pArrC[k].TT() << " > "
               << "for eta = 1 ... " << etamax << std::endl;
     std::cout << "z1\tz2\tz3" << std::endl;
 
     const auto& coeffs_temp = coeffs[t];
 
-    for (int z1 = 0; z1 < pArrA[i].zeta; z1++)
-      for (int z2 = 0; z2 < pArrB[j].zeta; z2++)
-        for (int z3 = 0; z3 < pArrC[k].zeta; z3++)
+    for (int z1 = 0; z1 < pArrA[i].zeta(); z1++)
+      for (int z2 = 0; z2 < pArrB[j].zeta(); z2++)
+        for (int z3 = 0; z3 < pArrC[k].zeta(); z3++)
           std::cout << "" << z1 + 1 << "\t" << z2 + 1 << "\t" << z3 + 1 << "\t"
-            << coeffs_temp.row((z1 * pArrB[j].zeta + z2) * pArrC[k].zeta + z3)
+            << coeffs_temp.row((z1 * pArrB[j].zeta() + z2) * pArrC[k].zeta() + z3)
             << std::endl;
   }
 

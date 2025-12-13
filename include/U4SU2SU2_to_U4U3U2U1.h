@@ -246,12 +246,12 @@ namespace u4
     const Eigen::MatrixXd& transformation)
   {
     // normalize coefficient
-    double n = std::sqrt(4.0 / ((p.SS - MMS) * (p.SS + MMS + 2.0)));
+    double n = std::sqrt(4.0 / ((p.SS() - MMS) * (p.SS() + MMS + 2.0)));
 
     // new expansion
     std::vector<int> canoBasis_new = u4::expand_to_gelfand(MMS, MMT, gArr);
 
-    Eigen::MatrixXd transformation_new(canoBasis_new.size(), p.zeta);
+    Eigen::MatrixXd transformation_new(canoBasis_new.size(), p.zeta());
     transformation_new.setZero();
 
     // basis states are obtained by acting with two generators E31 and E42
@@ -301,12 +301,12 @@ namespace u4
     const Eigen::MatrixXd& transformation)
   {
     // normalize coefficient
-    double n = std::sqrt(4.0 / ((p.SS + MMS) * (p.SS - MMS + 2.0)));
+    double n = std::sqrt(4.0 / ((p.SS() + MMS) * (p.SS() - MMS + 2.0)));
 
     // new expansion
     std::vector<int> canoBasis_new = u4::expand_to_gelfand(MMS, MMT, gArr);
 
-    Eigen::MatrixXd transformation_new(canoBasis_new.size(), p.zeta);
+    Eigen::MatrixXd transformation_new(canoBasis_new.size(), p.zeta());
     transformation_new.setZero();
 
     // basis states are obtained by acting with two generators E31 and E42
@@ -355,12 +355,12 @@ namespace u4
     const Eigen::MatrixXd& transformation)
   {
     // normalize coefficient
-    double n =  std::sqrt(4.0 / ((p.TT - MMT) * (p.TT + MMT + 2.0)));
+    double n =  std::sqrt(4.0 / ((p.TT() - MMT) * (p.TT() + MMT + 2.0)));
 
     // new expansion
     std::vector<int> canoBasis_new = u4::expand_to_gelfand(MMS, MMT, gArr);
 
-    Eigen::MatrixXd transformation_new(canoBasis_new.size(), p.zeta);
+    Eigen::MatrixXd transformation_new(canoBasis_new.size(), p.zeta());
     transformation_new.setZero();
 
     // basis states are obtained by acting with two generators E21 and E43
@@ -401,12 +401,12 @@ namespace u4
     const Eigen::MatrixXd& transformation)
   {
     // normalize coefficient
-    double n =  std::sqrt(4.0 / ((p.TT + MMT) * (p.TT - MMT + 2.0)));
+    double n =  std::sqrt(4.0 / ((p.TT() + MMT) * (p.TT() - MMT + 2.0)));
 
     // new expansion
     std::vector<int> canoBasis_new = u4::expand_to_gelfand(MMS, MMT, gArr);
 
-    Eigen::MatrixXd transformation_new(canoBasis_new.size(), p.zeta);
+    Eigen::MatrixXd transformation_new(canoBasis_new.size(), p.zeta());
     transformation_new.setZero();
 
     // basis states are obtained by acting with two generators E21 and E43
@@ -444,33 +444,33 @@ namespace u4
   {
     if (p.P1() >= p.P3())
     {
-      std::vector<int> canoBasis = u4::expand_to_gelfand(p.SS, p.TT, gArr);
+      std::vector<int> canoBasis = u4::expand_to_gelfand(p.SS(), p.TT(), gArr);
 
       // build the projection matrix
       auto STproj = u4::STprojection(gArr, canoBasis);
       //std::cout << STproj << std::endl;
       // and solve its null space
 #ifdef USE_SLEPC
-      Eigen::MatrixXd transformation = qcx_utils::null_space_slepc(STproj, p.zeta);
+      Eigen::MatrixXd transformation = qcx_utils::null_space_slepc(STproj, p.zeta());
 #else
       Eigen::MatrixXd transformation = qcx_utils::null_space(STproj);
 #endif
 
       // ensure the nullspace is solved correctly
-      assert(p.zeta == transformation.cols());
+      assert(p.zeta() == transformation.cols());
 
       // lower MS 
-      for (int mms = p.SS - 2; mms >= MMS; mms -= 2)
+      for (int mms = p.SS() - 2; mms >= MMS; mms -= 2)
       {
         auto [canoBasis_new, transformation_new] = 
-          u4::lowerMS(p, mms, p.TT, gArr, canoBasis, transformation);
+          u4::lowerMS(p, mms, p.TT(), gArr, canoBasis, transformation);
 
         transformation = transformation_new;
         canoBasis = canoBasis_new;
       }
 
       // lower MT 
-      for (int mmt = p.TT - 2; mmt >= MMT; mmt -= 2)
+      for (int mmt = p.TT() - 2; mmt >= MMT; mmt -= 2)
       {
         auto [canoBasis_new, transformation_new] = 
           u4::lowerMT(p, MMS, mmt, gArr, canoBasis, transformation);
@@ -486,18 +486,18 @@ namespace u4
       // If P1 < P3, we construct the conjugate state and 
       // then conjugate to get the desired state
 
-      u4::irrep irr_conj = p.irr.conjugate();
-      u4::physicalvector p_conj(irr_conj, p.SS, p.TT);
+      u4::irrep irr_conj = p.irr().conjugate();
+      u4::physicalvector p_conj(irr_conj, p.SS(), p.TT());
       auto gArr_conj = u4::gelfandBasis(irr_conj);
       double p_phase = 
-        ((2 * (p.P1() + p.P2() + p.P3()) - p.SS - p.TT - MMS - MMT) % 4 == 0) 
+        ((2 * (p.P1() + p.P2() + p.P3()) - p.SS() - p.TT() - MMS - MMT) % 4 == 0) 
         ? 1.0 : -1.0;
 
       auto [canoBasis_conj, transformation_conj] = 
         u4::phys_to_cano(p_conj, -MMS, -MMT, gArr_conj);
 
       auto canoBasis = u4::expand_to_gelfand(MMS, MMT, gArr);
-      Eigen::MatrixXd transformation(canoBasis.size(), p.zeta);
+      Eigen::MatrixXd transformation(canoBasis.size(), p.zeta());
 
       for (size_t i = 0; i < canoBasis.size(); i++)
       {
@@ -528,31 +528,31 @@ namespace u4
     if (p.P1() >= p.P3())
     {
       std::vector<std::vector<std::vector<int>>> 
-        canoBasis(p.SS + 1, std::vector<std::vector<int>>(p.TT + 1));
+        canoBasis(p.SS() + 1, std::vector<std::vector<int>>(p.TT() + 1));
 
       std::vector<std::vector<Eigen::MatrixXd>> 
-        transformation(p.SS + 1, std::vector<Eigen::MatrixXd>(p.TT + 1));  
+        transformation(p.SS() + 1, std::vector<Eigen::MatrixXd>(p.TT() + 1));  
 
-      for (int MMS = p.SS; MMS >= -p.SS; MMS -= 2)
+      for (int MMS = p.SS(); MMS >= -p.SS(); MMS -= 2)
       {
-        int indexS = (p.SS - MMS) / 2;
+        int indexS = (p.SS() - MMS) / 2;
 
-        if (MMS == p.SS)
+        if (MMS == p.SS())
         {
           std::tie(canoBasis[0][0], transformation[0][0]) = 
-                                    u4::phys_to_cano(p, p.SS, p.TT, gArr);
+                                    u4::phys_to_cano(p, p.SS(), p.TT(), gArr);
         }
               
         else // if (MMS < p.SS)
         {
           std::tie(canoBasis[indexS][0], transformation[indexS][0]) =
-            u4::lowerMS(p, MMS, p.TT, gArr,
+            u4::lowerMS(p, MMS, p.TT(), gArr,
               canoBasis[indexS - 1][0], transformation[indexS - 1][0]);
         }
 
-        for (int MMT = p.TT - 2; MMT >= -p.TT; MMT -= 2)
+        for (int MMT = p.TT() - 2; MMT >= -p.TT(); MMT -= 2)
         {
-          int indexT = (p.TT - MMT) / 2;
+          int indexT = (p.TT() - MMT) / 2;
 
           std::tie(canoBasis[indexS][indexT],transformation[indexS][indexT]) =
             u4::lowerMT(p, MMS, MMT, gArr,
@@ -565,31 +565,31 @@ namespace u4
     else 
     {
       std::vector<std::vector<std::vector<int>>> 
-        canoBasis(p.SS + 1, std::vector<std::vector<int>>(p.TT + 1));
+        canoBasis(p.SS() + 1, std::vector<std::vector<int>>(p.TT() + 1));
 
       std::vector<std::vector<Eigen::MatrixXd>> 
-        transformation(p.SS + 1, std::vector<Eigen::MatrixXd>(p.TT + 1));  
+        transformation(p.SS() + 1, std::vector<Eigen::MatrixXd>(p.TT() + 1));  
 
-      for (int MMS = -p.SS; MMS <= p.SS; MMS += 2)
+      for (int MMS = -p.SS(); MMS <= p.SS(); MMS += 2)
       {
-        int indexS = (p.SS - MMS) / 2, indexT = p.TT;
+        int indexS = (p.SS() - MMS) / 2, indexT = p.TT();
 
-        if (MMS == -p.SS)
+        if (MMS == -p.SS())
         {
           std::tie(canoBasis[indexS][indexT], transformation[indexS][indexT]) = 
-                                    u4::phys_to_cano(p, MMS, -p.TT, gArr);
+                                    u4::phys_to_cano(p, MMS, -p.TT(), gArr);
         }
               
         else // if (MMS < p.SS)
         {
           std::tie(canoBasis[indexS][indexT], transformation[indexS][indexT]) =
-            u4::raiseMS(p, MMS, -p.TT, gArr,
+            u4::raiseMS(p, MMS, -p.TT(), gArr,
               canoBasis[indexS + 1][indexT], transformation[indexS + 1][indexT]);
         }
 
-        for (int MMT = -p.TT + 2; MMT <= p.TT; MMT += 2)
+        for (int MMT = -p.TT() + 2; MMT <= p.TT(); MMT += 2)
         {
-          indexT = (p.TT - MMT) / 2;
+          indexT = (p.TT() - MMT) / 2;
 
           std::tie(canoBasis[indexS][indexT],transformation[indexS][indexT]) =
             u4::raiseMT(p, MMS, MMT, gArr,
