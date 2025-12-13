@@ -3,13 +3,20 @@
 
 #include <tuple>
 
+#include <qcx_Int.h>
+
 namespace u4
 {
+  // Define alias datatypes
+  using uqn_t = qcx_utils::UInt8;  // unsigned quantum numbers: 0 to 255
+  using qn_t = qcx_utils::Int8;    // signed quantum numbers: -128 to 127
+  using mult_t = qcx_utils::UInt8; // multiplicities: 0 to 255
+
   namespace internal
   {
     class gelfand_int_rep
     {
-      int n14_, n24_, n34_, n44_, n13_, n23_, n33_, n12_, n22_, n11_;
+      uqn_t n14_, n24_, n34_, n44_, n13_, n23_, n33_, n12_, n22_, n11_;
 
       // helper function for comparison operators:
       auto tie() const
@@ -32,8 +39,8 @@ namespace u4
             n11_(0)
       { }
 
-      gelfand_int_rep(int n14, int n24, int n34, int n44, int n13, int n23,
-                      int n33, int n12, int n22, int n11)
+      gelfand_int_rep(uqn_t n14, uqn_t n24, uqn_t n34, uqn_t n44, uqn_t n13, 
+                      uqn_t n23, uqn_t n33, uqn_t n12, uqn_t n22, uqn_t n11)
           : n14_(n14),
             n24_(n24),
             n34_(n34),
@@ -46,27 +53,27 @@ namespace u4
             n11_(n11)
       { }
 
-      int n14() const { return n14_; }
-      int n24() const { return n24_; }
-      int n34() const { return n34_; }
-      int n44() const { return n44_; }
-      int n13() const { return n13_; }
-      int n23() const { return n23_; }
-      int n33() const { return n33_; }
-      int n12() const { return n12_; }
-      int n22() const { return n22_; }
-      int n11() const { return n11_; }
+      int n14() const { return static_cast<int>(n14_); }
+      int n24() const { return static_cast<int>(n24_); }
+      int n34() const { return static_cast<int>(n34_); }
+      int n44() const { return static_cast<int>(n44_); }
+      int n13() const { return static_cast<int>(n13_); }
+      int n23() const { return static_cast<int>(n23_); }
+      int n33() const { return static_cast<int>(n33_); }
+      int n12() const { return static_cast<int>(n12_); }
+      int n22() const { return static_cast<int>(n22_); }
+      int n11() const { return static_cast<int>(n11_); }
 
-      void n14(int n14) { n14_ = n14; }
-      void n24(int n24) { n24_ = n24; }
-      void n34(int n34) { n34_ = n34; }
-      void n44(int n44) { n44_ = n44; }
-      void n13(int n13) { n13_ = n13; }
-      void n23(int n23) { n23_ = n23; }
-      void n33(int n33) { n33_ = n33; }
-      void n12(int n12) { n12_ = n12; }
-      void n22(int n22) { n22_ = n22; }
-      void n11(int n11) { n11_ = n11; }
+      void n14(uqn_t n14) { n14_ = n14; }
+      void n24(uqn_t n24) { n24_ = n24; }
+      void n34(uqn_t n34) { n34_ = n34; }
+      void n44(uqn_t n44) { n44_ = n44; }
+      void n13(uqn_t n13) { n13_ = n13; }
+      void n23(uqn_t n23) { n23_ = n23; }
+      void n33(uqn_t n33) { n33_ = n33; }
+      void n12(uqn_t n12) { n12_ = n12; }
+      void n22(uqn_t n22) { n22_ = n22; }
+      void n11(uqn_t n11) { n11_ = n11; }
 
       bool operator==(const gelfand_int_rep& other) const
       {
