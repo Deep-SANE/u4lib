@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <istream>
 #include <ostream>
+#include <vector>
 
 #include <qcx_convert.h>
 #include <qcx_readwrite.h>
@@ -100,6 +101,7 @@ namespace su4
       qcx_utils::readBinary(s, P3_);
     }
   };
+  using irreps = std::vector<su4::irrep>;
 
   // output stream operator:
   inline std::ostream& operator<<(std::ostream& s, const irrep& su4)
@@ -187,6 +189,7 @@ namespace u4
       qcx_utils::readBinary(s, n44_);
     }
   };
+  using irreps = std::vector<u4::irrep>;
 
   // output stream operator:
   inline std::ostream& operator<<(std::ostream& s, const irrep& u4)
