@@ -28,7 +28,7 @@ namespace su4
     // default constructor; creates (0,0):
     irrep() : P1_(0), P2_(0), P3_(0) { }
 
-    irrep(rep_type P1, rep_type P2, rep_type P3)
+    irrep(qcx_utils::UInt8 P1, qcx_utils::UInt8 P2, qcx_utils::UInt8 P3)
         : P1_(P1), P2_(P2), P3_(P3) // conversion check is implicit
     { }
 
@@ -77,7 +77,7 @@ namespace su4
     }
 
     // conjugate irrep
-    su4::irrep conjugate() const { return su4::irrep(P3_, P2_, P1_); }
+    su4::irrep conjugate() const { return su4::irrep(P3(), P2(), P1()); }
     double conjugate_phase_power() const
     {
       // return (3.0 * n14_ + n24_ - n34_ - 3.0 * n44_) / 2.0;
@@ -119,7 +119,8 @@ namespace u4
     // default constructor; creates [0,0,0,0]:
     irrep() : n44_(0) { }
 
-    irrep(rep_type n1, rep_type n2, rep_type n3, rep_type n4)
+    irrep(qcx_utils::UInt8 n1, qcx_utils::UInt8 n2, 
+          qcx_utils::UInt8 n3, qcx_utils::UInt8 n4)
         : su4::irrep(n1 - n2, n2 - n3, n3 - n4), n44_(n4)
     { 
       assert(n1 >= n2);
@@ -127,13 +128,13 @@ namespace u4
       assert(n3 >= n4);
     }
 
-    irrep(rep_type P1, rep_type P2, rep_type P3) 
+    irrep(qcx_utils::UInt8 P1, qcx_utils::UInt8 P2, qcx_utils::UInt8 P3) 
       : su4::irrep(P1, P2, P3), n44_(0) { }
 
     irrep(const su4::irrep& su4) : su4::irrep(su4), n44_(0) { }
 
     // SU(4)->U(4) conversion with the total number of quanta provided:
-    irrep(const su4::irrep& su4, rep_type A) : irrep(su4)
+    irrep(const su4::irrep& su4, int A) : irrep(su4)
     {
       assert(A >= 0);
       int n44 = A - su4.P1() - 2 * su4.P2() - 3 * su4.P3();
@@ -175,9 +176,6 @@ namespace u4
     // write to binary file:
     void writeBinary(std::ostream& s) const
     {
-      // qcx_utils::writeBinary(s, n14_);
-      // qcx_utils::writeBinary(s, n24_);
-      // qcx_utils::writeBinary(s, n34_);
       su4::irrep::writeBinary(s);
       qcx_utils::writeBinary(s, n44_);
     }
@@ -185,9 +183,6 @@ namespace u4
     // read from binary file:
     void readBinary(std::istream& s)
     {
-      // qcx_utils::readBinary(s, n14_);
-      // qcx_utils::readBinary(s, n24_);
-      // qcx_utils::readBinary(s, n34_);
       su4::irrep::readBinary(s);
       qcx_utils::readBinary(s, n44_);
     }

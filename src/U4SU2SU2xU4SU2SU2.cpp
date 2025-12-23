@@ -24,11 +24,12 @@ int main(int argc, char* argv[])
   int P1a, P2a, P3a, P1b, P2b, P3b;
   std::cout << "Please enter SU(4) quantum numbers (P1a,P2a,P3a): ";
   std::cin >> P1a >> P2a >> P3a;
+  u4::irrep u4A(P1a, P2a, P3a);
 
   std::cout << "Please enter SU(4) quantum numbers (P1b,P2b,P3b): ";
   std::cin >> P1b >> P2b >> P3b;
 
-  u4::irrep u4A(P1a, P2a, P3a), u4B(P1b, P2b, P3b);
+  u4::irrep u4B(P1b, P2b, P3b);
 
   auto [u4Cs, etamaxs] = u4::decomposition(u4A, u4B);
 

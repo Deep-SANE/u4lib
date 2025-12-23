@@ -153,14 +153,15 @@ namespace u4
   inline std::vector<u4::gelfand> gelfandBasis(const u4::irrep& x)
   {
     std::vector<u4::gelfand> gArr;
+    int n14_ = x.n14(), n24_ = x.n24(), n34_ = x.n34(), n44_ = x.n44();
 
-    for (int n13 = x.n14(); n13 >= x.n24(); n13--)
-      for (int n23 = x.n24(); n23 >= x.n34(); n23--)
-        for (int n33 = x.n34(); n33 >= x.n44(); n33--)
+    for (int n13 = n14_; n13 >= n24_; n13--)
+      for (int n23 = n24_; n23 >= n34_; n23--)
+        for (int n33 = n34_; n33 >= n44_; n33--)
           for (int n12 = n13; n12 >= n23; n12--)
             for (int n22 = n23; n22 >= n33; n22--)
               for (int n11 = n12; n11 >= n22; n11--)
-                gArr.emplace_back(x.n14(), x.n24(), x.n34(), x.n44(), n13, n23, n33, n12, n22, n11);
+                gArr.emplace_back(n14_, n24_, n34_, n44_, n13, n23, n33, n12, n22, n11);
 
     return gArr;
   }
@@ -170,7 +171,6 @@ namespace u4
                           const std::vector<u4::gelfand>& gArr)
   {
     std::size_t i;
-
     for (i = 0; i < gArr.size(); i++)
       if (u4::E11(g, gArr[i])) break;
 
@@ -253,8 +253,9 @@ namespace u4
     physicalvector() : zeta_(0), SS_(0), TT_(0) { }
 
     // initialization
-    physicalvector(const u4::irrep& irr, u4::uqn_t SS, u4::uqn_t TT)
-      : irr_(irr), SS_(SS), TT_(TT), zeta_(Zeta(irr, SS, TT))
+    physicalvector(const u4::irrep& irr, qcx_utils::UInt8 SS, qcx_utils::UInt8 TT)
+      : irr_(irr), SS_(SS), TT_(TT), 
+        zeta_(qcx_utils::UInt8(Zeta(irr, SS, TT)))
     { }
 
     // assignment operator
@@ -284,6 +285,7 @@ namespace u4
     int SS() const { return static_cast<int>(SS_); }
     int TT() const { return static_cast<int>(TT_); }
     int zeta() const { return static_cast<int>(zeta_); } 
+    int zetamax() const { return zeta(); }
   };
 
   // print out a physical basis vector
