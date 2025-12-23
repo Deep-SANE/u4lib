@@ -287,6 +287,7 @@ namespace u4
     int zeta() const { return static_cast<int>(zeta_); } 
     int zetamax() const { return zeta(); }
   };
+  using physicalvectors = std::vector<u4::physicalvector>;
 
   // print out a physical basis vector
   inline std::ostream& operator<<(std::ostream& s, physicalvector& physvec)
@@ -297,9 +298,9 @@ namespace u4
   }
 
   // find all physical states associated with an irrep
-  inline std::vector<u4::physicalvector> physicalBasis(const u4::irrep& u4)
+  inline u4::physicalvectors physicalBasis(const u4::irrep& u4)
   {
-    std::vector<u4::physicalvector> basis;
+    u4::physicalvectors basis;
 
     int ss, tt, sum; // sum = ss + tt
 
