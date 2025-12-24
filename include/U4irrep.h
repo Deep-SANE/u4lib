@@ -10,6 +10,8 @@
 #include <qcx_convert.h>
 #include <qcx_readwrite.h>
 
+#include <U4gelfand.h>
+
 #ifdef HAVE_FMT
 #include <fmt/format.h>
 #endif
