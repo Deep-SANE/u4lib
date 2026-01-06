@@ -4,17 +4,13 @@
 #include <vector>
 
 #include <U4basis.h>
-#include <U4SU2SU2_to_U4U3U2U1.h> 
+#include <U4SU2SU2_to_U4U3U2U1.h>
 
-#ifdef USE_SLEPC
-#include <slepcsys.h>
-#endif
+#include <qcx_utils.h>
   
 int main(int argc, char* argv[])
 {
-#ifdef USE_SLEPC
-  SlepcInitialize(&argc, &argv, NULL, NULL);
-#endif
+  qcx_utils::initialize(&argc, &argv);
 
   int P1, P2, P3;
   std::cout << "Please enter SU(4) quantum numbers (P1,P2,P3): ";
@@ -121,9 +117,5 @@ int main(int argc, char* argv[])
     std::cout << "Wrong mode" << std::endl;
   }
 
-#ifdef USE_SLEPC
-  SlepcFinalize();
-#endif  
-
-  return 0;
+  qcx_utils::finalize();
 }

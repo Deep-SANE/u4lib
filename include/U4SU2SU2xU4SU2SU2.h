@@ -85,8 +85,8 @@ namespace u4
             const auto& canoB = canoBasisB[indexS][indexT];
             const auto& transB = transformationB[indexS][indexT];
 
-            double cgcS = cgcs.compute(SSA, SSB, SSC, SSA, mmsB, SSC),
-                   cgcT = cgcs.compute(TTA, TTB, TTC, TTA, mmtB, TTC);
+            double cgcS = cgcs.get({SSA, SSB, SSC, SSA, mmsB, SSC}),
+                   cgcT = cgcs.get({TTA, TTB, TTC, TTA, mmtB, TTC});
 
             for (int iA = 0; iA < canoA.size(); iA++)
             {
@@ -116,7 +116,7 @@ namespace u4
                   if ((mm1 + mm2) == mm3 && 
                        std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
                   {
-                    double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+                    double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
                     auto [allowU3, accU3] = wigU3U2db.get(
                       gA.n13(), gA.n23(), gA.n33(), gA.n12(), gA.n22(), 
@@ -190,8 +190,8 @@ namespace u4
       int mmsB = SSC - SSA, mmtB = TTC - TTA;
       auto [canoB, transB] = u4::phys_to_cano(pB, mmsB, mmtB, gArrB);
 
-      double cgcS = cgcs_.compute(SSA, SSB, SSC, SSA, mmsB, SSC),
-             cgcT = cgcs_.compute(TTA, TTB, TTC, TTA, mmtB, TTC);
+      double cgcS = cgcs_.get({SSA, SSB, SSC, SSA, mmsB, SSC}),
+             cgcT = cgcs_.get({TTA, TTB, TTC, TTA, mmtB, TTC});
 
       Eigen::MatrixXd coeffs(ZA * ZB * ZC, etamax);
       coeffs.setZero();
@@ -221,7 +221,7 @@ namespace u4
             if ((mm1 + mm2) == mm3 && 
                  std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
             {
-              double cgc = cgcs_.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+              double cgc = cgcs_.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
               auto [allowU3, accU3] = wigU3U2db_.get(
                 gA.n13(), gA.n23(), gA.n33(), gA.n12(), gA.n22(), 
@@ -405,10 +405,10 @@ namespace u4
             int MSx2 = pArrC[k].SS - pArrA[i].SS,
                 MTx2 = pArrC[k].TT - pArrA[i].TT;
 
-            double cgcS = cgcs.compute(pArrA[i].SS, pArrB[j].SS, pArrC[k].SS,
-                                       pArrA[i].SS, MSx2, pArrC[k].SS),
-                   cgcT = cgcs.compute(pArrA[i].TT, pArrB[j].TT, pArrC[k].TT,
-                                       pArrA[i].TT, MTx2, pArrC[k].TT);
+            double cgcS = cgcs.get({pArrA[i].SS, pArrB[j].SS, pArrC[k].SS,
+                                       pArrA[i].SS, MSx2, pArrC[k].SS}),
+                   cgcT = cgcs.get({pArrA[i].TT, pArrB[j].TT, pArrC[k].TT,
+                                       pArrA[i].TT, MTx2, pArrC[k].TT});
             
             int indexS = (pArrB[j].SS - MSx2)/2,
                 indexT = (pArrB[j].TT - MTx2)/2;
@@ -446,7 +446,7 @@ namespace u4
                   if (exist == true && (mm1 + mm2) == mm3 && 
                     std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
                   {
-                    double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+                    double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
                     auto [allowU3, accU3] = wigU3U2db.get(
                       gArrA[gA].n13(), gArrA[gA].n23(), gArrA[gA].n33(), 

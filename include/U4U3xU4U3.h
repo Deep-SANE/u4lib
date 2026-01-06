@@ -567,7 +567,7 @@ namespace u4
             if (allowU3 == false)
               continue;
 
-            double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+            double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
             Eigen::RowVectorXd A_row = accU3 * cgc;
             Eigen::RowVectorXd B_row = nullspace.row(j);
@@ -679,7 +679,7 @@ namespace u4
 
           double factor = g1_n13p1.e43_13();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -718,7 +718,7 @@ namespace u4
 
           double factor = g1_n23p1.e43_23();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -757,7 +757,7 @@ namespace u4
 
           double factor = g1_n33p1.e43_33();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -798,7 +798,7 @@ namespace u4
 
           double factor = g2_n13p1.e43_13();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -838,7 +838,7 @@ namespace u4
 
           double factor = g2_n23p1.e43_23();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -878,7 +878,7 @@ namespace u4
 
           double factor = g2_n33p1.e43_33();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -959,7 +959,7 @@ namespace u4
 
           double factor = g1_n13n12p1.e42_13_12();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -1000,7 +1000,7 @@ namespace u4
 
           double factor = g1_n13n22p1.e42_13_22();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -1041,7 +1041,7 @@ namespace u4
 
           double factor = g1_n23n12p1.e42_23_12();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -1082,7 +1082,7 @@ namespace u4
 
           double factor = g1_n23n22p1.e42_23_22();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -1123,7 +1123,7 @@ namespace u4
 
           double factor = g1_n33n12p1.e42_33_12();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -1164,7 +1164,7 @@ namespace u4
 
           double factor = g1_n33n22p1.e42_33_22();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -1206,7 +1206,7 @@ namespace u4
 
           double factor = g2_n13n12p1.e42_13_12();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -1247,7 +1247,7 @@ namespace u4
 
           double factor = g2_n13n22p1.e42_13_22();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -1288,7 +1288,7 @@ namespace u4
 
           double factor = g2_n23n12p1.e42_23_12();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -1329,7 +1329,7 @@ namespace u4
 
           double factor = g2_n23n22p1.e42_23_22();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -1370,7 +1370,7 @@ namespace u4
 
           double factor = g2_n33n12p1.e42_33_12();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -1411,7 +1411,7 @@ namespace u4
 
           double factor = g2_n33n22p1.e42_33_22();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -1494,7 +1494,7 @@ namespace u4
 
           double factor = g1_n13n12n11p1.e41_13_12();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -1537,7 +1537,7 @@ namespace u4
 
           double factor = g1_n13n22n11p1.e41_13_22();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -1580,7 +1580,7 @@ namespace u4
 
           double factor = g1_n23n12n11p1.e41_23_12();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -1623,7 +1623,7 @@ namespace u4
 
           double factor = g1_n23n22n11p1.e41_23_22();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -1666,7 +1666,7 @@ namespace u4
 
           double factor = g1_n33n12n11p1.e41_33_12();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -1709,7 +1709,7 @@ namespace u4
 
           double factor = g1_n33n22n11p1.e41_33_22();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -1753,7 +1753,7 @@ namespace u4
 
           double factor = g2_n13n12n11p1.e41_13_12();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -1796,7 +1796,7 @@ namespace u4
 
           double factor = g2_n13n22n11p1.e41_13_22();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -1839,7 +1839,7 @@ namespace u4
 
           double factor = g2_n23n12n11p1.e41_23_12();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -1882,7 +1882,7 @@ namespace u4
 
           double factor = g2_n23n22n11p1.e41_23_22();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -1925,7 +1925,7 @@ namespace u4
 
           double factor = g2_n33n12n11p1.e41_33_12();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -1968,7 +1968,7 @@ namespace u4
 
           double factor = g2_n33n22n11p1.e41_33_22();
 
-          double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+          double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
           for (int e = 0; e < etamax; e++)
           {
@@ -2356,7 +2356,7 @@ namespace u4
                 if (allowU3 == false)
                   continue;
 
-                double cgc = cgcs.compute(jj1, jj2, jj3, mm1, mm2, mm3);
+                double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
                 Eigen::RowVectorXd A_row = accU3 * cgc;
                 Eigen::RowVectorXd B_row(etamax);

@@ -11,16 +11,12 @@
 #include <U4basis.h>
 #include <U4decomposition.h>
 #include <U4U3xU4U3.h>
- 
-#ifdef USE_SLEPC
-#include <slepcsys.h> 
-#endif 
+
+#include <qcx_utils.h> 
 
 int main(int argc, char* argv[])
-{  
-#ifdef USE_SLEPC 
-  SlepcInitialize(&argc, &argv, NULL, NULL);     
-#endif
+{
+  qcx_utils::initialize(&argc, &argv);
 
   int n14a, n24a, n34a, n44a;
   std::cout << "Please enter the first irrep [n14a,n24a,n34a,n44a]: ";
@@ -114,11 +110,7 @@ int main(int argc, char* argv[])
 
   // Output the time in seconds
   std::cout << "Elapsed time: " << duration.count() << " seconds or "
-            << duration.count() / 60.0 << " minutes" << std::endl; 
+            << duration.count() / 60.0 << " minutes" << std::endl;
 
-#ifdef USE_SLEPC 
-  SlepcFinalize();
-#endif
-
-  return 0;
+  qcx_utils::finalize();
 }

@@ -10,15 +10,11 @@
 #include <U4_U6Z6Coeffs.h>
 #include <U4basis.h>
 
-#ifdef USE_SLEPC
-#include <slepcsys.h> 
-#endif 
+#include <qcx_utils.h> 
 
 int main(int argc, char* argv[])
-{  
-#ifdef USE_SLEPC 
-  SlepcInitialize(&argc, &argv, NULL, NULL);     
-#endif
+{
+  qcx_utils::initialize(&argc, &argv);
 
   std::cout
       << "This program compute U6-recoupling coefficients of three U(4) irreps"
@@ -164,9 +160,5 @@ int main(int argc, char* argv[])
     std::cout << "Recoupling does not exist" << std::endl;
   }
 
-#ifdef USE_SLEPC 
-  SlepcFinalize();
-#endif
-
-  return 0;
+  qcx_utils::finalize();
 }

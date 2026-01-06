@@ -11,15 +11,11 @@
 #include <U4basis.h>
 #include <U4SU2SU2xU4SU2SU2.h>
 
-#ifdef USE_SLEPC
-#include <slepcsys.h>
-#endif 
+#include <qcx_utils.h> 
 
 int main(int argc, char* argv[])
 {
-#ifdef USE_SLEPC
-  SlepcInitialize(&argc, &argv, NULL, NULL);
-#endif
+  qcx_utils::initialize(&argc, &argv);
   
   int P1a, P2a, P3a, P1b, P2b, P3b;
   std::cout << "Please enter SU(4) quantum numbers (P1a,P2a,P3a): ";
@@ -199,9 +195,5 @@ int main(int argc, char* argv[])
   std::cout << "Elapsed time: " << duration.count() << " seconds or "
             << duration.count() / 60.0 << " minutes" << std::endl;
 
-#ifdef USE_SLEPC 
-  SlepcFinalize();
-#endif
-
-  return 0;
+  qcx_utils::finalize();
 }
