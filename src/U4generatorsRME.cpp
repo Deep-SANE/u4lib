@@ -4,8 +4,11 @@
 #include <U4basis.h>
 #include <U4generatorsRME.h>
 
-int main()
+#include <qcx_utils.h> 
+
+int main(int argc, char* argv[])
 {
+  qcx_utils::initialize(&argc, &argv);
 
   /*
       int n14,n24,n34,n44;
@@ -71,5 +74,5 @@ int main()
   for (int i = 0; i < bra_zeta.size(); i++)
     std::cout << bra_zeta[i] << "\t\t" << RME.row(i) << std::endl;
 
-  return 0;
+  qcx_utils::finalize();
 }
