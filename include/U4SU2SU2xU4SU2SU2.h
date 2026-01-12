@@ -24,10 +24,12 @@ namespace u4
   WigU4SU2SU2(int etamax, 
               const std::vector<u4::physicalvector>& pArrA,
               const std::vector<u4::physicalvector>& pArrB,
-              const std::vector<u4::physicalvector>& pArrC,
-              qcx_utils::SO3_CGC& cgcs, u3::WigU3U2_db& wigU3U2db,
-              u4::WigU4U3_db& wigU4U3db)
+              const std::vector<u4::physicalvector>& pArrC)
   {
+    auto& cgcs = qcx_utils::cgcs();
+    auto& wigU3U2db = u3::wigU3U2db();
+    auto& wigU4U3db = u4::wigU4U3db();
+
     // build Gelfand basis
     std::vector<u4::gelfand> gArrA = u4::gelfandBasis(pArrA[0].irr()),
                              gArrB = u4::gelfandBasis(pArrB[0].irr()),
@@ -164,13 +166,13 @@ namespace u4
     std::map<key_type, Eigen::MatrixXd> map_;
 #endif
 
-    qcx_utils::SO3_CGC& cgcs_;
-    u3::WigU3U2_db& wigU3U2db_;
-    u4::WigU4U3_db& wigU4U3db_;
-
     auto calculate(int etamax, const u4::physicalvector& pA,
       const u4::physicalvector& pB, const u4::physicalvector& pC)
     {
+      auto& cgcs = qcx_utils::cgcs();
+      auto& wigU3U2db = u3::wigU3U2db();
+      auto& wigU4U3db = u4::wigU4U3db();
+
       // build Gelfand basis
       std::vector<u4::gelfand> gArrA = u4::gelfandBasis(pA.irr()),
                                gArrB = u4::gelfandBasis(pB.irr()),
@@ -190,8 +192,8 @@ namespace u4
       int mmsB = SSC - SSA, mmtB = TTC - TTA;
       auto [canoB, transB] = u4::phys_to_cano(pB, mmsB, mmtB, gArrB);
 
-      double cgcS = cgcs_.get({SSA, SSB, SSC, SSA, mmsB, SSC}),
-             cgcT = cgcs_.get({TTA, TTB, TTC, TTA, mmtB, TTC});
+      double cgcS = cgcs.get({SSA, SSB, SSC, SSA, mmsB, SSC}),
+             cgcT = cgcs.get({TTA, TTB, TTC, TTA, mmtB, TTC});
 
       Eigen::MatrixXd coeffs(ZA * ZB * ZC, etamax);
       coeffs.setZero();
@@ -208,7 +210,7 @@ namespace u4
           {
             const auto& gC = gArrC[canoC[iC]];
 
-            auto [allowU4, accU4] = wigU4U3db_.get(
+            auto [allowU4, accU4] = wigU4U3db.get(
               gA.n14(), gA.n24(), gA.n34(), gA.n44(), gA.n13(), gA.n23(), gA.n33(),
               gB.n14(), gB.n24(), gB.n34(), gB.n44(), gB.n13(), gB.n23(), gB.n33(),
               gC.n14(), gC.n24(), gC.n34(), gC.n44(), gC.n13(), gC.n23(), gC.n33());
@@ -221,9 +223,9 @@ namespace u4
             if ((mm1 + mm2) == mm3 && 
                  std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
             {
-              double cgc = cgcs_.get({jj1, jj2, jj3, mm1, mm2, mm3});
+              double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
-              auto [allowU3, accU3] = wigU3U2db_.get(
+              auto [allowU3, accU3] = wigU3U2db.get(
                 gA.n13(), gA.n23(), gA.n33(), gA.n12(), gA.n22(), 
                 gB.n13(), gB.n23(), gB.n33(), gB.n12(), gB.n22(),
                 gC.n13(), gC.n23(), gC.n33(), gC.n12(), gC.n22());
@@ -255,17 +257,12 @@ namespace u4
       return coeffs;
     }
 
-  public:
-    WigU4SU2SU2_db(qcx_utils::SO3_CGC& cgcs, u3::WigU3U2_db& wigU3U2db,
-                   u4::WigU4U3_db& wigU4U3db)
-        : cgcs_(cgcs), wigU3U2db_(wigU3U2db), wigU4U3db_(wigU4U3db)
-    { }
-
-#ifdef U4LIB_ENABLE_WIGU4SU2SU2_CACHE
+    // This class is a singleton, and cannot be instantiated directly:
+    WigU4SU2SU2_db() = default;
     WigU4SU2SU2_db(const WigU4SU2SU2_db&) = delete;
     WigU4SU2SU2_db& operator=(const WigU4SU2SU2_db&) = delete;
-#endif
 
+  public:
     auto get(int P1a, int P2a, int P3a, int SSa, int TTa, 
              int P1b, int P2b, int P3b, int SSb, int TTb,
              int P1c, int P2c, int P3c, int SSc, int TTc)
@@ -305,7 +302,16 @@ namespace u4
 
       return std::make_pair(flag, m);
     }
+
+    friend WigU4SU2SU2_db& wigU4SU2SU2db();
   };
+
+  inline WigU4SU2SU2_db& wigU4SU2SU2db()
+  {
+    static WigU4SU2SU2_db wigU4SU2SU2db;
+
+    return wigU4SU2SU2db;
+  }
 
 } // namespace u4
 
@@ -318,9 +324,7 @@ namespace u4
   WigU4SU2SU2(int etamax, 
               const std::vector<u4::physicalvector>& pArrA,
               const std::vector<u4::physicalvector>& pArrB,
-              const std::vector<u4::physicalvector>& pArrC,
-              qcx_utils::SO3_CGC& cgcs, u3::WigU3U2_db& wigU3U2db,
-              u4::WigU4U3_db& wigU4U3db)
+              const std::vector<u4::physicalvector>& pArrC)
   {
     // build Gelfand basis
     std::vector<u4::gelfand> gArrA = u4::gelfandBasis(pArrA[0].irr),

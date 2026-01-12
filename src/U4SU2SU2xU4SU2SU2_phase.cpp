@@ -38,6 +38,8 @@ int main(int argc, char* argv[])
 {
   qcx_utils::initialize(&argc, &argv);
 
+  auto& wigU4SU2SU2db = u4::wigU4SU2SU2db();
+
   int P1a, P2a, P3a;
   std::cout << "Please enter SU(4) quantum numbers (P1a,P2a,P3a): ";
   std::cin >> P1a >> P2a >> P3a;
@@ -64,11 +66,6 @@ int main(int argc, char* argv[])
   	pArrB = u4::physicalBasis(u4B), pArrC = u4::physicalBasis(u4C);
 
   double dimA = u4A.dim(), dimC = u4C.dim();
-
-  qcx_utils::SO3_CGC cgcs;
-  u3::WigU3U2_db wigU3U2db(cgcs);
-  u4::WigU4U3_db wigU4U3db(cgcs, wigU3U2db);
-  u4::WigU4SU2SU2_db wigU4SU2SU2db(cgcs, wigU3U2db, wigU4U3db);
 
   for (const auto& pA : pArrA)
   {

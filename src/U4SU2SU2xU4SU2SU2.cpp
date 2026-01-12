@@ -153,12 +153,7 @@ int main(int argc, char* argv[])
   // Start time measurement
   auto t0 = std::chrono::high_resolution_clock::now();
 
-  qcx_utils::SO3_CGC cgcs;
-  u3::WigU3U2_db wigU3U2db(cgcs);
-  u4::WigU4U3_db wigU4U3db(cgcs, wigU3U2db);
-
-  auto [tArr, coeffs] = u4::WigU4SU2SU2(
-    etamax, pArrA, pArrB, pArrC, cgcs, wigU3U2db, wigU4U3db);
+  auto [tArr, coeffs] = u4::WigU4SU2SU2(etamax, pArrA, pArrB, pArrC);
 
   // End time measurement
   auto t1 = std::chrono::high_resolution_clock::now();

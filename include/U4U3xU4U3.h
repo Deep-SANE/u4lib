@@ -462,10 +462,11 @@ namespace u4
   inline void HighestWeightReducedCoeffs(const std::vector<u4::gelfand>& gArr1,
                                          const std::vector<u4::gelfand>& gArr2,
                                          const std::vector<u4::gelfand>& gArr3,
-                                         int etamax, qcx_utils::SO3_CGC& cgcs,
-                                         u4::WigU4U3_coeffs& coeffs,
-                                         u3::WigU3U2_db& wigU3U2db)
+                                         int etamax, u4::WigU4U3_coeffs& coeffs)
   {
+    auto& cgcs = qcx_utils::cgcs();
+    auto& wigU3U2db = u3::wigU3U2db();
+
     std::vector<std::pair<int, int>> indices =
         expand_to_uncoupled(gArr3[0], gArr1, gArr2);
 
@@ -631,9 +632,12 @@ namespace u4
       const std::vector<u4::gelfand>& gArr1,
       const std::vector<u4::gelfand>& gArr2,
       const std::vector<u4::gelfand>& gArr3, Eigen::MatrixXd& b,
-      qcx_utils::SO3_CGC& cgcs, std::vector<Eigen::MatrixXd>& E43E42E41,
-      u4::WigU4U3_coeffs& coeffs, u3::WigU3U2_db& wigU3U2db)
+      std::vector<Eigen::MatrixXd>& E43E42E41,
+      u4::WigU4U3_coeffs& coeffs)
   {
+    auto& cgcs = qcx_utils::cgcs();
+    auto& wigU3U2db = u3::wigU3U2db();
+
     int jj3 = gArr3[parent_g3].Lambdax2(), mm3 = gArr3[parent_g3].MLambdax2();
 
     // loop over daughter states
@@ -903,9 +907,12 @@ namespace u4
       const std::vector<u4::gelfand>& gArr1,
       const std::vector<u4::gelfand>& gArr2,
       const std::vector<u4::gelfand>& gArr3, Eigen::MatrixXd& b,
-      qcx_utils::SO3_CGC& cgcs, std::vector<Eigen::MatrixXd>& E43E42E41,
-      u4::WigU4U3_coeffs& coeffs, u3::WigU3U2_db& wigU3U2db)
+      std::vector<Eigen::MatrixXd>& E43E42E41,
+      u4::WigU4U3_coeffs& coeffs)
   {
+    auto& cgcs = qcx_utils::cgcs();
+    auto& wigU3U2db = u3::wigU3U2db();
+
     int jj3 = gArr3[parent_g3].Lambdax2(), mm3 = gArr3[parent_g3].MLambdax2();
 
     // loop over daughter states
@@ -1436,9 +1443,12 @@ namespace u4
       const std::vector<u4::gelfand>& gArr1,
       const std::vector<u4::gelfand>& gArr2,
       const std::vector<u4::gelfand>& gArr3, Eigen::MatrixXd& b,
-      qcx_utils::SO3_CGC& cgcs, std::vector<Eigen::MatrixXd>& E43E42E41,
-      u4::WigU4U3_coeffs& coeffs, u3::WigU3U2_db& wigU3U2db)
+      std::vector<Eigen::MatrixXd>& E43E42E41,
+      u4::WigU4U3_coeffs& coeffs)
   {
+    auto& cgcs = qcx_utils::cgcs();
+    auto& wigU3U2db = u3::wigU3U2db();
+
     int jj3 = gArr3[parent_g3].Lambdax2(), mm3 = gArr3[parent_g3].MLambdax2();
 
     // loop over daughter states
@@ -1990,10 +2000,10 @@ namespace u4
                                        const std::vector<u4::gelfand>& gArr2,
                                        const std::vector<u4::gelfand>& gArr3,
                                        int etamax, int w3,
-                                       qcx_utils::SO3_CGC& cgcs,
-                                       WigU4U3_coeffs& coeffs,
-                                       u3::WigU3U2_db& wigU3U2db)
+                                       WigU4U3_coeffs& coeffs)
   {
+    auto& cgcs = qcx_utils::cgcs();
+    auto& wigU3U2db = u3::wigU3U2db();
 
     // trace states with same [w3,w2,w1] (z-weight)
     int W1max = gArr3[0].n14(), W1min = gArr3[0].n44(),
@@ -2269,22 +2279,22 @@ namespace u4
         if (opt == 0)
         {
           E43(parent_g3, row, etamax, same_weight_gArr3,
-              uncoupled_same_weight_gArr3, gArr1, gArr2, gArr3, b, cgcs,
-              E43E42E41, coeffs, wigU3U2db);
+              uncoupled_same_weight_gArr3, gArr1, gArr2, gArr3, b, 
+              E43E42E41, coeffs);
         }
 
         else if (opt == 1)
         {
           E42(parent_g3, row, etamax, same_weight_gArr3,
-              uncoupled_same_weight_gArr3, gArr1, gArr2, gArr3, b, cgcs,
-              E43E42E41, coeffs, wigU3U2db);
+              uncoupled_same_weight_gArr3, gArr1, gArr2, gArr3, b,
+              E43E42E41, coeffs);
         }
 
         else if (opt == 2)
         {
           E41(parent_g3, row, etamax, same_weight_gArr3,
-              uncoupled_same_weight_gArr3, gArr1, gArr2, gArr3, b, cgcs,
-              E43E42E41, coeffs, wigU3U2db);
+              uncoupled_same_weight_gArr3, gArr1, gArr2, gArr3, b,
+              E43E42E41, coeffs);
         }
       }
 
@@ -2424,13 +2434,11 @@ namespace u4
                       const u4::irrep& u4C, int etamax, int w3min,
                       const std::vector<u4::gelfand>& gArrA,
                       const std::vector<u4::gelfand>& gArrB,
-                      const std::vector<u4::gelfand>& gArrC,
-                      qcx_utils::SO3_CGC& cgcs, u3::WigU3U2_db& wigU3U2db)
+                      const std::vector<u4::gelfand>& gArrC)
   {
     WigU4U3_coeffs coeffs(u4A, u4B, u4C, etamax);
 
-    u4::HighestWeightReducedCoeffs(gArrA, gArrB, gArrC, etamax, cgcs, coeffs,
-                                   wigU3U2db);
+    u4::HighestWeightReducedCoeffs(gArrA, gArrB, gArrC, etamax, coeffs);
 
 #ifdef U4LIB_TIME_LOG
     auto t0 = std::chrono::high_resolution_clock::now();
@@ -2444,8 +2452,7 @@ namespace u4
 
       for (int w3 = w3max - 1; w3 >= w3min; w3--)
       {
-        u4::LowerWeightReducedCoeffs(gArrA, gArrB, gArrC, etamax, w3, cgcs,
-                                     coeffs, wigU3U2db);
+        u4::LowerWeightReducedCoeffs(gArrA, gArrB, gArrC, etamax, w3, coeffs);
       }
     }
 
@@ -2469,9 +2476,6 @@ namespace u4
     std::map<key_type, WigU4U3_coeffs> map_;
 #endif
 
-    qcx_utils::SO3_CGC& cgcs_;
-    u3::WigU3U2_db& wigU3U2db_;
-
     auto calculate(const irrep& u4a, const irrep& u4b, const irrep& u4c)
     {
       auto etamax = Eta(u4a, u4b, u4c);
@@ -2480,20 +2484,15 @@ namespace u4
       auto gArrB = u4::gelfandBasis(u4b);
       auto gArrC = u4::gelfandBasis(u4c);
 
-      return WigU4U3(u4a, u4b, u4c, etamax, -1, gArrA, gArrB, gArrC, cgcs_,
-                     wigU3U2db_);
+      return WigU4U3(u4a, u4b, u4c, etamax, -1, gArrA, gArrB, gArrC);
     }
 
-  public:
-    WigU4U3_db(qcx_utils::SO3_CGC& cgcs, u3::WigU3U2_db& wigU3U2db)
-        : cgcs_(cgcs), wigU3U2db_(wigU3U2db)
-    { }
-
-#ifdef U4LIB_ENABLE_WIGU4U3_CACHE
+    // This class is a singleton, and cannot be instantiated directly:
+    WigU4U3_db() = default;
     WigU4U3_db(const WigU4U3_db&) = delete;
     WigU4U3_db& operator=(const WigU4U3_db&) = delete;
-#endif
 
+  public:
     auto get(int n14a, int n24a, int n34a, int n44a, int n13a, int n23a,
              int n33a, int n14b, int n24b, int n34b, int n44b, int n13b,
              int n23b, int n33b, int n14c, int n24c, int n34c, int n44c,
@@ -2545,7 +2544,17 @@ namespace u4
 
       return std::pair(exist, matrix);
     }
+
+    friend WigU4U3_db& wigU4U3db();
   };
+
+  inline WigU4U3_db& wigU4U3db()
+  {
+    static WigU4U3_db wigU4U3db;
+
+    return wigU4U3db;
+  }
+
 } // namespace u4
 
 #endif

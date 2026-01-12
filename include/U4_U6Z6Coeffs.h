@@ -27,29 +27,29 @@ namespace u4
      const u4::irrep& u4C, const std::vector<u4::gelfand>& gArrC,
      const u4::irrep& u4AB, const std::vector<u4::gelfand>& gArrAB,
      int etaABmax, int etaAB_Cmax, const u4::irrep& u4BC,
-     const std::vector<u4::gelfand>& gArrBC, int etaBCmax, int etaA_BCmax,
-     qcx_utils::SO3_CGC& cgcs, qcx_utils::SO3_Racah& racahs,
-     u3::WigU3U2_db& wigU3U2db, u4::WigU4U3_db& wigU4U3db)
+     const std::vector<u4::gelfand>& gArrBC, int etaBCmax, int etaA_BCmax)
   {
+    auto& wigU4U3db = u4::wigU4U3db();
+
     /*
         // coupling <gA;hwBC|hwABC> rhoA_BC etaA_BC
         auto coeffsA_BC = u4::WigU4U3(u4A, u4BC, u4ABC, etaA_BCmax,
                           u4ABC.n14() + u4ABC.n24() + u4ABC.n34(),
-                          gArrA, gArrBC, gArrABC, cgcs, wigU3U2db);
+                          gArrA, gArrBC, gArrABC);
 
         // coupling <gAB;gC|hwABC> rhoAB_C etaAB_C
         auto coeffsAB_C = u4::WigU4U3(u4AB, u4C, u4ABC, etaAB_Cmax,
                           u4ABC.n14() + u4ABC.n24() + u4ABC.n34(),
-                          gArrAB, gArrC, gArrABC, cgcs, wigU3U2db);
+                          gArrAB, gArrC, gArrABC);
 
         // coupling <gB;gC|hwBC> rhoBC etaBC
         auto coeffsBC = u4::WigU4U3(u4B, u4C, u4BC, etaBCmax,
                           u4BC.n14() + u4BC.n24() + u4BC.n34(),
-                          gArrB, gArrC, gArrBC, cgcs, wigU3U2db);
+                          gArrB, gArrC, gArrBC);
 
         // coupling <gA;gB|gAB> rhoAB etaAB
         auto coeffsAB = u4::WigU4U3(u4A, u4B, u4AB, etaABmax, -1,
-                          gArrA, gArrB, gArrAB, cgcs, wigU3U2db);
+                          gArrA, gArrB, gArrAB);
     */
     Eigen::MatrixXd A(etaA_BCmax, etaA_BCmax);
     Eigen::MatrixXd B(etaA_BCmax, etaABmax * etaAB_Cmax * etaBCmax);
@@ -183,8 +183,7 @@ namespace u4
                                         u3a, gArr3a, u3b, gArr3b, u3abc,
                                         gArr3abc, u3c, gArr3c, u3ab, gArr3ab,
                                         accAB.rows(), accAB_C.rows(), u3bc,
-                                        gArr3bc, accBC.rows(), accA_BC.rows(),
-                                        cgcs, racahs, wigU3U2db);
+                                        gArr3bc, accBC.rows(), accA_BC.rows());
 
                                     for (int eAB = 0; eAB < etaABmax; eAB++)
                                       for (int eAB_C = 0; eAB_C < etaAB_Cmax;
@@ -268,11 +267,6 @@ namespace u4
     std::map<key_type, std::vector<double>> map_;
 #endif
 
-    qcx_utils::SO3_CGC& cgcs_;
-    qcx_utils::SO3_Racah& racahs_;
-    u3::WigU3U2_db& wigU3U2db_;
-    u4::WigU4U3_db& wigU4U3db_;
-
     auto calculate(const u4::irrep& u4A, const u4::irrep& u4B, 
                    const u4::irrep& u4ABC, const u4::irrep& u4C,
                    const u4::irrep& u4AB, int etaABmax, int etaAB_Cmax,
@@ -287,17 +281,15 @@ namespace u4
 
       return U6(u4A,gArrA,u4B,gArrB,u4ABC,gArrABC,u4C,gArrC,
                 u4AB,gArrAB,etaABmax,etaAB_Cmax,
-                u4BC,gArrBC,etaBCmax,etaA_BCmax,
-                cgcs_,racahs_,wigU3U2db_,wigU4U3db_);
+                u4BC,gArrBC,etaBCmax,etaA_BCmax);
     }
 
-  public:
-    U4U6_db(qcx_utils::SO3_CGC& cgcs, qcx_utils::SO3_Racah& racahs,
-            u3::WigU3U2_db& wigU3U2db, u4::WigU4U3_db& wigU4U3db) 
-      : cgcs_(cgcs), racahs_(racahs), 
-        wigU3U2db_(wigU3U2db), wigU4U3db_(wigU4U3db)
-    {}
+    // This class is a singleton, and cannot be instantiated directly:
+    U4U6_db() = default;
+    U4U6_db(const U4U6_db&) = delete;
+    U4U6_db& operator=(const U4U6_db&) = delete;
 
+  public:
     auto get(int n14a, int n24a, int n34a, int n44a, 
              int n14b, int n24b, int n34b, int n44b, 
              int n14abc, int n24abc, int n34abc, int n44abc, 
@@ -346,7 +338,16 @@ namespace u4
 
       return std::make_pair(flag, c);
     }
+
+    friend U4U6_db& u4u6db();
   };
+
+  inline U4U6_db& u4u6db()
+  {
+    static U4U6_db u4u6db;
+
+    return u4u6db;
+  }
 
   // input by users: u4b, u4a, u4abc, u4c, u4ab, u4bc, all normalized
   inline std::vector<double>
@@ -356,29 +357,29 @@ namespace u4
      const u4::irrep& u4C, const std::vector<u4::gelfand>& gArrC,
      const u4::irrep& u4AB, const std::vector<u4::gelfand>& gArrAB,
      int etaABmax, int etaAB_Cmax, const u4::irrep& u4AC,
-     const std::vector<u4::gelfand>& gArrAC, int etaACmax, int etaAC_Bmax,
-     qcx_utils::SO3_CGC& cgcs, qcx_utils::SO3_Racah& racahs,
-     u3::WigU3U2_db& wigU3U2db, u4::WigU4U3_db& wigU4U3db)
+     const std::vector<u4::gelfand>& gArrAC, int etaACmax, int etaAC_Bmax)
   {
+    auto& wigU4U3db = u4::wigU4U3db();
+
     /*
         // coupling <hwAC;gB|hwABC> rhoAC_B etaAC_B
         auto coeffsAC_B = u4::WigU4U3(u4AC, u4B, u4ABC, etaAC_Bmax,
                           u4ABC.n14() + u4ABC.n24() + u4ABC.n34(),
-                          gArrAC, gArrB, gArrABC, cgcs, wigU3U2db);
+                          gArrAC, gArrB, gArrABC);
 
         // coupling <gAB;gC|hwABC> rhoAB_C etaAB_C
         auto coeffsAB_C = u4::WigU4U3(u4AB, u4C, u4ABC, etaAB_Cmax,
                           u4ABC.n14() + u4ABC.n24() + u4ABC.n34(),
-                          gArrAB, gArrC, gArrABC, cgcs, wigU3U2db);
+                          gArrAB, gArrC, gArrABC);
 
         // coupling <gA;gC|hwAC> rhoAC etaAC
         auto coeffsAC = u4::WigU4U3(u4A, u4C, u4AC, etaACmax,
                         u4AC.n14() + u4AC.n24() + u4AC.n34(),
-                        gArrA, gArrC, gArrAC, cgcs, wigU3U2db);
+                        gArrA, gArrC, gArrAC);
 
         // coupling <gA;gB|gAB> rhoAB etaAB
         auto coeffsAB = u4::WigU4U3(u4A, u4B, u4AB, etaABmax, -1,
-                        gArrA, gArrB, gArrAB, cgcs, wigU3U2db);
+                        gArrA, gArrB, gArrAB);
     */
     Eigen::MatrixXd A(etaAC_Bmax, etaAC_Bmax);
     Eigen::MatrixXd B(etaAC_Bmax, etaABmax * etaAB_Cmax * etaACmax);
@@ -511,8 +512,7 @@ namespace u4
                                         u3b, gArr3b, u3a, gArr3a, u3abc,
                                         gArr3abc, u3c, gArr3c, u3ab, gArr3ab,
                                         accAB.rows(), accAB_C.rows(), u3ac,
-                                        gArr3ac, accAC.rows(), accAC_B.rows(),
-                                        cgcs, racahs, wigU3U2db);
+                                        gArr3ac, accAC.rows(), accAC_B.rows());
 
                                     for (int eAB = 0; eAB < etaABmax; eAB++)
                                       for (int eAB_C = 0; eAB_C < etaAB_Cmax;
@@ -596,11 +596,6 @@ namespace u4
     std::map<key_type, std::vector<double>> map_;
 #endif
 
-    qcx_utils::SO3_CGC& cgcs_;
-    qcx_utils::SO3_Racah& racahs_;
-    u3::WigU3U2_db& wigU3U2db_;
-    u4::WigU4U3_db& wigU4U3db_;
-
     auto calculate(const u4::irrep& u4B, const u4::irrep& u4A, 
                    const u4::irrep& u4ABC, const u4::irrep& u4C,
                    const u4::irrep& u4AB, int etaABmax, int etaAB_Cmax,
@@ -615,17 +610,15 @@ namespace u4
 
       return U6(u4B,gArrB,u4A,gArrA,u4ABC,gArrABC,u4C,gArrC,
                 u4AB,gArrAB,etaABmax,etaAB_Cmax,
-                u4AC,gArrAC,etaACmax,etaAC_Bmax,
-                cgcs_,racahs_,wigU3U2db_,wigU4U3db_);
+                u4AC,gArrAC,etaACmax,etaAC_Bmax);
     }
 
-  public:
-    U4Z6_db(qcx_utils::SO3_CGC& cgcs, qcx_utils::SO3_Racah& racahs,
-            u3::WigU3U2_db& wigU3U2db, u4::WigU4U3_db& wigU4U3db) 
-      : cgcs_(cgcs), racahs_(racahs), 
-        wigU3U2db_(wigU3U2db), wigU4U3db_(wigU4U3db)
-    {}
+    // This class is a singleton, and cannot be instantiated directly:
+    U4Z6_db() = default;
+    U4Z6_db(const U4Z6_db&) = delete;
+    U4Z6_db& operator=(const U4Z6_db&) = delete;
 
+  public:
     auto get(int n14b, int n24b, int n34b, int n44b,
              int n14a, int n24a, int n34a, int n44a, 
              int n14abc, int n24abc, int n34abc, int n44abc, 
@@ -674,6 +667,16 @@ namespace u4
 
       return std::make_pair(flag, c);
     }
+
+    friend U4Z6_db& u4z6db();
   };
+
+  inline U4Z6_db& u4z6db()
+  {
+    static U4Z6_db u4z6db;
+
+    return u4z6db;
+  }
+
 } // namespace u4
 #endif
