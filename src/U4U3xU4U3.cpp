@@ -8,6 +8,9 @@
 
 #include <so3Coeffs/SO3_CGC.h>
  
+#include <u3lib.h>
+
+#include <u4lib.h>
 #include <U4basis.h>
 #include <U4decomposition.h>
 #include <U4U3xU4U3.h>
@@ -17,6 +20,8 @@
 int main(int argc, char* argv[])
 {
   qcx_utils::initialize(&argc, &argv);
+  u3::initialize();
+  u4::initialize();
 
   int n14a, n24a, n34a, n44a;
   std::cout << "Please enter the first irrep [n14a,n24a,n34a,n44a]: ";
@@ -109,5 +114,7 @@ int main(int argc, char* argv[])
   std::cout << "Elapsed time: " << duration.count() << " seconds or "
             << duration.count() / 60.0 << " minutes" << std::endl;
 
+  u4::finalize();
+  u3::finalize();
   qcx_utils::finalize();
 }

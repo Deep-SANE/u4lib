@@ -3,6 +3,9 @@
 #include <iostream>
 #include <vector>
 
+#include <u3lib.h>
+
+#include <u4lib.h>
 #include <U4basis.h>
 #include <U4SU2SU2_to_U4U3U2U1.h>
 
@@ -11,6 +14,8 @@
 int main(int argc, char* argv[])
 {
   qcx_utils::initialize(&argc, &argv);
+  u3::initialize();
+  u4::initialize();
 
   int P1, P2, P3;
   std::cout << "Please enter SU(4) quantum numbers (P1,P2,P3): ";
@@ -117,5 +122,7 @@ int main(int argc, char* argv[])
     std::cout << "Wrong mode" << std::endl;
   }
 
+  u4::finalize();
+  u3::finalize();
   qcx_utils::finalize();
 }

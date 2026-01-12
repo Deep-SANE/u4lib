@@ -1,3 +1,6 @@
+#include <u3lib.h>
+
+#include <u4lib.h>
 #include <U4decomposition.h>
 #include <U4basis.h>
 #include <U4SU2SU2xU4SU2SU2.h>
@@ -37,6 +40,8 @@ Eigen::MatrixXd diff(int z1, const Eigen::MatrixXd& m1,
 int main(int argc, char* argv[])
 {
   qcx_utils::initialize(&argc, &argv);
+  u3::initialize();
+  u4::initialize();
 
   auto& wigU4SU2SU2db = u4::wigU4SU2SU2db();
 
@@ -107,5 +112,7 @@ int main(int argc, char* argv[])
   	}
   }
 
+  u4::finalize();
+  u3::finalize();
   qcx_utils::finalize();
 }

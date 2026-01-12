@@ -6,6 +6,9 @@
 #include <string>
 #include <vector>
 
+#include <u3lib.h>
+
+#include <u4lib.h>
 #include <U4decomposition.h>
 #include <U4_U9Coeffs.h>
 #include <U4basis.h>
@@ -15,6 +18,8 @@
 int main(int argc, char* argv[])
 {
   qcx_utils::initialize(&argc, &argv);
+  u3::initialize();
+  u4::initialize();
 
   std::cout
       << "This program compute U9-recoupling coefficients of four U(4) irreps"
@@ -203,5 +208,7 @@ int main(int argc, char* argv[])
     std::cout << "Recoupling does not exist" << std::endl;
   }
 
+  u4::finalize();
+  u3::finalize();
   qcx_utils::finalize();
 }

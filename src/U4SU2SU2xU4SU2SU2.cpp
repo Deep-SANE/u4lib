@@ -7,6 +7,9 @@
 #include <tuple>
 #include <vector>
 
+#include <u3lib.h>
+
+#include <u4lib.h>
 #include <U4decomposition.h>
 #include <U4basis.h>
 #include <U4SU2SU2xU4SU2SU2.h>
@@ -16,6 +19,8 @@
 int main(int argc, char* argv[])
 {
   qcx_utils::initialize(&argc, &argv);
+  u3::initialize();
+  u4::initialize();
   
   int P1a, P2a, P3a, P1b, P2b, P3b;
   std::cout << "Please enter SU(4) quantum numbers (P1a,P2a,P3a): ";
@@ -190,5 +195,7 @@ int main(int argc, char* argv[])
   std::cout << "Elapsed time: " << duration.count() << " seconds or "
             << duration.count() / 60.0 << " minutes" << std::endl;
 
+  u4::finalize();
+  u3::finalize();
   qcx_utils::finalize();
 }

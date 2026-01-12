@@ -1,6 +1,9 @@
 #include <chrono>
 #include <iostream>
 
+#include <u3lib.h>
+
+#include <u4lib.h>
 #include <U4basis.h>
 #include <U4generatorsRME.h>
 
@@ -9,6 +12,8 @@
 int main(int argc, char* argv[])
 {
   qcx_utils::initialize(&argc, &argv);
+  u3::initialize();
+  u4::initialize();
 
   /*
       int n14,n24,n34,n44;
@@ -74,5 +79,7 @@ int main(int argc, char* argv[])
   for (int i = 0; i < bra_zeta.size(); i++)
     std::cout << bra_zeta[i] << "\t\t" << RME.row(i) << std::endl;
 
+  u4::finalize();
+  u3::finalize();
   qcx_utils::finalize();
 }
