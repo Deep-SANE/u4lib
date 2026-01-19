@@ -36,6 +36,9 @@ namespace u4
      int etaABmax, int etaCDmax, int etaAB_CDmax, int etaACmax, int etaBDmax,
      int etaAC_BDmax)
   {
+    auto& u4u6db = u4::u4u6db();
+    auto& u4z6db = u4::u4z6db();
+
     std::vector<double> U(etaACmax * etaBDmax * etaAB_CDmax * etaABmax *
                               etaCDmax * etaAC_BDmax,
                           0.0);
@@ -43,22 +46,6 @@ namespace u4
     // couple u4AB and u4C
     auto [u4AB_C, etamaxsAB_C] = u4::decomposition(u4AB, u4C);
 
-    /* an array to store the couple I-II-III irreps
-    std::vector<u4::irrep> u4ABC;
-    std::vector<int> etaAB_Cmax, etaAC_Bmax;    
-
-    for (int i = 0; i < u4AB_C.size(); i++)
-    {
-      int etamaxAC_B = u4::Eta(u4AC, u4B, u4AB_C[i]);
-      if (etamaxAC_B > 0)
-      {
-        u4ABC.push_back(u4AB_C[i]);
-        etaAB_Cmax.push_back(etamaxsAB_C[i]);
-        etaAC_Bmax.push_back(etamaxAC_B);
-      }
-    } */
-
-    //for (int i = 0; i < u4ABC.size(); i++)
     for (int i = 0; i < u4AB_C.size(); i++)
     {
       int etamaxAC_B = u4::Eta(u4AC, u4B, u4AB_C[i]);
@@ -71,6 +58,25 @@ namespace u4
 
       std::vector<u4::gelfand> gArrABC = u4::gelfandBasis(u4AB_C[i]);
 
+#ifdef U4LIB_ENABLE_U4U6_CACHE
+      auto [allowU6_1, U6_1] = u4u6db.get(
+        u4AC.n14(), u4AC.n24(), u4AC.n34(), u4AC.n44(),
+        u4B.n14(), u4B.n24(), u4B.n34(), u4B.n44(),
+        u4ABCD.n14(), u4ABCD.n24(), u4ABCD.n34(), u4ABCD.n44(),
+        u4D.n14(), u4D.n24(), u4D.n34(), u4D.n44(),               
+        u4AB_C[i].n14(), u4AB_C[i].n24(), u4AB_C[i].n34(), u4AB_C[i].n44(),
+        u4BD.n14(), u4BD.n24(), u4BD.n34(), u4BD.n44());
+      if (!allowU6_1) continue;
+
+      auto [allowU6_2, U6_2] = u4u6db.get(
+        u4AB.n14(), u4AB.n24(), u4AB.n34(), u4AB.n44(),
+        u4C.n14(), u4C.n24(), u4C.n34(), u4C.n44(),
+        u4ABCD.n14(), u4ABCD.n24(), u4ABCD.n34(), u4ABCD.n44(),
+        u4D.n14(), u4D.n24(), u4D.n34(), u4D.n44(),  
+        u4AB_C[i].n14(), u4AB_C[i].n24(), u4AB_C[i].n34(), u4AB_C[i].n44(),
+        u4CD.n14(), u4CD.n24(), u4CD.n34(), u4CD.n44());
+      if (!allowU6_2) continue;
+#else
       std::vector<double> U6_1 =
           u4::U6(u4AC, gArrAC, u4B, gArrB, u4ABCD, gArrABCD, u4D, gArrD,
                  u4AB_C[i], gArrABC, etamaxAC_B, etaABC_Dmax, u4BD, gArrBD,
@@ -80,11 +86,23 @@ namespace u4
           u4::U6(u4AB, gArrAB, u4C, gArrC, u4ABCD, gArrABCD, u4D, gArrD,
                  u4AB_C[i], gArrABC, etamaxsAB_C[i], etaABC_Dmax, u4CD, gArrCD,
                  etaCDmax, etaAB_CDmax);
+#endif
 
+#ifdef U4LIB_ENABLE_U4Z6_CACHE
+      auto [allowZ6, Z6] = u4z6db.get(
+        u4B.n14(), u4B.n24(), u4B.n34(), u4B.n44(),
+        u4A.n14(), u4A.n24(), u4A.n34(), u4A.n44(),
+        u4AB_C[i].n14(), u4AB_C[i].n24(), u4AB_C[i].n34(), u4AB_C[i].n44(),
+        u4C.n14(), u4C.n24(), u4C.n34(), u4C.n44(),
+        u4AB.n14(), u4AB.n24(), u4AB.n34(), u4AB.n44(),
+        u4AC.n14(), u4AC.n24(), u4AC.n34(), u4AC.n44());
+      if (!allowZ6) continue;
+#else
       std::vector<double> Z6 =
           u4::Z6(u4B, gArrB, u4A, gArrA, u4AB_C[i], gArrABC, u4C, gArrC, u4AB,
                  gArrAB, etaABmax, etamaxsAB_C[i], u4AC, gArrAC, etaACmax,
                  etamaxAC_B);
+#endif
 
       for (int eAC = 0; eAC < etaACmax; eAC++)
       {
