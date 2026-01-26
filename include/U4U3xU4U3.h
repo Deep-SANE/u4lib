@@ -2469,6 +2469,155 @@ namespace u4
   }
 
 #define U4LIB_ENABLE_WIGU4U3_CACHE
+
+  class WigU4U3_db
+  {
+    using db_value_type = Eigen::MatrixXd;
+
+    using ht_key_type = std::array<uint8_t, 9>;
+    using ht_value_type = WigU4U3_coeffs;
+
+#ifdef U4LIB_ENABLE_WIGU4U3_CACHE
+    qcx_utils::Cache<ht_key_type, ht_value_type> cache_;
+#endif
+
+    inline static db_value_type* p_result_ = nullptr;
+#pragma omp threadprivate(p_result_)
+
+  public:
+    static void initialize()
+    {
+      assert(p_result_ == nullptr);
+      p_result_ = new db_value_type;
+    }
+
+    static void finalize()
+    {
+      assert(p_result_ != nullptr);
+      delete p_result_;
+      p_result_ = nullptr;
+    }
+
+    static void initialize_thread()
+    {
+#ifdef USE_OPENMP
+      if (omp_get_thread_num() == 0)
+      {
+        assert(p_result_ != nullptr);
+      }
+      else
+      {
+        assert(p_result_ == nullptr);
+        p_result_ = new db_value_type;
+      }
+#endif
+    }
+
+    static void finalize_thread()
+    {
+#ifdef USE_OPENMP
+      if (omp_get_thread_num() != 0)
+      {
+        assert(p_result_ != nullptr);
+        delete p_result_;
+        p_result_ = nullptr;
+      }
+#endif
+    }  
+    
+  private:
+    // This class is a singleton, and cannot be instantiated directly:
+    WigU4U3_db() = default;
+    WigU4U3_db(const WigU4U3_db&) = delete;
+    WigU4U3_db& operator=(const WigU4U3_db&) = delete;
+
+    static ht_value_type compute(ht_key_type ht_key, int etamax)
+    {
+      irrep u4a(ht_key[0], ht_key[1], ht_key[2], 0);
+      irrep u4b(ht_key[3], ht_key[4], ht_key[5], 0);
+      irrep u4c(ht_key[6], ht_key[7], ht_key[8], 0);
+
+      auto gArrA = u4::gelfandBasis(u4a);
+      auto gArrB = u4::gelfandBasis(u4b);
+      auto gArrC = u4::gelfandBasis(u4c);
+
+      return WigU4U3(u4a, u4b, u4c, etamax, -1, gArrA, gArrB, gArrC);
+    }  
+
+  public:
+    std::pair<bool, db_value_type> get(
+      int n14a, int n24a, int n34a, int n44a, int n13a, int n23a, int n33a,
+      int n14b, int n24b, int n34b, int n44b, int n13b, int n23b, int n33b,
+      int n14c, int n24c, int n34c, int n44c, int n13c, int n23c, int n33c)
+    {
+      assert(n14a >= n24a);
+      assert(n24a >= n34a);
+      assert(n34a >= n44a);
+      assert(n14b >= n24b);
+      assert(n24b >= n34b);
+      assert(n34b >= n44b);
+      assert(n14c >= n24c);
+      assert(n24c >= n34c);
+      assert(n34c >= n44c);
+
+      irrep u4a(n14a - n44a, n24a - n44a, n34a - n44a, 0);
+      irrep u4b(n14b - n44b, n24b - n44b, n34b - n44b, 0);
+      irrep u4c(n14c - n44c, n24c - n44c, n34c - n44c, 0);
+
+      u3::irrep u3a(n13a - n44a, n23a - n44a, n33a - n44a);
+      u3::irrep u3b(n13b - n44b, n23b - n44b, n33b - n44b);
+      u3::irrep u3c(n13c - n44c, n23c - n44c, n33c - n44c);
+
+      auto etamax = Eta(u4a, u4b, u4c);
+      auto rhomax = u3::Rho(u3a, u3b, u3c);
+
+      if (etamax == 0 || rhomax == 0)
+        return {false, db_value_type()};
+
+      bool flag = false;
+
+      std::array<qcx_utils::UInt8, 9> 
+        ht_key_safe = {u4a.n14(), u4a.n24(), u4a.n34(),
+                       u4b.n14(), u4b.n24(), u4b.n34(),
+                       u4c.n14(), u4c.n24(), u4c.n34()};
+
+      ht_key_type ht_key = {ht_key_safe[0], ht_key_safe[1], ht_key_safe[2],
+                            ht_key_safe[3], ht_key_safe[4], ht_key_safe[5],
+                            ht_key_safe[6], ht_key_safe[7], ht_key_safe[8]};
+
+#ifdef U4LIB_ENABLE_WIGU4U3_CACHE
+      auto producer = [etamax](ht_key_type ht_key) { return compute(ht_key, etamax); };
+
+      auto accessor = [&flag, u3a, u3b, u3c](const auto& element)
+      {
+        const auto& coeffs = element.second;
+
+        auto acc = coeffs.access(u3a, u3b, u3c);
+
+        flag = acc.first;
+        if (flag) *p_result_ = acc.second;
+      };
+
+      cache_.visit(ht_key, producer, accessor);
+#else
+      auto coeffs = compute(ht_key);
+
+      auto acc = coeffs.access(u3a, u3b, u3c);
+
+      flag = acc.first;
+      if (flag) *p_result_ = acc.second;
+#endif
+
+      if (flag)
+        assert(p_result_->cols() == etamax && p_result_->rows() == rhomax);
+
+      return {flag, *p_result_};
+    }
+
+    friend WigU4U3_db& wigU4U3db();
+  };
+
+/*
   class WigU4U3_db
   {
 #ifdef U4LIB_ENABLE_WIGU4U3_CACHE
@@ -2547,7 +2696,7 @@ namespace u4
 
     friend WigU4U3_db& wigU4U3db();
   };
-
+*/
   inline WigU4U3_db& wigU4U3db()
   {
     static WigU4U3_db wigU4U3db;
