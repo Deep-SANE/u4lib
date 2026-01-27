@@ -323,10 +323,9 @@ namespace u4
       int etamax = Eta(u4a, u4b, u4c);
       u4::physicalvector pA(u4a,SSa,TTa), pB(u4b,SSb,TTb), pC(u4c,SSc,TTc);
 
-      if (((etamax > 0) && (pA.zeta() > 0) && (pB.zeta() > 0) &&
-           (pC.zeta() > 0) && (std::abs(SSa - SSb) <= SSc) &&
-           ((SSa + SSb) >= SSc) && (std::abs(TTa - TTb) <= TTc) &&
-           ((TTa + TTb) >= TTc)) == false)
+      if ((etamax == 0) || (pA.zeta() == 0) || (pB.zeta() == 0) ||
+          (pC.zeta() == 0) || (u2::mult(SSa, SSb, SSc) == 0) || 
+          (u2::mult(TTa, TTb, TTc) == 0))
         return {false, value_type()};
 
 #ifdef U4LIB_ENABLE_WIGU4SU2SU2_CACHE
