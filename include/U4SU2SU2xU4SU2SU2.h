@@ -14,6 +14,8 @@
 #include "U4SU2SU2_to_U4U3U2U1.h"
 #include "U4U3xU4U3.h"
 
+#include <qcx_Cache.h>
+#include <qcx_Int.h>
 #include <so3Coeffs/SO3_CGC.h>
 
 namespace u4
@@ -159,15 +161,69 @@ namespace u4
   }
 
 #define U4LIB_ENABLE_WIGU4SU2SU2_CACHE
+
   class WigU4SU2SU2_db
   {
+    using key_type = std::array<uint8_t, 15>;
+    using value_type = Eigen::MatrixXd;
+
 #ifdef U4LIB_ENABLE_WIGU4SU2SU2_CACHE
-    using key_type = std::array<int, 15>;
-    std::map<key_type, Eigen::MatrixXd> map_;
+    qcx_utils::Cache<key_type, value_type> cache_;
 #endif
 
-    auto calculate(int etamax, const u4::physicalvector& pA,
-      const u4::physicalvector& pB, const u4::physicalvector& pC)
+    inline static value_type* p_result_ = nullptr;
+#pragma omp threadprivate(p_result_)
+
+  public:
+    static void initialize()
+    {
+      assert(p_result_ == nullptr);
+      p_result_ = new value_type;
+    }
+
+    static void finalize()
+    {
+      assert(p_result_ != nullptr);
+      delete p_result_;
+      p_result_ = nullptr;
+    }
+
+    static void initialize_thread()
+    {
+#ifdef USE_OPENMP
+      if (omp_get_thread_num() == 0)
+      {
+        assert(p_result_ != nullptr);
+      }
+      else
+      {
+        assert(p_result_ == nullptr);
+        p_result_ = new value_type;
+      }
+#endif
+    }
+
+    static void finalize_thread()
+    {
+#ifdef USE_OPENMP
+      if (omp_get_thread_num() != 0)
+      {
+        assert(p_result_ != nullptr);
+        delete p_result_;
+        p_result_ = nullptr;
+      }
+#endif
+    }
+
+  private:
+    // This class is a singleton, and cannot be instantiated directly:
+    WigU4SU2SU2_db() = default;
+    WigU4SU2SU2_db(const WigU4SU2SU2_db&) = delete;
+    WigU4SU2SU2_db& operator=(const WigU4SU2SU2_db&) = delete;
+
+    static value_type compute(int etamax, const u4::physicalvector& pA,
+                              const u4::physicalvector& pB,
+                              const u4::physicalvector& pC)
     {
       auto& cgcs = qcx_utils::cgcs();
       auto& wigU3U2db = u3::wigU3U2db();
@@ -257,50 +313,42 @@ namespace u4
       return coeffs;
     }
 
-    // This class is a singleton, and cannot be instantiated directly:
-    WigU4SU2SU2_db() = default;
-    WigU4SU2SU2_db(const WigU4SU2SU2_db&) = delete;
-    WigU4SU2SU2_db& operator=(const WigU4SU2SU2_db&) = delete;
-
   public:
-    auto get(int P1a, int P2a, int P3a, int SSa, int TTa, 
-             int P1b, int P2b, int P3b, int SSb, int TTb,
-             int P1c, int P2c, int P3c, int SSc, int TTc)
+    std::pair<bool, value_type> get(int P1a, int P2a, int P3a, int SSa, int TTa,
+                                    int P1b, int P2b, int P3b, int SSb, int TTb,
+                                    int P1c, int P2c, int P3c, int SSc, int TTc)
     {
       // normalized irreps:
       u4::irrep u4a(P1a, P2a, P3a), u4b(P1b, P2b, P3b), u4c(P1c, P2c, P3c);
       int etamax = Eta(u4a, u4b, u4c);
       u4::physicalvector pA(u4a,SSa,TTa), pB(u4b,SSb,TTb), pC(u4c,SSc,TTc);
 
-      bool flag = false;
-      Eigen::MatrixXd m;
+      if (((etamax > 0) && (pA.zeta() > 0) && (pB.zeta() > 0) &&
+           (pC.zeta() > 0) && (std::abs(SSa - SSb) <= SSc) &&
+           ((SSa + SSb) >= SSc) && (std::abs(TTa - TTb) <= TTc) &&
+           ((TTa + TTb) >= TTc)) == false)
+        return {false, value_type()};
 
-      if (etamax > 0 && pA.zeta() > 0 && pB.zeta() > 0 && pC.zeta() > 0 &&
-          std::fabs(SSa - SSb) <= SSc && (SSa + SSb) >= SSc &&
-          std::fabs(TTa - TTb) <= TTc && (TTa + TTb) >= TTc)
-      {
 #ifdef U4LIB_ENABLE_WIGU4SU2SU2_CACHE
-        key_type key = {P1a, P2a, P3a, SSa, TTa,
-                        P1b, P2b, P3b, SSb, TTb,
-                        P1c, P2c, P3c, SSc, TTc};
+      std::array<qcx_utils::UInt8, 15> safe_key = {P1a, P2a, P3a, SSa, TTa,
+                                                   P1b, P2b, P3b, SSb, TTb,
+                                                   P1c, P2c, P3c, SSc, TTc};
 
-        auto iter = map_.find(key);
-        if (iter == map_.end())
-        {
-          auto p = map_.try_emplace(key, calculate(etamax, pA, pB, pC));
-          assert(p.second);
-          iter = p.first;
-        }
+      key_type key = {safe_key[0],  safe_key[1],  safe_key[2],  safe_key[3],
+                      safe_key[4],  safe_key[5],  safe_key[6],  safe_key[7],
+                      safe_key[8],  safe_key[9],  safe_key[10], safe_key[11],
+                      safe_key[12], safe_key[13], safe_key[14]};
 
-        m = iter->second;
+      auto producer = [etamax, &pA, &pB, &pC](key_type)
+      { return compute(etamax, pA, pB, pC); };
+
+      auto accessor = [](const auto& element) { *p_result_ = element.second; };
+
+      cache_.visit(key, producer, accessor);
 #else
-        m = calculate(etamax, pA, pB, pC);
+      *p_result_ = compute(etamax, pA, pB, pC);
 #endif
-        flag = true;
-        
-      }
-
-      return std::make_pair(flag, m);
+      return {true, *p_result_};
     }
 
     friend WigU4SU2SU2_db& wigU4SU2SU2db();
