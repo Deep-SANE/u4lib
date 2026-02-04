@@ -133,6 +133,9 @@ namespace u4
                  const u4::irrep& u4c)
   {
     //std::cout << u4a << u4b << u4c << std::endl;
+
+    // Implementation based on decomposition
+    /*
     int x = u4a.quanta() + u4b.quanta() - u4c.quanta();
 
     if(x % 4 != 0) return 0;
@@ -140,13 +143,6 @@ namespace u4
     x /= 4;
 
     if ((u4c.n44() + x) < 0) x = - (u4c.n44() + x);
-    /*
-    u4::irrep u4c_temp = u4c;
-    u4c_temp.n14(u4c_temp.n14() + x);
-    u4c_temp.n24(u4c_temp.n24() + x);
-    u4c_temp.n34(u4c_temp.n34() + x);
-    u4c_temp.n44(u4c_temp.n44() + x);
-    */
     u4::irrep u4c_temp(u4c.n14() + x, u4c.n24() + x, u4c.n34() + x,
                        u4c.n44() + x);
 
@@ -198,6 +194,7 @@ namespace u4
 
               // u4C.n14(u4C.n14() + b11);
               n14 += b11;
+              if (n14 != u4c_temp.n14()) continue;
 
               // u4C.n44(u4C.n44() + b24);
               n44 += b24;
@@ -210,6 +207,7 @@ namespace u4
               // u4C.n24(u4C.n24() + b22);
               n24 += b22;
               if (n24 > n14) continue;
+              if (n24 != u4c_temp.n24()) continue;
 
               // u4C.n44(u4C.n44() + b34);
               n44 += b34;
@@ -218,18 +216,78 @@ namespace u4
               // u4C.n34(u4C.n34() + b33);
               n34 += b33;
               if (n34 > n24) continue;
+              if (n34 != u4c_temp.n34()) continue;
 
               // u4C.n44(u4C.n44() + b44);
               n44 += b44;
               if (n44 > n34) continue;
-
-              u4::irrep u4C(n14, n24, n34, n44);
-
-              if (u4C == u4c_temp)
-                eta++;
+              if (n44 != u4c_temp.n44()) continue;
+              
+              eta++;
             }
           }
         }
+      }
+    }
+    */
+
+    // Implementation based on http://arxiv.org/abs/quant-ph/9704014v1
+
+    // first irrep
+    int l1 = u4a.n14() - u4a.n44(),
+        l2 = u4a.n24() - u4a.n44(),
+        l3 = u4a.n34() - u4a.n44();
+
+    // second irrep
+    int m1 = u4b.n14() - u4b.n44(),
+        m2 = u4b.n24() - u4b.n44(),
+        m3 = u4b.n34() - u4b.n44();
+
+    // third irrep
+    int x = l1 + l2 + l3 // u4a.quanta() 
+          + m1 + m2 + m3 // u4b.quanta() 
+          - u4c.quanta();
+
+    if(x % 4 != 0) return 0;
+
+    x /= 4;
+    if ((u4c.n44() + x) < 0) x = - (u4c.n44() + x);
+
+    int n1 = u4c.n14() + x,
+        n2 = u4c.n24() + x,
+        n3 = u4c.n34() + x,
+        n4 = u4c.n44() + x;
+
+    using std::min;
+    using std::max;
+
+    int eta = 0, 
+        e1min = max(0, n2 - l1), 
+        e1max = min(n2 - l2, n1 - l1);
+
+    for (int e1 = e1min; e1 <= e1max; e1++)
+    {
+      int e2min = max(n3 - n2 + e1, 0),
+          e2max = min(min(e1, m3), n3 - n4);
+
+      for (int e2 = e2min; e2 <= e2max; e2++)
+      {
+        int e3min = max(max(max(max(max(max(
+                      2 * e2 - e1 + m2 + n4 - n3 - m3,
+                      e2 - e1 + l3 + m2 - n3),
+                      e2 + n4 - l3 - m3),
+                      e2 + l1 + l2 + l3 + 2 * m2 - n1 - n2 - n3),
+                      e1 + l1 + l2 + m2 - n1 - n2),
+                      0),
+                      (e2 + l1 + l2 + l3 + 2 * m2 - n1 - n2 - n3) / 2),
+            e3max = min(min(min(min(
+                      m2 - e1,
+                      n4 - m3 + e2),
+                      m2 - m3),
+                      l2 - n3 + m2 - e1 + e2),
+                      m2 - e2);
+
+        for (int e3 = e3min; e3 <= e3max; e3++) eta++;
       }
     }
 
