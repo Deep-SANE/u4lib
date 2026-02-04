@@ -6,6 +6,11 @@
 #include <iostream>
 #include <vector>
 
+// #define TIME_U4U6Z6
+#ifdef TIME_U4U6Z6
+#include <chrono>
+#endif
+
 #include <Eigen/Dense>
 
 #include "U4basis.h"
@@ -29,6 +34,12 @@ namespace u4
      int etaABmax, int etaAB_Cmax, const u4::irrep& u4BC,
      const std::vector<u4::gelfand>& gArrBC, int etaBCmax, int etaA_BCmax)
   {
+#ifdef TIME_U4U6Z6
+    static std::chrono::duration<double> u4u6_time(0);
+    static double u4u6_last_print = 0.0;
+    auto start = std::chrono::high_resolution_clock::now();
+#endif
+
     auto& wigU4U3db = u4::wigU4U3db();
 
     Eigen::MatrixXd A(etaA_BCmax, etaA_BCmax);
@@ -186,21 +197,86 @@ namespace u4
               eA_BC] = X(eA_BC, col);
           }
 
+#ifdef TIME_U4U6Z6
+    auto end = std::chrono::high_resolution_clock::now();
+    u4u6_time += end - start;  // duration in seconds
+
+    // Print occasionally 
+    if (u4u6_time.count() - u4u6_last_print >= 1.0) 
+    {
+        std::cout << "Accumulated U4U6 time: " << u4u6_time.count() << " s\n";
+        u4u6_last_print = u4u6_time.count();
+    }
+#endif
+
     return U;
   }
 
 #define U4LIB_ENABLE_U4U6_CACHE
   class U4U6_db
   {
+    using key_type = std::array<uint8_t, 18>;
+    using value_type = std::vector<double>;
+
 #ifdef U4LIB_ENABLE_U4U6_CACHE
-    using key_type = std::array<int, 18>;
-    std::map<key_type, std::vector<double>> map_;
+    qcx_utils::Cache<key_type, value_type> cache_;
 #endif
 
-    auto calculate(const u4::irrep& u4A, const u4::irrep& u4B, 
-                   const u4::irrep& u4ABC, const u4::irrep& u4C,
-                   const u4::irrep& u4AB, int etaABmax, int etaAB_Cmax,
-                   const u4::irrep& u4BC, int etaBCmax, int etaA_BCmax)
+    inline static value_type* p_result_ = nullptr;
+#pragma omp threadprivate(p_result_)
+
+  public:
+    static void initialize()
+    {
+      assert(p_result_ == nullptr);
+      p_result_ = new value_type;
+    }
+
+    static void finalize()
+    {
+      assert(p_result_ != nullptr);
+      delete p_result_;
+      p_result_ = nullptr;
+    }
+
+    static void initialize_thread()
+    {
+#ifdef USE_OPENMP
+      if (omp_get_thread_num() == 0)
+      {
+        assert(p_result_ != nullptr);
+      }
+      else
+      {
+        assert(p_result_ == nullptr);
+        p_result_ = new value_type;
+      }
+#endif
+    }
+
+    static void finalize_thread()
+    {
+#ifdef USE_OPENMP
+      if (omp_get_thread_num() != 0)
+      {
+        assert(p_result_ != nullptr);
+        delete p_result_;
+        p_result_ = nullptr;
+      }
+#endif
+    }
+
+  private:
+    // This class is a singleton, and cannot be instantiated directly:
+    U4U6_db() = default;
+    U4U6_db(const U4U6_db&) = delete;
+    U4U6_db& operator=(const U4U6_db&) = delete;
+
+    static value_type compute(
+      const u4::irrep& u4A, const u4::irrep& u4B, 
+      const u4::irrep& u4ABC, const u4::irrep& u4C,
+      const u4::irrep& u4AB, int etaABmax, int etaAB_Cmax,
+      const u4::irrep& u4BC, int etaBCmax, int etaA_BCmax)
     {
       std::vector<u4::gelfand> gArrA = u4::gelfandBasis(u4A),
                                gArrB = u4::gelfandBasis(u4B),
@@ -214,18 +290,14 @@ namespace u4
                 u4BC,gArrBC,etaBCmax,etaA_BCmax);
     }
 
-    // This class is a singleton, and cannot be instantiated directly:
-    U4U6_db() = default;
-    U4U6_db(const U4U6_db&) = delete;
-    U4U6_db& operator=(const U4U6_db&) = delete;
-
   public:
-    auto get(int n14a, int n24a, int n34a, int n44a, 
-             int n14b, int n24b, int n34b, int n44b, 
-             int n14abc, int n24abc, int n34abc, int n44abc, 
-             int n14c, int n24c, int n34c, int n44c, 
-             int n14ab, int n24ab, int n34ab, int n44ab, 
-             int n14bc, int n24bc, int n34bc, int n44bc)
+    value_type get(
+      int n14a, int n24a, int n34a, int n44a, 
+      int n14b, int n24b, int n34b, int n44b, 
+      int n14abc, int n24abc, int n34abc, int n44abc, 
+      int n14c, int n24c, int n34c, int n44c, 
+      int n14ab, int n24ab, int n34ab, int n44ab, 
+      int n14bc, int n24bc, int n34bc, int n44bc)
     {
       u4::irrep u4A(n14a - n44a, n24a - n44a, n34a - n44a, 0), 
                 u4B(n14b - n44b, n24b - n44b, n34b - n44b, 0), 
@@ -237,36 +309,42 @@ namespace u4
       int etaABmax = Eta(u4A,u4B,u4AB), etaAB_Cmax = Eta(u4AB,u4C,u4ABC),
           etaBCmax = Eta(u4B,u4C,u4BC), etaA_BCmax = Eta(u4A,u4BC,u4ABC);
 
-      bool flag = false;
-      std::vector<double> c;
-
-      if (etaABmax > 0 && etaAB_Cmax > 0 && etaBCmax > 0 && etaA_BCmax > 0)
-      {
+      if (etaABmax == 0 || etaAB_Cmax == 0 || etaBCmax == 0 || etaA_BCmax == 0)
+        return {};
+      
 #ifdef U4LIB_ENABLE_U4U6_CACHE
-        key_type key = {u4A.n14(), u4A.n24(), u4A.n34(),
-                        u4B.n14(), u4B.n24(), u4B.n34(),
-                        u4ABC.n14(), u4ABC.n24(), u4ABC.n34(),
-                        u4C.n14(), u4C.n24(), u4C.n34(),
-                        u4AB.n14(), u4AB.n24(), u4AB.n34(),
-                        u4BC.n14(), u4BC.n24(), u4BC.n34()};
-        auto iter = map_.find(key);
-        if (iter == map_.end())
-        {
-          auto p = map_.try_emplace(key, calculate(u4A, u4B, u4ABC, u4C, 
-                    u4AB, etaABmax, etaAB_Cmax, u4BC, etaBCmax, etaA_BCmax));
-          assert(p.second);
-          iter = p.first;
-        }
+      std::array<qcx_utils::UInt8, 18> safe_key = {
+        u4A.n14(), u4A.n24(), u4A.n34(),
+        u4B.n14(), u4B.n24(), u4B.n34(),
+        u4ABC.n14(), u4ABC.n24(), u4ABC.n34(),
+        u4C.n14(), u4C.n24(), u4C.n34(),
+        u4AB.n14(), u4AB.n24(), u4AB.n34(),
+        u4BC.n14(), u4BC.n24(), u4BC.n34()};
 
-        c = iter->second;
+      key_type key = {safe_key[0], safe_key[1], safe_key[2],
+                      safe_key[3], safe_key[4], safe_key[5],
+                      safe_key[6], safe_key[7], safe_key[8],
+                      safe_key[9], safe_key[10], safe_key[11],
+                      safe_key[12], safe_key[13], safe_key[14],
+                      safe_key[15], safe_key[16], safe_key[17]};
+
+      auto producer = [&u4A, &u4B, &u4ABC, &u4C, 
+                       &u4AB, &etaABmax, &etaAB_Cmax,
+                       &u4BC, &etaBCmax, &etaA_BCmax](key_type)
+      { 
+        return compute(u4A, u4B, u4ABC, u4C, u4AB, etaABmax, etaAB_Cmax, 
+                                             u4BC, etaBCmax, etaA_BCmax);
+      };
+        
+      auto accessor = [](const auto& element) { *p_result_ = element.second; };
+
+      cache_.visit(key, producer, accessor);
 #else
-        c = calculate(u4A, u4B, u4ABC, u4C, u4AB, etaABmax, etaAB_Cmax,
-                                            u4BC, etaBCmax, etaA_BCmax);
+      *p_result_ = compute(u4A, u4B, u4ABC, u4C, u4AB, etaABmax, etaAB_Cmax, 
+                                                 u4BC, etaBCmax, etaA_BCmax);
 #endif
-        flag = true;
-      }
 
-      return std::make_pair(flag, c);
+      return *p_result_;
     }
 
     friend U4U6_db& u4u6db();
@@ -289,6 +367,12 @@ namespace u4
      int etaABmax, int etaAB_Cmax, const u4::irrep& u4AC,
      const std::vector<u4::gelfand>& gArrAC, int etaACmax, int etaAC_Bmax)
   {
+#ifdef TIME_U4U6Z6
+    static std::chrono::duration<double> u4z6_time(0);
+    static double u4z6_last_print = 0.0;
+    auto start = std::chrono::high_resolution_clock::now();
+#endif
+
     auto& wigU4U3db = u4::wigU4U3db();
 
     Eigen::MatrixXd A(etaAC_Bmax, etaAC_Bmax);
@@ -446,21 +530,86 @@ namespace u4
               eAC_B] = X(eAC_B, col);
           }
 
+#ifdef TIME_U4U6Z6
+    auto end = std::chrono::high_resolution_clock::now();
+    u4z6_time += end - start;  // duration in seconds
+
+    // Print occasionally 
+    if (u4z6_time.count() - u4z6_last_print >= 1.0) 
+    {
+        std::cout << "Accumulated U4Z6 time: " << u4z6_time.count() << " s\n";
+        u4z6_last_print = u4z6_time.count();
+    }
+#endif
+
     return Z;
   }
 
 #define U4LIB_ENABLE_U4Z6_CACHE
   class U4Z6_db
   {
+    using key_type = std::array<uint8_t, 18>;
+    using value_type = std::vector<double>;
+
 #ifdef U4LIB_ENABLE_U4Z6_CACHE
-    using key_type = std::array<int, 18>;
-    std::map<key_type, std::vector<double>> map_;
+    qcx_utils::Cache<key_type, value_type> cache_;
 #endif
 
-    auto calculate(const u4::irrep& u4B, const u4::irrep& u4A, 
-                   const u4::irrep& u4ABC, const u4::irrep& u4C,
-                   const u4::irrep& u4AB, int etaABmax, int etaAB_Cmax,
-                   const u4::irrep& u4AC, int etaACmax, int etaAC_Bmax)
+    inline static value_type* p_result_ = nullptr;
+#pragma omp threadprivate(p_result_)
+
+  public:
+    static void initialize()
+    {
+      assert(p_result_ == nullptr);
+      p_result_ = new value_type;
+    }
+
+    static void finalize()
+    {
+      assert(p_result_ != nullptr);
+      delete p_result_;
+      p_result_ = nullptr;
+    }
+
+    static void initialize_thread()
+    {
+#ifdef USE_OPENMP
+      if (omp_get_thread_num() == 0)
+      {
+        assert(p_result_ != nullptr);
+      }
+      else
+      {
+        assert(p_result_ == nullptr);
+        p_result_ = new value_type;
+      }
+#endif
+    }
+
+    static void finalize_thread()
+    {
+#ifdef USE_OPENMP
+      if (omp_get_thread_num() != 0)
+      {
+        assert(p_result_ != nullptr);
+        delete p_result_;
+        p_result_ = nullptr;
+      }
+#endif
+    }
+
+  private:
+    // This class is a singleton, and cannot be instantiated directly:
+    U4Z6_db() = default;
+    U4Z6_db(const U4Z6_db&) = delete;
+    U4Z6_db& operator=(const U4Z6_db&) = delete;
+
+    static value_type compute(
+      const u4::irrep& u4B, const u4::irrep& u4A, 
+      const u4::irrep& u4ABC, const u4::irrep& u4C,
+      const u4::irrep& u4AB, int etaABmax, int etaAB_Cmax,
+      const u4::irrep& u4AC, int etaACmax, int etaAC_Bmax)
     {
       std::vector<u4::gelfand> gArrA = u4::gelfandBasis(u4A),
                                gArrB = u4::gelfandBasis(u4B),
@@ -474,18 +623,14 @@ namespace u4
                 u4AC,gArrAC,etaACmax,etaAC_Bmax);
     }
 
-    // This class is a singleton, and cannot be instantiated directly:
-    U4Z6_db() = default;
-    U4Z6_db(const U4Z6_db&) = delete;
-    U4Z6_db& operator=(const U4Z6_db&) = delete;
-
   public:
-    auto get(int n14b, int n24b, int n34b, int n44b,
-             int n14a, int n24a, int n34a, int n44a, 
-             int n14abc, int n24abc, int n34abc, int n44abc, 
-             int n14c, int n24c, int n34c, int n44c, 
-             int n14ab, int n24ab, int n34ab, int n44ab, 
-             int n14ac, int n24ac, int n34ac, int n44ac)
+    value_type get(
+      int n14b, int n24b, int n34b, int n44b,
+      int n14a, int n24a, int n34a, int n44a, 
+      int n14abc, int n24abc, int n34abc, int n44abc, 
+      int n14c, int n24c, int n34c, int n44c, 
+      int n14ab, int n24ab, int n34ab, int n44ab, 
+      int n14ac, int n24ac, int n34ac, int n44ac)
     {
       u4::irrep u4A(n14a - n44a, n24a - n44a, n34a - n44a, 0), 
                 u4B(n14b - n44b, n24b - n44b, n34b - n44b, 0), 
@@ -497,36 +642,42 @@ namespace u4
       int etaABmax = Eta(u4A,u4B,u4AB), etaAB_Cmax = Eta(u4AB,u4C,u4ABC),
           etaACmax = Eta(u4A,u4C,u4AC), etaAC_Bmax = Eta(u4AC,u4B,u4ABC);
 
-      bool flag = false;
-      std::vector<double> c;
+      if (etaABmax == 0 || etaAB_Cmax == 0 || etaACmax == 0 || etaAC_Bmax == 0)
+        return {};
 
-      if (etaABmax > 0 && etaAB_Cmax > 0 && etaACmax > 0 && etaAC_Bmax > 0)
-      {
 #ifdef U4LIB_ENABLE_U4Z6_CACHE
-        key_type key = {u4B.n14(), u4B.n24(), u4B.n34(),
-                        u4A.n14(), u4A.n24(), u4A.n34(),
-                        u4ABC.n14(), u4ABC.n24(), u4ABC.n34(),
-                        u4C.n14(), u4C.n24(), u4C.n34(),
-                        u4AB.n14(), u4AB.n24(), u4AB.n34(),
-                        u4AC.n14(), u4AC.n24(), u4AC.n34()};
-        auto iter = map_.find(key);
-        if (iter == map_.end())
-        {
-          auto p = map_.try_emplace(key, calculate(u4B, u4A, u4ABC, u4C, 
-                    u4AB, etaABmax, etaAB_Cmax, u4AC, etaACmax, etaAC_Bmax));
-          assert(p.second);
-          iter = p.first;
-        }
+      std::array<qcx_utils::UInt8, 18> safe_key = {
+        u4B.n14(), u4B.n24(), u4B.n34(),
+        u4A.n14(), u4A.n24(), u4A.n34(),
+        u4ABC.n14(), u4ABC.n24(), u4ABC.n34(),
+        u4C.n14(), u4C.n24(), u4C.n34(),
+        u4AB.n14(), u4AB.n24(), u4AB.n34(),
+        u4AC.n14(), u4AC.n24(), u4AC.n34()};
 
-        c = iter->second;
+      key_type key = {safe_key[0], safe_key[1], safe_key[2],
+                      safe_key[3], safe_key[4], safe_key[5],
+                      safe_key[6], safe_key[7], safe_key[8],
+                      safe_key[9], safe_key[10], safe_key[11],
+                      safe_key[12], safe_key[13], safe_key[14],
+                      safe_key[15], safe_key[16], safe_key[17]};
+
+      auto producer = [&u4B, &u4A, &u4ABC, &u4C, 
+                       &u4AB, &etaABmax, &etaAB_Cmax,
+                       &u4AC, &etaACmax, &etaAC_Bmax](key_type)
+      { 
+        return compute(u4B, u4A, u4ABC, u4C, u4AB, etaABmax, etaAB_Cmax,
+                                             u4AC, etaACmax, etaAC_Bmax);
+      };
+
+      auto accessor = [](const auto& element) { *p_result_ = element.second; };
+
+      cache_.visit(key, producer, accessor);
 #else
-        c = calculate(u4B, u4A, u4ABC, u4C, u4AB, etaABmax, etaAB_Cmax,
-                                            u4AC, etaACmax, etaAC_Bmax);
+      *p_result_ = compute(u4B, u4A, u4ABC, u4C, u4AB, etaABmax, etaAB_Cmax,
+                                                 u4AC, etaACmax, etaAC_Bmax);
 #endif
-        flag = true;
-      }
 
-      return std::make_pair(flag, c);
+      return *p_result_;
     }
 
     friend U4Z6_db& u4z6db();
