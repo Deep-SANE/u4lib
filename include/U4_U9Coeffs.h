@@ -222,7 +222,8 @@ namespace u4
 #define U4LIB_ENABLE_U4U9_CACHE
   class U4U9_db
   {
-    using key_type = std::array<uint8_t, 27>;
+    // using key_type = std::array<uint8_t, 27>;
+    using key_type = std::tuple<uint64_t, uint64_t, uint64_t, uint32_t>;
     using value_type = std::vector<double>;
 
 #ifdef U4LIB_ENABLE_U4U9_CACHE
@@ -373,6 +374,30 @@ namespace u4
         u4AC.n34(),   u4BD.n14(),   u4BD.n24(),  u4BD.n34(),
         u4ABCD.n14(), u4ABCD.n24(), u4ABCD.n34()};
 
+      uint64_t key_1 = 
+        (uint64_t(safe_key[0]) << 56) | (uint64_t(safe_key[1]) << 48) |
+        (uint64_t(safe_key[2]) << 40) | (uint64_t(safe_key[3]) << 32) |
+        (uint64_t(safe_key[4]) << 24) | (uint64_t(safe_key[5]) << 16) |
+        (uint64_t(safe_key[6]) << 8) | uint64_t(safe_key[7]);
+
+      uint64_t key_2 = 
+        (uint64_t(safe_key[8]) << 56) | (uint64_t(safe_key[9]) << 48) |
+        (uint64_t(safe_key[10]) << 40) | (uint64_t(safe_key[11]) << 32) |
+        (uint64_t(safe_key[12]) << 24) | (uint64_t(safe_key[13]) << 16) |
+        (uint64_t(safe_key[14]) << 8) | uint64_t(safe_key[15]);
+
+      uint64_t key_3 = 
+        (uint64_t(safe_key[16]) << 56) | (uint64_t(safe_key[17]) << 48) |
+        (uint64_t(safe_key[18]) << 40) | (uint64_t(safe_key[19]) << 32) |
+        (uint64_t(safe_key[20]) << 24) | (uint64_t(safe_key[21]) << 16) |
+        (uint64_t(safe_key[22]) << 8) | uint64_t(safe_key[23]);
+
+      uint32_t key_4 = 
+        (uint32_t(safe_key[24]) << 24) | (uint32_t(safe_key[25]) << 16) |
+        (uint32_t(safe_key[26]) << 8);
+
+      key_type key = {key_1, key_2, key_3, key_4};
+      /*
       key_type key = {safe_key[0], safe_key[1], safe_key[2],
                       safe_key[3], safe_key[4], safe_key[5],
                       safe_key[6], safe_key[7], safe_key[8],
@@ -382,7 +407,7 @@ namespace u4
                       safe_key[18], safe_key[19], safe_key[20],
                       safe_key[21], safe_key[22], safe_key[23],
                       safe_key[24], safe_key[25], safe_key[26]};
-
+      */
       auto producer = [&u4A, &u4B, &u4C, &u4D, &u4AB, &u4CD, &u4AC, &u4BD, &u4ABCD, 
                        &etaABmax, &etaCDmax, &etaABCDmax, 
                        &etaACmax, &etaBDmax, &etaACBDmax](key_type)
@@ -442,6 +467,30 @@ namespace u4
         u4AC.n34(),   u4BD.n14(),   u4BD.n24(),  u4BD.n34(),
         u4ABCD.n14(), u4ABCD.n24(), u4ABCD.n34()};
 
+      uint64_t key_1 = 
+        (uint64_t(safe_key[0]) << 56) | (uint64_t(safe_key[1]) << 48) |
+        (uint64_t(safe_key[2]) << 40) | (uint64_t(safe_key[3]) << 32) |
+        (uint64_t(safe_key[4]) << 24) | (uint64_t(safe_key[5]) << 16) |
+        (uint64_t(safe_key[6]) << 8) | uint64_t(safe_key[7]);
+
+      uint64_t key_2 = 
+        (uint64_t(safe_key[8]) << 56) | (uint64_t(safe_key[9]) << 48) |
+        (uint64_t(safe_key[10]) << 40) | (uint64_t(safe_key[11]) << 32) |
+        (uint64_t(safe_key[12]) << 24) | (uint64_t(safe_key[13]) << 16) |
+        (uint64_t(safe_key[14]) << 8) | uint64_t(safe_key[15]);
+
+      uint64_t key_3 = 
+        (uint64_t(safe_key[16]) << 56) | (uint64_t(safe_key[17]) << 48) |
+        (uint64_t(safe_key[18]) << 40) | (uint64_t(safe_key[19]) << 32) |
+        (uint64_t(safe_key[20]) << 24) | (uint64_t(safe_key[21]) << 16) |
+        (uint64_t(safe_key[22]) << 8) | uint64_t(safe_key[23]);
+
+      uint32_t key_4 = 
+        (uint32_t(safe_key[24]) << 24) | (uint32_t(safe_key[25]) << 16) |
+        (uint32_t(safe_key[26]) << 8);
+
+      key_type key = {key_1, key_2, key_3, key_4};
+      /*
       key_type key = {safe_key[0], safe_key[1], safe_key[2],
                       safe_key[3], safe_key[4], safe_key[5],
                       safe_key[6], safe_key[7], safe_key[8],
@@ -451,7 +500,7 @@ namespace u4
                       safe_key[18], safe_key[19], safe_key[20],
                       safe_key[21], safe_key[22], safe_key[23],
                       safe_key[24], safe_key[25], safe_key[26]};
-
+      */
       auto producer = [&u4A, &u4B, &u4C, &u4D, &u4AB, &u4CD, &u4AC, &u4BD, &u4ABCD, 
                        &etaABmax, &etaCDmax, &etaABCDmax, 
                        &etaACmax, &etaBDmax, &etaACBDmax](key_type)

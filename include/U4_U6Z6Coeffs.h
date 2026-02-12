@@ -215,7 +215,8 @@ namespace u4
 #define U4LIB_ENABLE_U4U6_CACHE
   class U4U6_db
   {
-    using key_type = std::array<uint8_t, 18>;
+    // using key_type = std::array<uint8_t, 18>;
+    using key_type = std::tuple<uint64_t, uint64_t, uint16_t>;
     using value_type = std::vector<double>;
 
 #ifdef U4LIB_ENABLE_U4U6_CACHE
@@ -321,13 +322,30 @@ namespace u4
         u4AB.n14(), u4AB.n24(), u4AB.n34(),
         u4BC.n14(), u4BC.n24(), u4BC.n34()};
 
+      uint64_t key_1 = 
+        (uint64_t(safe_key[0]) << 56) | (uint64_t(safe_key[1]) << 48) |
+        (uint64_t(safe_key[2]) << 40) | (uint64_t(safe_key[3]) << 32) |
+        (uint64_t(safe_key[4]) << 24) | (uint64_t(safe_key[5]) << 16) |
+        (uint64_t(safe_key[6]) << 8) | uint64_t(safe_key[7]);
+
+      uint64_t key_2 = 
+        (uint64_t(safe_key[8]) << 56) | (uint64_t(safe_key[9]) << 48) |
+        (uint64_t(safe_key[10]) << 40) | (uint64_t(safe_key[11]) << 32) |
+        (uint64_t(safe_key[12]) << 24) | (uint64_t(safe_key[13]) << 16) |
+        (uint64_t(safe_key[14]) << 8) | uint64_t(safe_key[15]);
+
+      uint16_t key_3 = 
+        (uint16_t(safe_key[16]) << 8) | uint16_t(safe_key[17]);
+
+      key_type key = {key_1, key_2, key_3};
+      /*
       key_type key = {safe_key[0], safe_key[1], safe_key[2],
                       safe_key[3], safe_key[4], safe_key[5],
                       safe_key[6], safe_key[7], safe_key[8],
                       safe_key[9], safe_key[10], safe_key[11],
                       safe_key[12], safe_key[13], safe_key[14],
                       safe_key[15], safe_key[16], safe_key[17]};
-
+      */
       auto producer = [&u4A, &u4B, &u4ABC, &u4C, 
                        &u4AB, &etaABmax, &etaAB_Cmax,
                        &u4BC, &etaBCmax, &etaA_BCmax](key_type)
@@ -548,7 +566,8 @@ namespace u4
 #define U4LIB_ENABLE_U4Z6_CACHE
   class U4Z6_db
   {
-    using key_type = std::array<uint8_t, 18>;
+    // using key_type = std::array<uint8_t, 18>;
+    using key_type = std::tuple<uint64_t, uint64_t, uint16_t>;
     using value_type = std::vector<double>;
 
 #ifdef U4LIB_ENABLE_U4Z6_CACHE
@@ -654,13 +673,30 @@ namespace u4
         u4AB.n14(), u4AB.n24(), u4AB.n34(),
         u4AC.n14(), u4AC.n24(), u4AC.n34()};
 
+      uint64_t key_1 = 
+        (uint64_t(safe_key[0]) << 56) | (uint64_t(safe_key[1]) << 48) |
+        (uint64_t(safe_key[2]) << 40) | (uint64_t(safe_key[3]) << 32) |
+        (uint64_t(safe_key[4]) << 24) | (uint64_t(safe_key[5]) << 16) |
+        (uint64_t(safe_key[6]) << 8) | uint64_t(safe_key[7]);
+
+      uint64_t key_2 = 
+        (uint64_t(safe_key[8]) << 56) | (uint64_t(safe_key[9]) << 48) |
+        (uint64_t(safe_key[10]) << 40) | (uint64_t(safe_key[11]) << 32) |
+        (uint64_t(safe_key[12]) << 24) | (uint64_t(safe_key[13]) << 16) |
+        (uint64_t(safe_key[14]) << 8) | uint64_t(safe_key[15]);
+
+      uint16_t key_3 = 
+        (uint16_t(safe_key[16]) << 8) | uint16_t(safe_key[17]);
+
+      key_type key = {key_1, key_2, key_3};
+      /*
       key_type key = {safe_key[0], safe_key[1], safe_key[2],
                       safe_key[3], safe_key[4], safe_key[5],
                       safe_key[6], safe_key[7], safe_key[8],
                       safe_key[9], safe_key[10], safe_key[11],
                       safe_key[12], safe_key[13], safe_key[14],
                       safe_key[15], safe_key[16], safe_key[17]};
-
+      */
       auto producer = [&u4B, &u4A, &u4ABC, &u4C, 
                        &u4AB, &etaABmax, &etaAB_Cmax,
                        &u4AC, &etaACmax, &etaAC_Bmax](key_type)

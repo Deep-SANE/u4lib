@@ -2474,7 +2474,8 @@ namespace u4
   {
     using db_value_type = Eigen::MatrixXd;
 
-    using ht_key_type = std::array<uint8_t, 9>;
+    // using ht_key_type = std::array<uint8_t, 9>;
+    using ht_key_type = std::pair<uint64_t, uint8_t>;
     using ht_value_type = WigU4U3_coeffs;
 
 #ifdef U4LIB_ENABLE_WIGU4U3_CACHE
@@ -2531,12 +2532,14 @@ namespace u4
     WigU4U3_db(const WigU4U3_db&) = delete;
     WigU4U3_db& operator=(const WigU4U3_db&) = delete;
 
-    static ht_value_type compute(ht_key_type ht_key, int etamax)
+    static ht_value_type compute(const u4::irrep& u4a, 
+      const u4::irrep& u4b, const u4::irrep& u4c, int etamax)
     {
+      /*
       irrep u4a(ht_key[0], ht_key[1], ht_key[2], 0);
       irrep u4b(ht_key[3], ht_key[4], ht_key[5], 0);
       irrep u4c(ht_key[6], ht_key[7], ht_key[8], 0);
-
+      */
       auto gArrA = u4::gelfandBasis(u4a);
       auto gArrB = u4::gelfandBasis(u4b);
       auto gArrC = u4::gelfandBasis(u4c);
@@ -2581,14 +2584,26 @@ namespace u4
                        u4b.n14(), u4b.n24(), u4b.n34(),
                        u4c.n14(), u4c.n24(), u4c.n34()};
 
+      uint64_t key_1 = 
+        (uint64_t(ht_key_safe[0]) << 56) | (uint64_t(ht_key_safe[1]) << 48) |
+        (uint64_t(ht_key_safe[2]) << 40) | (uint64_t(ht_key_safe[3]) << 32) |
+        (uint64_t(ht_key_safe[4]) << 24) | (uint64_t(ht_key_safe[5]) << 16) |
+        (uint64_t(ht_key_safe[6]) << 8) | uint64_t(ht_key_safe[7]);
+
+      ht_key_type ht_key = {key_1, ht_key_safe[8]};
+      /*
       ht_key_type ht_key = {ht_key_safe[0], ht_key_safe[1], ht_key_safe[2],
                             ht_key_safe[3], ht_key_safe[4], ht_key_safe[5],
                             ht_key_safe[6], ht_key_safe[7], ht_key_safe[8]};
+      */
 
 #ifdef U4LIB_ENABLE_WIGU4U3_CACHE
-      auto producer = [etamax](ht_key_type ht_key) { return compute(ht_key, etamax); };
+      auto producer = [&u4a, &u4b, &u4c, &etamax](ht_key_type ht_key) 
+      { 
+        return compute(u4a, u4b, u4c, etamax); 
+      };
 
-      auto accessor = [&flag, u3a, u3b, u3c](const auto& element)
+      auto accessor = [&flag, &u3a, &u3b, &u3c](const auto& element)
       {
         const auto& coeffs = element.second;
 
@@ -2617,86 +2632,6 @@ namespace u4
     friend WigU4U3_db& wigU4U3db();
   };
 
-/*
-  class WigU4U3_db
-  {
-#ifdef U4LIB_ENABLE_WIGU4U3_CACHE
-    using key_type = std::array<int, 9>;
-    std::map<key_type, WigU4U3_coeffs> map_;
-#endif
-
-    auto calculate(const irrep& u4a, const irrep& u4b, const irrep& u4c)
-    {
-      auto etamax = Eta(u4a, u4b, u4c);
-
-      auto gArrA = u4::gelfandBasis(u4a);
-      auto gArrB = u4::gelfandBasis(u4b);
-      auto gArrC = u4::gelfandBasis(u4c);
-
-      return WigU4U3(u4a, u4b, u4c, etamax, -1, gArrA, gArrB, gArrC);
-    }
-
-    // This class is a singleton, and cannot be instantiated directly:
-    WigU4U3_db() = default;
-    WigU4U3_db(const WigU4U3_db&) = delete;
-    WigU4U3_db& operator=(const WigU4U3_db&) = delete;
-
-  public:
-    auto get(int n14a, int n24a, int n34a, int n44a, int n13a, int n23a,
-             int n33a, int n14b, int n24b, int n34b, int n44b, int n13b,
-             int n23b, int n33b, int n14c, int n24c, int n34c, int n44c,
-             int n13c, int n23c, int n33c)
-    {
-      // normalized irreps:
-      irrep u4a(n14a - n44a, n24a - n44a, n34a - n44a, 0);
-      irrep u4b(n14b - n44b, n24b - n44b, n34b - n44b, 0);
-      irrep u4c(n14c - n44c, n24c - n44c, n34c - n44c, 0);
-
-      u3::irrep u3a(n13a - n44a, n23a - n44a, n33a - n44a);
-      u3::irrep u3b(n13b - n44b, n23b - n44b, n33b - n44b);
-      u3::irrep u3c(n13c - n44c, n23c - n44c, n33c - n44c);
-
-      int etamax = Eta(u4a, u4b, u4c);
-      int rhomax = u3::Rho(u3a, u3b, u3c);
-
-      bool exist = false;
-
-      Eigen::MatrixXd matrix;
-
-      if (etamax > 0)
-      {
-#ifdef U4LIB_ENABLE_WIGU4U3_CACHE
-        key_type key = {u4a.n14(), u4a.n24(), u4a.n34(), u4b.n14(), u4b.n24(),
-                        u4b.n34(), u4c.n14(), u4c.n24(), u4c.n34()};
-
-        auto iter = map_.find(key);
-        if (iter == map_.end())
-        {
-          auto p = map_.try_emplace(key, calculate(u4a, u4b, u4c));
-          assert(p.second);
-          iter = p.first;
-        }
-
-        const auto& coeffs_ref = iter->second;
-#else
-        auto coeffs = calculate(u4a, u4b, u4c);
-        const auto& coeffs_ref = coeffs;
-#endif
-        std::tie(exist, matrix) = coeffs_ref.access(u3a, u3b, u3c);
-
-        if (exist)
-        {
-          assert(matrix.rows() == rhomax);
-          assert(matrix.cols() == etamax);
-        }
-      }
-
-      return std::pair(exist, matrix);
-    }
-
-    friend WigU4U3_db& wigU4U3db();
-  };
-*/
   inline WigU4U3_db& wigU4U3db()
   {
     static WigU4U3_db wigU4U3db;
