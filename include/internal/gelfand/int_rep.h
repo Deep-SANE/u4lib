@@ -5,13 +5,10 @@
 
 #include <qcx_Int.h>
 
+#include "../../Definitions.h"
+
 namespace u4
 {
-  // Define alias datatypes
-  using uqn_t = uint8_t;  // unsigned quantum numbers: 0 to 255
-  using qn_t = int8_t;    // signed quantum numbers: -128 to 127
-  using mult_t = uint8_t; // multiplicities: 0 to 255
-
   namespace internal
   {
     class gelfand_int_rep
