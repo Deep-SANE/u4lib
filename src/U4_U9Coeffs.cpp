@@ -147,17 +147,17 @@ int main(int argc, char* argv[])
     // Start time measurement
     auto t0 = std::chrono::high_resolution_clock::now();
 
-    std::vector<u4::gelfand> gArrA = u4::gelfandBasis(u4a);
-    std::vector<u4::gelfand> gArrB = u4::gelfandBasis(u4b);
-    std::vector<u4::gelfand> gArrC = u4::gelfandBasis(u4c);
-    std::vector<u4::gelfand> gArrD = u4::gelfandBasis(u4d);
-    std::vector<u4::gelfand> gArrAB = u4::gelfandBasis(u4ab[i_ab]);
-    std::vector<u4::gelfand> gArrCD = u4::gelfandBasis(u4cd[i_cd]);
-    std::vector<u4::gelfand> gArrAC = u4::gelfandBasis(u4ac[i_ac]);
-    std::vector<u4::gelfand> gArrBD = u4::gelfandBasis(u4bd[i_bd]);
-    std::vector<u4::gelfand> gArrABCD = u4::gelfandBasis(u4ab_cd[i_ab_cd]);
+    u4::gelfands gArrA = u4::gelfandBasis(u4a);
+    u4::gelfands gArrB = u4::gelfandBasis(u4b);
+    u4::gelfands gArrC = u4::gelfandBasis(u4c);
+    u4::gelfands gArrD = u4::gelfandBasis(u4d);
+    u4::gelfands gArrAB = u4::gelfandBasis(u4ab[i_ab]);
+    u4::gelfands gArrCD = u4::gelfandBasis(u4cd[i_cd]);
+    u4::gelfands gArrAC = u4::gelfandBasis(u4ac[i_ac]);
+    u4::gelfands gArrBD = u4::gelfandBasis(u4bd[i_bd]);
+    u4::gelfands gArrABCD = u4::gelfandBasis(u4ab_cd[i_ab_cd]);
 
-    std::vector<double> coeffs =
+    auto coeffs =
       u4::U9(u4a, gArrA, u4b, gArrB, u4c, gArrC, u4d, gArrD, u4ab[i_ab],
              gArrAB, u4cd[i_cd], gArrCD, u4ac[i_ac], gArrAC, u4bd[i_bd],
              gArrBD, u4ab_cd[i_ab_cd], gArrABCD, etamaxsab[i_ab],
@@ -175,25 +175,7 @@ int main(int argc, char* argv[])
               << "\tetaac_bd" << std::endl;
     std::cout << "etaac\tetabd\tetaab_cd\t" << std::endl;
 
-    std::cout << std::endl;
-
-    std::cout << "etaac\tetabd\tetaab_cd\tetaab\tetacd\tetaac_bd" << std::endl;
-
-    for (int eac = 0; eac < etamaxsac[i_ac]; eac++)
-      for (int ebd = 0; ebd < etamaxsbd[i_bd]; ebd++)
-        for (int eab_cd = 0; eab_cd < etamaxsab_cd[i_ab_cd]; eab_cd++)
-          for (int eab = 0; eab < etamaxsab[i_ab]; eab++)
-            for (int ecd = 0; ecd < etamaxscd[i_cd]; ecd++)
-              for (int eac_bd = 0; eac_bd < etamaxac_bd; eac_bd++)
-                std::cout << "  " << eac + 1 << "\t  " << ebd + 1 << "\t  "
-                          << eab_cd + 1 << "\t\t  " << eab + 1 << "\t  "
-                          << ecd + 1 << "\t  " << eac_bd + 1 << "\t\t  ->  "
-                          << coeffs[((((eac * etamaxsbd[i_bd] + ebd) *
-                                        etamaxsab_cd[i_ab_cd] + eab_cd) *
-                                        etamaxsab[i_ab] + eab) *
-                                        etamaxscd[i_cd] + ecd) *
-                                        etamaxac_bd + eac_bd]
-                          << std::endl;
+    std::cout << coeffs << std::endl;
 
     // Calculate the duration
     std::chrono::duration<double> duration = t1 - t0;

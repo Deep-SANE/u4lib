@@ -52,7 +52,7 @@ namespace u4
         u4::phys_to_cano(pArrC[i], pArrC[i].SS(), pArrC[i].TT(), gArrC);
 
     std::vector<std::tuple<int, int, int>> tArr;
-    std::vector<Eigen::MatrixXd> coeffs;
+    std::vector<U4SU2SU2<coeffs_t>> coeffs;
 
     int i, j, k;
     for (j = 0; j < pArrB.size(); j++)
@@ -81,8 +81,7 @@ namespace u4
           {
             tArr.emplace_back(i,j,k);
 
-            Eigen::MatrixXd coeffs_temp(ZA * ZB * ZC, etamax);
-            coeffs_temp.setZero();
+            U4SU2SU2<coeffs_t> coeffs_temp(ZA, ZB, ZC, etamax);
 
             int mmsB = SSC - SSA, mmtB = TTC - TTA;
             int indexS = (SSB - mmsB) / 2, indexT = (TTB - mmtB) / 2;
@@ -104,14 +103,14 @@ namespace u4
                 {
                   const auto& gC = gArrC[canoC[iC]];
 
-                  auto [allowU4, accU4] = wigU4U3db.get(
+                  auto accU4 = wigU4U3db.get(
                     gA.n14(), gA.n24(), gA.n34(), gA.n44(), 
                     gA.n13(), gA.n23(), gA.n33(),
                     gB.n14(), gB.n24(), gB.n34(), gB.n44(),
                     gB.n13(), gB.n23(), gB.n33(),
                     gC.n14(), gC.n24(), gC.n34(), gC.n44(),
                     gC.n13(), gC.n23(), gC.n33());
-                  if (allowU4 == false) continue;
+                  if (accU4.size() == 0) continue;
 
                   int jj1 = gA.Lambdax2(), mm1 = gA.MLambdax2(),
                       jj2 = gB.Lambdax2(), mm2 = gB.MLambdax2(),
@@ -122,11 +121,11 @@ namespace u4
                   {
                     double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
-                    auto [allowU3, accU3] = wigU3U2db.get(
+                    auto accU3 = wigU3U2db.get(
                       gA.n13(), gA.n23(), gA.n33(), gA.n12(), gA.n22(), 
                       gB.n13(), gB.n23(), gB.n33(), gB.n12(), gB.n22(),
                       gC.n13(), gC.n23(), gC.n33(), gC.n12(), gC.n22());
-                    if (allowU3 == false) continue;
+                    if (accU3.size() == 0) continue;
 
                     for (int e = 0; e < etamax; e++)   
                       for (int z1 = 0; z1 < ZA; z1++)
@@ -137,7 +136,7 @@ namespace u4
                             for (int r = 0; r < accU4.rows(); r++)
                               y += accU4(r,e) * accU3(r);
                             
-                            coeffs_temp((z1 * ZB + z2) * ZC + z3, e)
+                            coeffs_temp(z1, z2, z3, e)
                               += y * cgc * transA(iA, z1)
                                * transB(iB, z2) * transC(iC, z3);
                           }
@@ -146,11 +145,19 @@ namespace u4
               }
             }
 
+            /*
             coeffs_temp /= (cgcS * cgcT);
             for (int row = 0; row < coeffs_temp.rows(); row++)
               for (int col = 0; col < coeffs_temp.cols(); col++)
                 if (std::fabs(coeffs_temp(row,col)) <= 1e-12)
                   coeffs_temp(row,col) = 0.0;
+            */
+
+            for (size_t i = 0; i < coeffs_temp.size(); i++)
+            {
+              if (std::fabs(coeffs_temp[i]) <= 1e-12) coeffs_temp[i] = 0.0;
+              else coeffs_temp[i] /= (cgcS * cgcT);
+            }
 
             coeffs.push_back(coeffs_temp);
           }
@@ -160,13 +167,12 @@ namespace u4
     return std::make_pair(tArr, coeffs);
   }
 
-#define U4LIB_ENABLE_WIGU4SU2SU2_CACHE
-
+  // database for holding coupling coefficents
   class WigU4SU2SU2_db
   {
     // using key_type = std::array<uint8_t, 15>;
     using key_type = std::array<uint64_t, 2>;
-    using value_type = Eigen::MatrixXd;
+    using value_type = coeffs_t; //Eigen::MatrixXd;
 
 #ifdef U4LIB_ENABLE_WIGU4SU2SU2_CACHE
     qcx_utils::Cache<key_type, value_type> cache_;
@@ -231,9 +237,9 @@ namespace u4
       auto& wigU4U3db = u4::wigU4U3db();
 
       // build Gelfand basis
-      std::vector<u4::gelfand> gArrA = u4::gelfandBasis(pA.irr()),
-                               gArrB = u4::gelfandBasis(pB.irr()),
-                               gArrC = u4::gelfandBasis(pC.irr());
+      u4::gelfands gArrA = u4::gelfandBasis(pA.irr()),
+                   gArrB = u4::gelfandBasis(pB.irr()),
+                   gArrC = u4::gelfandBasis(pC.irr());
 
       int SSA = pA.SS(), TTA = pA.TT(), ZA = pA.zeta();
       int SSB = pB.SS(), TTB = pB.TT(), ZB = pB.zeta();
@@ -252,8 +258,7 @@ namespace u4
       double cgcS = cgcs.get({SSA, SSB, SSC, SSA, mmsB, SSC}),
              cgcT = cgcs.get({TTA, TTB, TTC, TTA, mmtB, TTC});
 
-      Eigen::MatrixXd coeffs(ZA * ZB * ZC, etamax);
-      coeffs.setZero();
+      U4SU2SU2<coeffs_t> coeffs(ZA, ZB, ZC, etamax);
 
       for (int iA = 0; iA < canoA.size(); iA++)
       {
@@ -267,11 +272,11 @@ namespace u4
           {
             const auto& gC = gArrC[canoC[iC]];
 
-            auto [allowU4, accU4] = wigU4U3db.get(
+            auto accU4 = wigU4U3db.get(
               gA.n14(), gA.n24(), gA.n34(), gA.n44(), gA.n13(), gA.n23(), gA.n33(),
               gB.n14(), gB.n24(), gB.n34(), gB.n44(), gB.n13(), gB.n23(), gB.n33(),
               gC.n14(), gC.n24(), gC.n34(), gC.n44(), gC.n13(), gC.n23(), gC.n33());
-            if (allowU4 == false) continue;
+            if (accU4.size() == 0) continue;
 
             int jj1 = gA.Lambdax2(), mm1 = gA.MLambdax2(),
                 jj2 = gB.Lambdax2(), mm2 = gB.MLambdax2(),
@@ -282,11 +287,11 @@ namespace u4
             {
               double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
 
-              auto [allowU3, accU3] = wigU3U2db.get(
+              auto accU3 = wigU3U2db.get(
                 gA.n13(), gA.n23(), gA.n33(), gA.n12(), gA.n22(), 
                 gB.n13(), gB.n23(), gB.n33(), gB.n12(), gB.n22(),
                 gC.n13(), gC.n23(), gC.n33(), gC.n12(), gC.n22());
-              if (allowU3 == false) continue;
+              if (accU3.size() == 0) continue;
 
               for (int e = 0; e < etamax; e++)   
                 for (int z1 = 0; z1 < ZA; z1++)
@@ -297,27 +302,34 @@ namespace u4
                       for (int r = 0; r < accU4.rows(); r++)
                         y += accU4(r,e) * accU3(r);
                             
-                      coeffs((z1 * ZB + z2) * ZC + z3, e) += y * cgc 
-                            * transA(iA, z1) * transB(iB, z2) * transC(iC, z3);
+                      coeffs(z1, z2, z3, e) += y * cgc 
+                        * transA(iA, z1) * transB(iB, z2) * transC(iC, z3);
                     }
             }
           }
         }
       }
-
+      /*
       coeffs /= (cgcS * cgcT);
       for (int row = 0; row < coeffs.rows(); row++)
         for (int col = 0; col < coeffs.cols(); col++)
           if (std::fabs(coeffs(row,col)) <= 1e-12)
             coeffs(row,col) = 0.0;
+      */
 
-      return coeffs;
+      for (size_t i = 0; i < coeffs.size(); i++)
+      {
+        if (std::fabs(coeffs[i]) <= 1e-12) coeffs[i] = 0.0;
+        else coeffs[i] /= (cgcS * cgcT);
+      }
+
+      return coeffs.data();
     }
 
   public:
-    std::pair<bool, value_type> get(int P1a, int P2a, int P3a, int SSa, int TTa,
-                                    int P1b, int P2b, int P3b, int SSb, int TTb,
-                                    int P1c, int P2c, int P3c, int SSc, int TTc)
+    U4SU2SU2<value_type> get_U4SU2SU2(int P1a, int P2a, int P3a, int SSa, int TTa,
+                             int P1b, int P2b, int P3b, int SSb, int TTb,
+                             int P1c, int P2c, int P3c, int SSc, int TTc)
     {
       // normalized irreps:
       u4::irrep u4a(P1a, P2a, P3a), u4b(P1b, P2b, P3b), u4c(P1c, P2c, P3c);
@@ -327,7 +339,7 @@ namespace u4
       if ((etamax == 0) || (pA.zeta() == 0) || (pB.zeta() == 0) ||
           (pC.zeta() == 0) || (u2::mult(SSa, SSb, SSc) == 0) || 
           (u2::mult(TTa, TTb, TTc) == 0))
-        return {false, value_type()};
+        return {};
 
 #ifdef U4LIB_ENABLE_WIGU4SU2SU2_CACHE
       std::array<qcx_utils::UInt8, 15> safe_key = {P1a, P2a, P3a, SSa, TTa,
@@ -362,7 +374,61 @@ namespace u4
 #else
       *p_result_ = compute(etamax, pA, pB, pC);
 #endif
-      return {true, *p_result_};
+      return {std::move(*p_result_), 
+              static_cast<size_t>(pA.zeta()),
+              static_cast<size_t>(pB.zeta()),
+              static_cast<size_t>(pC.zeta()), 
+              static_cast<size_t>(etamax)};
+    }
+
+    value_type get(int P1a, int P2a, int P3a, int SSa, int TTa,
+                            int P1b, int P2b, int P3b, int SSb, int TTb,
+                            int P1c, int P2c, int P3c, int SSc, int TTc)
+    {
+      // normalized irreps:
+      u4::irrep u4a(P1a, P2a, P3a), u4b(P1b, P2b, P3b), u4c(P1c, P2c, P3c);
+      int etamax = Eta(u4a, u4b, u4c);
+      u4::physicalvector pA(u4a,SSa,TTa), pB(u4b,SSb,TTb), pC(u4c,SSc,TTc);
+
+      if ((etamax == 0) || (pA.zeta() == 0) || (pB.zeta() == 0) ||
+          (pC.zeta() == 0) || (u2::mult(SSa, SSb, SSc) == 0) || 
+          (u2::mult(TTa, TTb, TTc) == 0))
+        return {};
+
+#ifdef U4LIB_ENABLE_WIGU4SU2SU2_CACHE
+      std::array<qcx_utils::UInt8, 15> safe_key = {P1a, P2a, P3a, SSa, TTa,
+                                                   P1b, P2b, P3b, SSb, TTb,
+                                                   P1c, P2c, P3c, SSc, TTc};
+
+      uint64_t key_1 = 
+        (uint64_t(safe_key[0]) << 56) | (uint64_t(safe_key[1]) << 48) |
+        (uint64_t(safe_key[2]) << 40) | (uint64_t(safe_key[3]) << 32) |
+        (uint64_t(safe_key[4]) << 24) | (uint64_t(safe_key[5]) << 16) |
+        (uint64_t(safe_key[6]) << 8) | uint64_t(safe_key[7]);
+
+      uint64_t key_2 = 
+        (uint64_t(safe_key[8]) << 56) | (uint64_t(safe_key[9]) << 48) |
+        (uint64_t(safe_key[10]) << 40) | (uint64_t(safe_key[11]) << 32) |
+        (uint64_t(safe_key[12]) << 24) | (uint64_t(safe_key[13]) << 16) |
+        (uint64_t(safe_key[14]) << 8);
+
+      key_type key = {key_1, key_2};
+      /*
+      key_type key = {safe_key[0],  safe_key[1],  safe_key[2],  safe_key[3],
+                      safe_key[4],  safe_key[5],  safe_key[6],  safe_key[7],
+                      safe_key[8],  safe_key[9],  safe_key[10], safe_key[11],
+                      safe_key[12], safe_key[13], safe_key[14]};
+      */
+      auto producer = [etamax, &pA, &pB, &pC](key_type)
+      { return compute(etamax, pA, pB, pC); };
+
+      auto accessor = [](const auto& element) { *p_result_ = element.second; };
+
+      cache_.visit(key, producer, accessor);
+#else
+      *p_result_ = compute(etamax, pA, pB, pC);
+#endif
+      return *p_result_;
     }
 
     friend WigU4SU2SU2_db& wigU4SU2SU2db();

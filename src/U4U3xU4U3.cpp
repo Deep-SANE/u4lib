@@ -86,13 +86,9 @@ int main(int argc, char* argv[])
                               u3b(n13b,n23b,n33b),
                               u3c(n13c,n23c,n33c);
 
-                    if (u3::Rho(u3a, u3b, u3c) <= 0)
-                      continue;
-
-                    auto [exist, coeffs_] = coeffs.access(u3a,u3b,u3c);  
+                    auto coeffs_ = coeffs.access(u3a,u3b,u3c);  
  
-                    if (exist == false)
-                      continue;  
+                    if (coeffs_.size() == 0) continue;
 
                     std::cout << "< " << u4a.n14() << "," << u4a.n24() << "," << u4a.n34() 
                               << ",0;" << n13a << "," << n23a << "," << n33a << " ; " 
@@ -103,7 +99,7 @@ int main(int argc, char* argv[])
                               << std::endl;
                     for (int r = 0; r < coeffs_.rows(); r++)
                       std::cout << "rho = " << r+1 << " --> \t" << coeffs_.row(r) << std::endl;
-            } 
+                  } 
 
   //std::cout << "Reduced coefficients count: " << coeffs.size() << std::endl;
 

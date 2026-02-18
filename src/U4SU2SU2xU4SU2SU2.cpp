@@ -174,18 +174,8 @@ int main(int argc, char* argv[])
               << " ; (" << P1b << "," << P2b << "," << P3b << ") z2 " 
               << pArrB[j].SS() << " " << pArrB[j].TT() << " || "
               << "(" << u4C.P1() << "," << u4C.P2() << "," << u4C.P3() 
-              << ") z3 " << pArrC[k].SS() << " " << pArrC[k].TT() << " > "
-              << "for eta = 1 ... " << etamax << std::endl;
-    std::cout << "z1\tz2\tz3" << std::endl;
-
-    const auto& coeffs_temp = coeffs[t];
-
-    for (int z1 = 0; z1 < pArrA[i].zeta(); z1++)
-      for (int z2 = 0; z2 < pArrB[j].zeta(); z2++)
-        for (int z3 = 0; z3 < pArrC[k].zeta(); z3++)
-          std::cout << "" << z1 + 1 << "\t" << z2 + 1 << "\t" << z3 + 1 << "\t"
-            << coeffs_temp.row((z1 * pArrB[j].zeta() + z2) * pArrC[k].zeta() + z3)
-            << std::endl;
+              << ") z3 " << pArrC[k].SS() << " " << pArrC[k].TT() << " >\n"
+              << coeffs[t] << std::endl;
   }
 
   // Calculate the duration

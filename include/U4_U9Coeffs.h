@@ -8,7 +8,6 @@
 #include <utility>
 #include <vector>
 
-// #define TIME_U4U9
 #ifdef TIME_U4U9
 #include <chrono>
 #endif
@@ -28,7 +27,7 @@ namespace u4
 
   // input by users: u4a, u4b, u4c, u4d, u4ab, u4cd, u4ac, u4bd, u4abcd
   // all normalized
-  inline std::vector<double>
+  inline auto
   U9(const u4::irrep& u4A, const std::vector<u4::gelfand>& gArrA,
      const u4::irrep& u4B, const std::vector<u4::gelfand>& gArrB,
      const u4::irrep& u4C, const std::vector<u4::gelfand>& gArrC,
@@ -49,10 +48,13 @@ namespace u4
 
     auto& u4u6db = u4::u4u6db();
     auto& u4z6db = u4::u4z6db();
-
+/*
     std::vector<double> U(etaACmax * etaBDmax * etaAB_CDmax * etaABmax *
                               etaCDmax * etaAC_BDmax,
                           0.0);
+*/
+    U4U9<coeffs_t> U(etaACmax, etaBDmax, etaAB_CDmax,
+                     etaABmax, etaCDmax, etaAC_BDmax);
 
     // couple u4AB and u4C
     auto [u4AB_C, etamaxsAB_C] = u4::decomposition(u4AB, u4C);
@@ -60,101 +62,74 @@ namespace u4
     for (int i = 0; i < u4AB_C.size(); i++)
     {
       int etamaxAC_B = u4::Eta(u4AC, u4B, u4AB_C[i]);
-      if (etamaxAC_B == 0)
-        continue;
+      if (etamaxAC_B == 0) continue;
 
       int etaABC_Dmax = u4::Eta(u4AB_C[i], u4D, u4ABCD);
-      if (etaABC_Dmax == 0)
-        continue;
+      if (etaABC_Dmax == 0) continue;
 
-      std::vector<u4::gelfand> gArrABC = u4::gelfandBasis(u4AB_C[i]);
-
-#ifdef U4LIB_ENABLE_U4U6_CACHE
-      auto U6_1 = u4u6db.get(
-        u4AC.n14(), u4AC.n24(), u4AC.n34(), u4AC.n44(),
-        u4B.n14(), u4B.n24(), u4B.n34(), u4B.n44(),
-        u4ABCD.n14(), u4ABCD.n24(), u4ABCD.n34(), u4ABCD.n44(),
-        u4D.n14(), u4D.n24(), u4D.n34(), u4D.n44(),               
-        u4AB_C[i].n14(), u4AB_C[i].n24(), u4AB_C[i].n34(), u4AB_C[i].n44(),
-        u4BD.n14(), u4BD.n24(), u4BD.n34(), u4BD.n44());
+#if defined(U4LIB_ENABLE_U4U6_CACHE) && defined(U4LIB_ENABLE_U4Z6_CACHE)
+      const auto U6_1 = u4u6db.get_U4U6(u4AC, u4B, u4ABCD, u4D,
+                                        u4AB_C[i], etamaxAC_B, etaABC_Dmax,
+                                        u4BD, etaBDmax, etaAC_BDmax);
       if (U6_1.empty()) continue;
 
-      auto U6_2 = u4u6db.get(
-        u4AB.n14(), u4AB.n24(), u4AB.n34(), u4AB.n44(),
-        u4C.n14(), u4C.n24(), u4C.n34(), u4C.n44(),
-        u4ABCD.n14(), u4ABCD.n24(), u4ABCD.n34(), u4ABCD.n44(),
-        u4D.n14(), u4D.n24(), u4D.n34(), u4D.n44(),  
-        u4AB_C[i].n14(), u4AB_C[i].n24(), u4AB_C[i].n34(), u4AB_C[i].n44(),
-        u4CD.n14(), u4CD.n24(), u4CD.n34(), u4CD.n44());
+      const auto U6_2 = u4u6db.get_U4U6(u4AB, u4C, u4ABCD, u4D,
+                                        u4AB_C[i], etamaxsAB_C[i], etaABC_Dmax,
+                                        u4CD, etaCDmax, etaAB_CDmax);
       if (U6_2.empty()) continue;
+
+      const auto Z6 = u4z6db.get_U4Z6(u4B, u4A, u4AB_C[i], u4C, 
+                                      u4AB, etaABmax, etamaxsAB_C[i],
+                                      u4AC, etaACmax, etamaxAC_B);
+      if (Z6.empty()) continue;
 #else
-      std::vector<double> U6_1 =
+      u4::gelfands gArrABC = u4::gelfandBasis(u4AB_C[i]);
+
+      const auto U6_1 =
           u4::U6(u4AC, gArrAC, u4B, gArrB, u4ABCD, gArrABCD, u4D, gArrD,
                  u4AB_C[i], gArrABC, etamaxAC_B, etaABC_Dmax, u4BD, gArrBD,
                  etaBDmax, etaAC_BDmax);
 
-      std::vector<double> U6_2 =
+      const auto U6_2 =
           u4::U6(u4AB, gArrAB, u4C, gArrC, u4ABCD, gArrABCD, u4D, gArrD,
                  u4AB_C[i], gArrABC, etamaxsAB_C[i], etaABC_Dmax, u4CD, gArrCD,
                  etaCDmax, etaAB_CDmax);
-#endif
 
-#ifdef U4LIB_ENABLE_U4Z6_CACHE
-      auto Z6 = u4z6db.get(
-        u4B.n14(), u4B.n24(), u4B.n34(), u4B.n44(),
-        u4A.n14(), u4A.n24(), u4A.n34(), u4A.n44(),
-        u4AB_C[i].n14(), u4AB_C[i].n24(), u4AB_C[i].n34(), u4AB_C[i].n44(),
-        u4C.n14(), u4C.n24(), u4C.n34(), u4C.n44(),
-        u4AB.n14(), u4AB.n24(), u4AB.n34(), u4AB.n44(),
-        u4AC.n14(), u4AC.n24(), u4AC.n34(), u4AC.n44());
-      if (Z6.empty()) continue;
-#else
-      std::vector<double> Z6 =
+      const auto Z6 =
           u4::Z6(u4B, gArrB, u4A, gArrA, u4AB_C[i], gArrABC, u4C, gArrC, u4AB,
                  gArrAB, etaABmax, etamaxsAB_C[i], u4AC, gArrAC, etaACmax,
                  etamaxAC_B);
 #endif
 
       for (int eAC = 0; eAC < etaACmax; eAC++)
-      {
         for (int eBD = 0; eBD < etaBDmax; eBD++)
-        {
           for (int eAB_CD = 0; eAB_CD < etaAB_CDmax; eAB_CD++)
-          {
             for (int eAB = 0; eAB < etaABmax; eAB++)
-            {
               for (int eCD = 0; eCD < etaCDmax; eCD++)
-              {
                 for (int eAC_BD = 0; eAC_BD < etaAC_BDmax; eAC_BD++)
-                {
                   for (int eAC_B = 0; eAC_B < etamaxAC_B; eAC_B++)
-                  {
                     for (int eAB_C = 0; eAB_C < etamaxsAB_C[i]; eAB_C++)
-                    {
                       for (int eABC_D = 0; eABC_D < etaABC_Dmax; eABC_D++)
                       {
-                        U[((((eAC * etaBDmax + eBD) * etaAB_CDmax + eAB_CD) *
-                        etaABmax + eAB) * etaCDmax + eCD) * etaAC_BDmax + eAC_BD] 
+#if defined(U4LIB_ENABLE_U4U6_CACHE) && defined(U4LIB_ENABLE_U4Z6_CACHE)
+                        U(eAC, eBD, eAB_CD, eAB, eCD, eAC_BD)
+                        += U6_1(eAC_B, eABC_D, eBD, eAC_BD)
+                         * Z6(eAB, eAB_C, eAC, eAC_B)
+                         * U6_2(eAB_C, eABC_D, eCD, eAB_CD);
+#else
+                        U(eAC, eBD, eAB_CD, eAB, eCD, eAC_BD)
                         += U6_1[((eAC_B * etaABC_Dmax + eABC_D) * etaBDmax +
-                                  eBD) * etaAC_BDmax + eAC_BD] 
+                                  eBD) * etaAC_BDmax + eAC_BD]
                          * Z6[((eAB * etamaxsAB_C[i] + eAB_C) * etaACmax +
-                                eAC) * etamaxAC_B + eAC_B] 
+                                eAC) * etamaxAC_B + eAC_B]
                          * U6_2[((eAB_C * etaABC_Dmax + eABC_D) * etaCDmax +
                                   eCD) * etaAB_CDmax + eAB_CD];
+#endif
                       }
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
     }
 
     for (int i = 0; i < U.size(); i++)
-      if (std::fabs(U[i]) < 1e-14)
-        U[i] = 0.0;
+      if (std::fabs(U[i]) < 1e-14) U[i] = 0.0;
 
 #ifdef TIME_U4U9
     auto end = std::chrono::high_resolution_clock::now();
@@ -171,60 +146,12 @@ namespace u4
     return U;
   }
 
-  template <typename T>
-  class U4U9
-  {
-    T coeffs_;
-    qcx_utils::NDIndex6 ndi_;
-
-  public:
-    U4U9()
-    {
-      ndi_.add_dimensions(0, 0, 0, 0, 0, 0);
-      assert(coeffs_.size() == ndi_.cardinality());
-    }
-
-    U4U9(T&& coeffs, size_t etaACmax, size_t etaBDmax,
-         size_t etaABCDmax, size_t etaABmax, size_t etaCDmax, size_t etaACBDmax)
-        : coeffs_(std::move(coeffs))
-    {
-      ndi_.add_dimensions(etaACmax, etaBDmax, etaABCDmax, etaABmax, etaCDmax,
-                          etaACBDmax);
-      assert(coeffs_.size() == ndi_.cardinality());
-    }
-
-    size_t size() const { return coeffs_.size(); }
-
-    bool empty() const { return size() == 0; }
-
-    size_t etaACmax() const { return ndi_.dimension(0); }
-    size_t etaBDmax() const { return ndi_.dimension(1); }
-    size_t etaABCDmax() const { return ndi_.dimension(2); }
-    size_t etaABmax() const { return ndi_.dimension(3); }
-    size_t etaCDmax() const { return ndi_.dimension(4); }
-    size_t etaACBDmax() const { return ndi_.dimension(5); }
-
-    double operator[](size_t i) const
-    {
-      assert(i < coeffs_.size());
-      return coeffs_[i];
-    }
-
-    double get(size_t etaAC, size_t etaBD, size_t etaABCD, size_t etaAB,
-               size_t etaCD, size_t etaACBD)
-    {
-      std::array multi_index = {etaAC, etaBD, etaABCD, etaAB, etaCD, etaACBD};
-      size_t i = ndi_.to_linear(multi_index);
-      return operator[](i);
-    }
-  };
-
-#define U4LIB_ENABLE_U4U9_CACHE
+  // Database of U9 coefficients
   class U4U9_db
   {
     // using key_type = std::array<uint8_t, 27>;
     using key_type = std::tuple<uint64_t, uint64_t, uint64_t, uint32_t>;
-    using value_type = std::vector<double>;
+    using value_type = coeffs_t;
 
 #ifdef U4LIB_ENABLE_U4U9_CACHE
     qcx_utils::Cache<key_type, value_type> cache_;
@@ -305,7 +232,7 @@ namespace u4
       return U9(u4A, gArrA, u4B, gArrB, u4C, gArrC, u4D, gArrD, u4AB, gArrAB,
                 u4CD, gArrCD, u4AC, gArrAC, u4BD, gArrBD, u4ABCD, gArrABCD,
                 etaABmax, etaCDmax, etaABCDmax, etaACmax, etaBDmax,
-                etaACBDmax);
+                etaACBDmax).data();
     }
 
   public:
@@ -319,10 +246,6 @@ namespace u4
       int etaACmax, int etaBDmax, int etaABCDmax,
       int etaABmax, int etaCDmax, int etaACBDmax)
     {
-      if ((etaACmax == 0) || (etaBDmax == 0) || (etaABCDmax == 0) ||
-          (etaABmax == 0) || (etaCDmax == 0) || (etaACBDmax == 0))
-        return {};
-
       auto coeffs =
           get(u4A, u4B, u4C, u4D, u4AB, u4CD, u4AC, u4BD, u4ABCD, etaABmax,
               etaCDmax, etaABCDmax, etaACmax, etaBDmax, etaACBDmax);
@@ -343,6 +266,10 @@ namespace u4
                     int etaCDmax, int etaABCDmax, int etaACmax, int etaBDmax,
                     int etaACBDmax)
     {
+      if ((etaACmax == 0) || (etaBDmax == 0) || (etaABCDmax == 0) ||
+          (etaABmax == 0) || (etaCDmax == 0) || (etaACBDmax == 0))
+        return {};
+
       u4A.normalize();
       u4B.normalize();
       u4C.normalize();
@@ -359,10 +286,6 @@ namespace u4
       assert(etaACmax == Eta(u4A, u4C, u4AC));
       assert(etaBDmax == Eta(u4B, u4D, u4BD));
       assert(etaACBDmax == Eta(u4AC, u4BD, u4ABCD));
-
-      if ((etaABmax == 0) || (etaCDmax == 0) || (etaABCDmax == 0) ||
-          (etaACmax == 0) || (etaBDmax == 0) || (etaACBDmax == 0))
-        return {};
 
 #ifdef U4LIB_ENABLE_U4U9_CACHE
       std::array<qcx_utils::UInt8, 27> safe_key = {

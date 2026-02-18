@@ -6,7 +6,6 @@
 #include <iostream>
 #include <vector>
 
-// #define TIME_U4U6Z6
 #ifdef TIME_U4U6Z6
 #include <chrono>
 #endif
@@ -25,7 +24,7 @@ namespace u4
 {
 
   // input by users: u4a, u4b, u4abc, u4c, u4ab, u4bc, all normalized
-  inline std::vector<double>
+  inline auto
   U6(const u4::irrep& u4A, const std::vector<u4::gelfand>& gArrA,
      const u4::irrep& u4B, const std::vector<u4::gelfand>& gArrB,
      const u4::irrep& u4ABC, const std::vector<u4::gelfand>& gArrABC,
@@ -41,6 +40,7 @@ namespace u4
 #endif
 
     auto& wigU4U3db = u4::wigU4U3db();
+    auto& u3u6db = u3::u3u6db();
 
     Eigen::MatrixXd A(etaA_BCmax, etaA_BCmax);
     Eigen::MatrixXd B(etaA_BCmax, etaABmax * etaAB_Cmax * etaBCmax);
@@ -54,12 +54,12 @@ namespace u4
       {
         for (int n33A = u4A.n34(); n33A >= u4A.n44() && !done; n33A--)
         {
-          auto [existA_BC, accA_BC] = wigU4U3db.get(
+          auto accA_BC = wigU4U3db.get(
               u4A.n14(), u4A.n24(), u4A.n34(), u4A.n44(), n13A, n23A, n33A,
               u4BC.n14(), u4BC.n24(), u4BC.n34(), u4BC.n44(), u4BC.n14(),
               u4BC.n24(), u4BC.n34(), u4ABC.n14(), u4ABC.n24(), u4ABC.n34(),
               u4ABC.n44(), u4ABC.n14(), u4ABC.n24(), u4ABC.n34());
-          if (!existA_BC) continue;
+          if (accA_BC.size() == 0) continue;
           
           // std::cout << "accA_BC = " << accA_BC << std::endl;
           u3::irrep u3a(n13A - n33A, n23A - n33A, 0),
@@ -69,9 +69,11 @@ namespace u4
           // u3bc.normalize();
           // u3abc.normalize();
 
+#ifndef U3LIB_ENABLE_U3U6_CACHE
           u3::gelfands gArr3a = u3::gelfandBasis(u3a),
                        gArr3bc = u3::gelfandBasis(u3bc),
                        gArr3abc = u3::gelfandBasis(u3abc);
+#endif
 
           for (int rA_BC = 0; rA_BC < accA_BC.rows(); rA_BC++)
           {
@@ -89,14 +91,14 @@ namespace u4
                     {
                       for (int n33AB = u4AB.n34(); n33AB >= u4AB.n44(); n33AB--)
                       {
-                        auto [existAB, accAB] = wigU4U3db.get(
+                        auto accAB = wigU4U3db.get(
                           u4A.n14(), u4A.n24(), u4A.n34(), u4A.n44(), 
                           n13A, n23A, n33A, 
                           u4B.n14(), u4B.n24(), u4B.n34(), u4B.n44(), 
                           n13B, n23B, n33B, u4AB.n14(),
                           u4AB.n24(), u4AB.n34(), u4AB.n44(), 
                           n13AB, n23AB, n33AB);
-                        if (!existAB) continue;
+                        if (accAB.size() == 0) continue;
                           
                         // std::cout << "accAB = " << accAB << std::endl;
                         u3::irrep u3b(n13B - n33B, n23B - n33B, 0),
@@ -104,8 +106,10 @@ namespace u4
                         // u3b.normalize();
                         // u3ab.normalize();
 
+#ifndef U3LIB_ENABLE_U3U6_CACHE
                         u3::gelfands gArr3b = u3::gelfandBasis(u3b),
                                      gArr3ab = u3::gelfandBasis(u3ab);
+#endif
 
                         for (int n13C = u4C.n14(); n13C >= u4C.n24(); n13C--)
                         {
@@ -113,34 +117,41 @@ namespace u4
                           {
                             for (int n33C = u4C.n34(); n33C >= u4C.n44(); n33C--)
                             {
-                              auto [existAB_C, accAB_C] = wigU4U3db.get(
+                              auto accAB_C = wigU4U3db.get(
                                 u4AB.n14(), u4AB.n24(), u4AB.n34(), u4AB.n44(),
                                 n13AB, n23AB, n33AB,
                                 u4C.n14(), u4C.n24(), u4C.n34(), u4C.n44(), 
                                 n13C, n23C, n33C, 
                                 u4ABC.n14(), u4ABC.n24(), u4ABC.n34(), u4ABC.n44(),
                                 u4ABC.n14(), u4ABC.n24(), u4ABC.n34());
-                              if (!existAB_C) continue;
+                              if (accAB_C.size() == 0) continue;
 
-                              auto [existBC, accBC] = wigU4U3db.get(
+                              auto accBC = wigU4U3db.get(
                                 u4B.n14(), u4B.n24(), u4B.n34(), u4B.n44(),
                                 n13B, n23B, n33B, 
                                 u4C.n14(), u4C.n24(), u4C.n34(), u4C.n44(),
                                 n13C, n23C, n33C, 
                                 u4BC.n14(), u4BC.n24(), u4BC.n34(), u4BC.n44(), 
                                 u4BC.n14(), u4BC.n24(), u4BC.n34());
-                              if (!existBC) continue;
+                              if (accBC.size() == 0) continue;
                                   
                               u3::irrep u3c(n13C - n33C, n23C - n33C, 0);
                               // u3c.normalize();
+                              
+#ifdef U3LIB_ENABLE_U3U6_CACHE
+                              const auto U6_coeffs = u3u6db.get_U3U6(
+                                u3a, u3b, u3abc, u3c, 
+                                u3ab, accAB.rows(), accAB_C.rows(), 
+                                u3bc, accBC.rows(), accA_BC.rows());
+#else
                               u3::gelfands gArr3c = u3::gelfandBasis(u3c);
 
-                              std::vector<double> U6_coeffs = u3::U6(
+                              const auto U6_coeffs = u3::U6(
                                 u3a, gArr3a, u3b, gArr3b, u3abc,
                                 gArr3abc, u3c, gArr3c, u3ab, gArr3ab,
                                 accAB.rows(), accAB_C.rows(), u3bc,
                                 gArr3bc, accBC.rows(), accA_BC.rows());
-
+#endif
                               for (int eAB = 0; eAB < etaABmax; eAB++)
                                 for (int eAB_C = 0; eAB_C < etaAB_Cmax; eAB_C++)
                                   for (int eBC = 0; eBC < etaBCmax; eBC++)
@@ -182,20 +193,28 @@ namespace u4
 
     Eigen::MatrixXd X = A.householderQr().solve(B);
 
-    std::vector<double> U(etaABmax * etaAB_Cmax * etaBCmax * etaA_BCmax);
+    // std::vector<double> U(etaABmax * etaAB_Cmax * etaBCmax * etaA_BCmax);
+    U4U6<coeffs_t> U(etaABmax, etaAB_Cmax, etaBCmax, etaA_BCmax);
 
     for (int eAB = 0; eAB < etaABmax; eAB++)
       for (int eAB_C = 0; eAB_C < etaAB_Cmax; eAB_C++)
         for (int eBC = 0; eBC < etaBCmax; eBC++)
+        {
+          int col = (eAB * etaAB_Cmax + eAB_C) * etaBCmax + eBC;
+
           for (int eA_BC = 0; eA_BC < etaA_BCmax; eA_BC++)
           {
-            int col = (eAB * etaAB_Cmax + eAB_C) * etaBCmax + eBC;
+            /*
             if (std::fabs(X(eA_BC, col)) < 1e-14)
               X(eA_BC, col) = 0.0;
 
             U[((eAB * etaAB_Cmax + eAB_C) * etaBCmax + eBC) * etaA_BCmax +
               eA_BC] = X(eA_BC, col);
+            */
+            U[col * etaA_BCmax + eA_BC] =
+              (std::fabs(X(eA_BC, col)) < 1e-14) ? 0.0 : X(eA_BC, col);
           }
+        }
 
 #ifdef TIME_U4U6Z6
     auto end = std::chrono::high_resolution_clock::now();
@@ -212,12 +231,12 @@ namespace u4
     return U;
   }
 
-#define U4LIB_ENABLE_U4U6_CACHE
+  // database for holding U6 recoupling coefficients
   class U4U6_db
   {
     // using key_type = std::array<uint8_t, 18>;
     using key_type = std::tuple<uint64_t, uint64_t, uint16_t>;
-    using value_type = std::vector<double>;
+    using value_type = coeffs_t;
 
 #ifdef U4LIB_ENABLE_U4U6_CACHE
     qcx_utils::Cache<key_type, value_type> cache_;
@@ -288,10 +307,101 @@ namespace u4
 
       return U6(u4A,gArrA,u4B,gArrB,u4ABC,gArrABC,u4C,gArrC,
                 u4AB,gArrAB,etaABmax,etaAB_Cmax,
-                u4BC,gArrBC,etaBCmax,etaA_BCmax);
+                u4BC,gArrBC,etaBCmax,etaA_BCmax).data();
     }
 
   public:
+    // pass by references to avoid copies
+    U4U6<value_type> get_U4U6(
+      const u4::irrep& u4A, const u4::irrep& u4B, 
+      const u4::irrep& u4ABC, const u4::irrep& u4C,
+      const u4::irrep& u4AB, int etaABmax, int etaAB_Cmax,
+      const u4::irrep& u4BC, int etaBCmax, int etaA_BCmax)
+    {
+      auto coeffs = get(u4A, u4B, u4ABC, u4C, u4AB, etaABmax, etaAB_Cmax,
+                                              u4BC, etaBCmax, etaA_BCmax);
+
+      return {std::move(coeffs),
+              static_cast<size_t>(etaABmax),
+              static_cast<size_t>(etaAB_Cmax),
+              static_cast<size_t>(etaBCmax),
+              static_cast<size_t>(etaA_BCmax)};
+    }
+
+    // pass by values to normalize irreps
+    value_type get(u4::irrep u4A, u4::irrep u4B, u4::irrep u4ABC, u4::irrep u4C, 
+                   u4::irrep u4AB, int etaABmax, int etaAB_Cmax,
+                   u4::irrep u4BC, int etaBCmax, int etaA_BCmax)
+    {
+      if (etaABmax == 0 || etaAB_Cmax == 0 || etaBCmax == 0 || etaA_BCmax == 0)
+        return {};
+
+      u4A.normalize();
+      u4B.normalize();
+      u4C.normalize();
+      u4AB.normalize();
+      u4BC.normalize();
+      u4ABC.normalize();
+
+      assert(etaABmax == Eta(u4A,u4B,u4AB)); 
+      assert(etaAB_Cmax == Eta(u4AB,u4C,u4ABC));
+      assert(etaBCmax == Eta(u4B,u4C,u4BC)); 
+      assert(etaA_BCmax == Eta(u4A,u4BC,u4ABC));
+      
+      
+#ifdef U4LIB_ENABLE_U4U6_CACHE
+      std::array<qcx_utils::UInt8, 18> safe_key = {
+        u4A.n14(), u4A.n24(), u4A.n34(),
+        u4B.n14(), u4B.n24(), u4B.n34(),
+        u4ABC.n14(), u4ABC.n24(), u4ABC.n34(),
+        u4C.n14(), u4C.n24(), u4C.n34(),
+        u4AB.n14(), u4AB.n24(), u4AB.n34(),
+        u4BC.n14(), u4BC.n24(), u4BC.n34()};
+
+      uint64_t key_1 = 
+        (uint64_t(safe_key[0]) << 56) | (uint64_t(safe_key[1]) << 48) |
+        (uint64_t(safe_key[2]) << 40) | (uint64_t(safe_key[3]) << 32) |
+        (uint64_t(safe_key[4]) << 24) | (uint64_t(safe_key[5]) << 16) |
+        (uint64_t(safe_key[6]) << 8) | uint64_t(safe_key[7]);
+
+      uint64_t key_2 = 
+        (uint64_t(safe_key[8]) << 56) | (uint64_t(safe_key[9]) << 48) |
+        (uint64_t(safe_key[10]) << 40) | (uint64_t(safe_key[11]) << 32) |
+        (uint64_t(safe_key[12]) << 24) | (uint64_t(safe_key[13]) << 16) |
+        (uint64_t(safe_key[14]) << 8) | uint64_t(safe_key[15]);
+
+      uint16_t key_3 = 
+        (uint16_t(safe_key[16]) << 8) | uint16_t(safe_key[17]);
+
+      key_type key = {key_1, key_2, key_3};
+      /*
+      key_type key = {safe_key[0], safe_key[1], safe_key[2],
+                      safe_key[3], safe_key[4], safe_key[5],
+                      safe_key[6], safe_key[7], safe_key[8],
+                      safe_key[9], safe_key[10], safe_key[11],
+                      safe_key[12], safe_key[13], safe_key[14],
+                      safe_key[15], safe_key[16], safe_key[17]};
+      */
+      auto producer = [&u4A, &u4B, &u4ABC, &u4C, 
+                       &u4AB, &etaABmax, &etaAB_Cmax,
+                       &u4BC, &etaBCmax, &etaA_BCmax](key_type)
+      { 
+        return compute(u4A, u4B, u4ABC, u4C, u4AB, etaABmax, etaAB_Cmax, 
+                                             u4BC, etaBCmax, etaA_BCmax);
+      };
+        
+      auto accessor = [](const auto& element) { *p_result_ = element.second; };
+
+      cache_.visit(key, producer, accessor);
+#else
+      *p_result_ = compute(u4A, u4B, u4ABC, u4C, u4AB, etaABmax, etaAB_Cmax, 
+                                                 u4BC, etaBCmax, etaA_BCmax);
+#endif
+
+      return *p_result_;
+    }
+
+    // TO BE REMOVED IN THE FUTURE:
     value_type get(
       int n14a, int n24a, int n34a, int n44a, 
       int n14b, int n24b, int n34b, int n44b, 
@@ -376,7 +486,7 @@ namespace u4
   }
 
   // input by users: u4b, u4a, u4abc, u4c, u4ab, u4bc, all normalized
-  inline std::vector<double>
+  inline auto
   Z6(const u4::irrep& u4B, const std::vector<u4::gelfand>& gArrB,
      const u4::irrep& u4A, const std::vector<u4::gelfand>& gArrA,
      const u4::irrep& u4ABC, const std::vector<u4::gelfand>& gArrABC,
@@ -392,6 +502,7 @@ namespace u4
 #endif
 
     auto& wigU4U3db = u4::wigU4U3db();
+    auto& u3z6db = u3::u3z6db();
 
     Eigen::MatrixXd A(etaAC_Bmax, etaAC_Bmax);
     Eigen::MatrixXd B(etaAC_Bmax, etaABmax * etaAB_Cmax * etaACmax);
@@ -405,12 +516,12 @@ namespace u4
       {
         for (int n33B = u4B.n34(); n33B >= u4B.n44() && !done; n33B--)
         {
-          auto [existAC_B, accAC_B] = wigU4U3db.get(
+          auto accAC_B = wigU4U3db.get(
               u4AC.n14(), u4AC.n24(), u4AC.n34(), u4AC.n44(), u4AC.n14(),
               u4AC.n24(), u4AC.n34(), u4B.n14(), u4B.n24(), u4B.n34(),
               u4B.n44(), n13B, n23B, n33B, u4ABC.n14(), u4ABC.n24(),
               u4ABC.n34(), u4ABC.n44(), u4ABC.n14(), u4ABC.n24(), u4ABC.n34());
-          if (!existAC_B) continue;
+          if (accAC_B.size() == 0) continue;
           
           // std::cout << "accAC_B = " << accAC_B << std::endl;
           u3::irrep u3b(n13B - n33B, n23B - n33B, 0),
@@ -420,9 +531,11 @@ namespace u4
           // u3ac.normalize();
           // u3abc.normalize();
 
+#ifndef U3LIB_ENABLE_U3Z6_CACHE
           u3::gelfands gArr3b = u3::gelfandBasis(u3b),
                        gArr3ac = u3::gelfandBasis(u3ac),
                        gArr3abc = u3::gelfandBasis(u3abc);
+#endif
 
           for (int rAC_B = 0; rAC_B < accAC_B.rows(); rAC_B++)
           {
@@ -440,14 +553,14 @@ namespace u4
                     {
                       for (int n33AB = u4AB.n34(); n33AB >= u4AB.n44(); n33AB--)
                       {
-                        auto [existAB, accAB] = wigU4U3db.get(
+                        auto accAB = wigU4U3db.get(
                           u4A.n14(), u4A.n24(), u4A.n34(), u4A.n44(), 
                           n13A, n23A, n33A, 
                           u4B.n14(), u4B.n24(), u4B.n34(), u4B.n44(), 
                           n13B, n23B, n33B, 
                           u4AB.n14(), u4AB.n24(), u4AB.n34(), u4AB.n44(), 
                           n13AB, n23AB, n33AB);
-                        if (!existAB) continue;
+                        if (accAB.size() == 0) continue;
                           
                         // std::cout << "accAB = " << accAB << std::endl;
                         u3::irrep u3a(n13A - n33A, n23A - n33A, 0),
@@ -455,8 +568,10 @@ namespace u4
                         // u3a.normalize();
                         // u3ab.normalize();
 
+#ifndef U3LIB_ENABLE_U3Z6_CACHE
                         u3::gelfands gArr3a = u3::gelfandBasis(u3a),
                                      gArr3ab = u3::gelfandBasis(u3ab);
+#endif
 
                         for (int n13C = u4C.n14(); n13C >= u4C.n24(); n13C--)
                         {
@@ -464,33 +579,40 @@ namespace u4
                           {
                             for (int n33C = u4C.n34(); n33C >= u4C.n44(); n33C--)
                             {
-                              auto [existAB_C, accAB_C] = wigU4U3db.get(
+                              auto accAB_C = wigU4U3db.get(
                                 u4AB.n14(), u4AB.n24(), u4AB.n34(), u4AB.n44(),
                                 n13AB, n23AB, n33AB,
                                 u4C.n14(), u4C.n24(), u4C.n34(), u4C.n44(),
                                 n13C, n23C, n33C, 
                                 u4ABC.n14(), u4ABC.n24(), u4ABC.n34(), u4ABC.n44(),
                                 u4ABC.n14(), u4ABC.n24(), u4ABC.n34());
-                              if (!existAB_C) continue;
+                              if (accAB_C.size() == 0) continue;
 
-                              auto [existAC, accAC] = wigU4U3db.get(
+                              auto accAC = wigU4U3db.get(
                                 u4A.n14(), u4A.n24(), u4A.n34(), u4A.n44(),
                                 n13A, n23A, n33A, 
                                 u4C.n14(), u4C.n24(), u4C.n34(), u4C.n44(),
                                 n13C, n23C, n33C, 
                                 u4AC.n14(), u4AC.n24(), u4AC.n34(), u4AC.n44(),
                                 u4AC.n14(), u4AC.n24(), u4AC.n34());
-                              if (!existAC) continue;
+                              if (accAC.size() == 0) continue;
                                   
                               u3::irrep u3c(n13C - n33C, n23C - n33C, 0);
                               // u3c.normalize();
+#ifdef U3LIB_ENABLE_U3Z6_CACHE
+                              const auto Z6_coeffs = u3z6db.get_U3Z6(
+                                u3b, u3a, u3abc, u3c, 
+                                u3ab, accAB.rows(), accAB_C.rows(), 
+                                u3ac, accAC.rows(), accAC_B.rows());
+#else
                               u3::gelfands gArr3c = u3::gelfandBasis(u3c);
 
-                              std::vector<double> Z6_coeffs = u3::Z6(
+                              const auto Z6_coeffs = u3::Z6(
                                 u3b, gArr3b, u3a, gArr3a, u3abc,
                                 gArr3abc, u3c, gArr3c, u3ab, gArr3ab,
                                 accAB.rows(), accAB_C.rows(), u3ac,
                                 gArr3ac, accAC.rows(), accAC_B.rows());
+#endif
 
                               for (int eAB = 0; eAB < etaABmax; eAB++)
                                 for (int eAB_C = 0; eAB_C < etaAB_Cmax; eAB_C++)
@@ -533,20 +655,28 @@ namespace u4
 
     Eigen::MatrixXd X = A.householderQr().solve(B);
 
-    std::vector<double> Z(etaABmax * etaAB_Cmax * etaACmax * etaAC_Bmax);
+    //std::vector<double> Z(etaABmax * etaAB_Cmax * etaACmax * etaAC_Bmax);
+    U4Z6<coeffs_t> Z(etaABmax, etaAB_Cmax, etaACmax, etaAC_Bmax);
 
     for (int eAB = 0; eAB < etaABmax; eAB++)
       for (int eAB_C = 0; eAB_C < etaAB_Cmax; eAB_C++)
         for (int eAC = 0; eAC < etaACmax; eAC++)
+        {
+          int col = (eAB * etaAB_Cmax + eAB_C) * etaACmax + eAC;
+
           for (int eAC_B = 0; eAC_B < etaAC_Bmax; eAC_B++)
           {
-            int col = (eAB * etaAB_Cmax + eAB_C) * etaACmax + eAC;
+            /*
             if (std::fabs(X(eAC_B, col)) < 1e-14)
               X(eAC_B, col) = 0.0;
 
             Z[((eAB * etaAB_Cmax + eAB_C) * etaACmax + eAC) * etaAC_Bmax +
               eAC_B] = X(eAC_B, col);
+            */
+            Z[col * etaAC_Bmax + eAC_B] = 
+              (std::fabs(X(eAC_B, col)) < 1e-14) ? 0.0 : X(eAC_B, col);
           }
+        }
 
 #ifdef TIME_U4U6Z6
     auto end = std::chrono::high_resolution_clock::now();
@@ -563,12 +693,12 @@ namespace u4
     return Z;
   }
 
-#define U4LIB_ENABLE_U4Z6_CACHE
+  // database for holding Z6 recoupling coefficients
   class U4Z6_db
   {
     // using key_type = std::array<uint8_t, 18>;
     using key_type = std::tuple<uint64_t, uint64_t, uint16_t>;
-    using value_type = std::vector<double>;
+    using value_type = coeffs_t;
 
 #ifdef U4LIB_ENABLE_U4Z6_CACHE
     qcx_utils::Cache<key_type, value_type> cache_;
@@ -639,10 +769,101 @@ namespace u4
 
       return Z6(u4B,gArrB,u4A,gArrA,u4ABC,gArrABC,u4C,gArrC,
                 u4AB,gArrAB,etaABmax,etaAB_Cmax,
-                u4AC,gArrAC,etaACmax,etaAC_Bmax);
+                u4AC,gArrAC,etaACmax,etaAC_Bmax).data();
     }
 
   public:
+    // pass by references to avoid copies
+    U4Z6<value_type> get_U4Z6(
+      const u4::irrep& u4B, const u4::irrep& u4A, 
+      const u4::irrep& u4ABC, const u4::irrep& u4C,
+      const u4::irrep& u4AB, int etaABmax, int etaAB_Cmax,
+      const u4::irrep& u4AC, int etaACmax, int etaAC_Bmax)
+    {
+      auto coeffs = get(u4B, u4A, u4ABC, u4C, u4AB, etaABmax, etaAB_Cmax,
+                                              u4AC, etaACmax, etaAC_Bmax);
+
+      return {std::move(coeffs),
+              static_cast<size_t>(etaABmax),
+              static_cast<size_t>(etaAB_Cmax),
+              static_cast<size_t>(etaACmax),
+              static_cast<size_t>(etaAC_Bmax)};
+    }
+
+    // pass by values to normalize irreps
+    value_type get(u4::irrep u4B, u4::irrep u4A, u4::irrep u4ABC, u4::irrep u4C,
+                   u4::irrep u4AB, int etaABmax, int etaAB_Cmax,
+                   u4::irrep u4AC, int etaACmax, int etaAC_Bmax)
+    {
+      if (etaABmax == 0 || etaAB_Cmax == 0 || etaACmax == 0 || etaAC_Bmax == 0)
+        return {};
+
+      u4A.normalize();
+      u4B.normalize();
+      u4C.normalize();
+      u4AB.normalize();
+      u4AC.normalize();
+      u4ABC.normalize();
+
+      assert(etaABmax == Eta(u4A,u4B,u4AB)); 
+      assert(etaAB_Cmax == Eta(u4AB,u4C,u4ABC));
+      assert(etaACmax == Eta(u4A,u4C,u4AC)); 
+      assert(etaAC_Bmax == Eta(u4AC,u4B,u4ABC));
+      
+
+#ifdef U4LIB_ENABLE_U4Z6_CACHE
+      std::array<qcx_utils::UInt8, 18> safe_key = {
+        u4B.n14(), u4B.n24(), u4B.n34(),
+        u4A.n14(), u4A.n24(), u4A.n34(),
+        u4ABC.n14(), u4ABC.n24(), u4ABC.n34(),
+        u4C.n14(), u4C.n24(), u4C.n34(),
+        u4AB.n14(), u4AB.n24(), u4AB.n34(),
+        u4AC.n14(), u4AC.n24(), u4AC.n34()};
+
+      uint64_t key_1 = 
+        (uint64_t(safe_key[0]) << 56) | (uint64_t(safe_key[1]) << 48) |
+        (uint64_t(safe_key[2]) << 40) | (uint64_t(safe_key[3]) << 32) |
+        (uint64_t(safe_key[4]) << 24) | (uint64_t(safe_key[5]) << 16) |
+        (uint64_t(safe_key[6]) << 8) | uint64_t(safe_key[7]);
+
+      uint64_t key_2 = 
+        (uint64_t(safe_key[8]) << 56) | (uint64_t(safe_key[9]) << 48) |
+        (uint64_t(safe_key[10]) << 40) | (uint64_t(safe_key[11]) << 32) |
+        (uint64_t(safe_key[12]) << 24) | (uint64_t(safe_key[13]) << 16) |
+        (uint64_t(safe_key[14]) << 8) | uint64_t(safe_key[15]);
+
+      uint16_t key_3 = 
+        (uint16_t(safe_key[16]) << 8) | uint16_t(safe_key[17]);
+
+      key_type key = {key_1, key_2, key_3};
+      /*
+      key_type key = {safe_key[0], safe_key[1], safe_key[2],
+                      safe_key[3], safe_key[4], safe_key[5],
+                      safe_key[6], safe_key[7], safe_key[8],
+                      safe_key[9], safe_key[10], safe_key[11],
+                      safe_key[12], safe_key[13], safe_key[14],
+                      safe_key[15], safe_key[16], safe_key[17]};
+      */
+      auto producer = [&u4B, &u4A, &u4ABC, &u4C, 
+                       &u4AB, &etaABmax, &etaAB_Cmax,
+                       &u4AC, &etaACmax, &etaAC_Bmax](key_type)
+      { 
+        return compute(u4B, u4A, u4ABC, u4C, u4AB, etaABmax, etaAB_Cmax,
+                                             u4AC, etaACmax, etaAC_Bmax);
+      };
+
+      auto accessor = [](const auto& element) { *p_result_ = element.second; };
+
+      cache_.visit(key, producer, accessor);
+#else
+      *p_result_ = compute(u4B, u4A, u4ABC, u4C, u4AB, etaABmax, etaAB_Cmax,
+                                                 u4AC, etaACmax, etaAC_Bmax);
+#endif
+
+      return *p_result_;
+    }
+
+    // TO BE REMOVED IN THE FUTURE:
     value_type get(
       int n14b, int n24b, int n34b, int n44b,
       int n14a, int n24a, int n34a, int n44a, 
