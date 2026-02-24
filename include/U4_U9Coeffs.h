@@ -410,7 +410,7 @@ namespace u4
 
       uint32_t key_4 = 
         (uint32_t(safe_key[24]) << 24) | (uint32_t(safe_key[25]) << 16) |
-        (uint32_t(safe_key[26]) << 8);
+        (uint32_t(safe_key[26]) << 8) | 0;
 
       key_type key = {key_1, key_2, key_3, key_4};
       /*

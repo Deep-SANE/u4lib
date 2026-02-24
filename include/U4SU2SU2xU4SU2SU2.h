@@ -410,7 +410,7 @@ namespace u4
         (uint64_t(safe_key[8]) << 56) | (uint64_t(safe_key[9]) << 48) |
         (uint64_t(safe_key[10]) << 40) | (uint64_t(safe_key[11]) << 32) |
         (uint64_t(safe_key[12]) << 24) | (uint64_t(safe_key[13]) << 16) |
-        (uint64_t(safe_key[14]) << 8);
+        (uint64_t(safe_key[14]) << 8) | 0;
 
       key_type key = {key_1, key_2};
       /*
