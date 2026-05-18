@@ -446,6 +446,10 @@ namespace u4
     }
 
     friend U4U9_db& u4u9db();
+
+#ifdef U4LIB_ENABLE_U4U9_CACHE
+    void clear() { cache_.clear(); }
+#endif
   };
 
   inline U4U9_db& u4u9db()

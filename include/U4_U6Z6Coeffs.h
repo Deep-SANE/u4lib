@@ -476,6 +476,10 @@ namespace u4
     }
 
     friend U4U6_db& u4u6db();
+
+#ifdef U4LIB_ENABLE_U4U6_CACHE
+    void clear() { cache_.clear(); }
+#endif
   };
 
   inline U4U6_db& u4u6db()
@@ -938,6 +942,10 @@ namespace u4
     }
 
     friend U4Z6_db& u4z6db();
+
+#ifdef U4LIB_ENABLE_U4Z6_CACHE
+    void clear() { cache_.clear(); }
+#endif
   };
 
   inline U4Z6_db& u4z6db()

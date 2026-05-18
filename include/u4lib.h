@@ -43,6 +43,15 @@ namespace u4
     U4Z6_db::finalize_thread();
     U4U9_db::finalize_thread();
   }
+
+  inline void clear()
+  {
+    wigU4U3db().clear();
+    wigU4SU2SU2db().clear();
+    u4u6db().clear();
+    u4z6db().clear();
+    u4u9db().clear();
+  }
 }
 
 #endif

@@ -2685,6 +2685,10 @@ namespace u4
     }
 
     friend WigU4U3_db& wigU4U3db();
+
+#ifdef U4LIB_ENABLE_WIGU4U3_CACHE
+    void clear() { cache_.clear(); }
+#endif
   };
 
   inline WigU4U3_db& wigU4U3db()

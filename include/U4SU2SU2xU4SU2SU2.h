@@ -432,6 +432,10 @@ namespace u4
     }
 
     friend WigU4SU2SU2_db& wigU4SU2SU2db();
+
+#ifdef U4LIB_ENABLE_WIGU4SU2SU2_CACHE
+    void clear() { cache_.clear(); }
+#endif
   };
 
   inline WigU4SU2SU2_db& wigU4SU2SU2db()
