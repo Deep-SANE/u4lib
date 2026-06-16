@@ -9,15 +9,17 @@
 #include <vector>
 
 #include <Eigen/Dense>
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
 #include <Eigen/Sparse>
 #endif
 
 #include "U4basis.h"
 
 #include <nullspace_solver_qr.h>
-#ifdef USE_SLEPC
+#if defined(NULLSPACE_SOLVER_SLEPC)
 #include <nullspace_solver_slepc.h>
+#elif defined(NULLSPACE_SOLVER_SNS)
+#include <nullspace_solver_sns.h>
 #endif
  
 namespace u4
@@ -124,7 +126,7 @@ namespace u4
 
     int row_num = new_indices.size(), col_num = indices.size();
 
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
     std::vector<Eigen::Triplet<double>> ija;
 #else
     Eigen::MatrixXd projector(row_num, col_num);
@@ -140,37 +142,37 @@ namespace u4
 
         // action of E24
         if (u4::E24_13_12(g, g_new))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, g.e24_13_12());
 #else
           projector(i, j) = g.e24_13_12();
 #endif
         else if (u4::E24_13_22(g, g_new))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, g.e24_13_22());
 #else
           projector(i, j) = g.e24_13_22();
 #endif
         else if (u4::E24_23_12(g, g_new))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, g.e24_23_12());
 #else
           projector(i, j) = g.e24_23_12();
 #endif
         else if (u4::E24_23_22(g, g_new))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, g.e24_23_22());
 #else
           projector(i, j) = g.e24_23_22();
 #endif
         else if (u4::E24_33_12(g, g_new))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, g.e24_33_12());
 #else
           projector(i, j) = g.e24_33_12();
 #endif
         else if (u4::E24_33_22(g, g_new))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, g.e24_33_22());
 #else
           projector(i, j) = g.e24_33_22();
@@ -178,13 +180,13 @@ namespace u4
 
         // action of E13
         else if (u4::E13_12(g, g_new))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, g.e13_12());
 #else
           projector(i, j) = g.e13_12();
 #endif
         else if (u4::E13_22(g, g_new))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, g.e13_22());
 #else
           projector(i, j) = g.e13_22();
@@ -192,19 +194,19 @@ namespace u4
 
         // action of E34
         else if (u4::E34_13(g, g_new))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, g.e34_13());
 #else
           projector(i, j) = g.e34_13();
 #endif
         else if (u4::E34_23(g, g_new))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, g.e34_23());
 #else
           projector(i, j) = g.e34_23();
 #endif
         else if (u4::E34_33(g, g_new))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, g.e34_33());
 #else
           projector(i, j) = g.e34_33();
@@ -212,14 +214,14 @@ namespace u4
 
         // action of E12
         else if (u4::E12(g, g_new))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, g.e12());
 #else
           projector(i, j) = g.e12();
 #endif
 
         else
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ;
 #else
           projector(i, j) = 0.0;
@@ -227,7 +229,7 @@ namespace u4
       }
     }
 
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
     Eigen::SparseMatrix<double> projector(row_num, col_num);
     projector.setFromTriplets(ija.begin(), ija.end());
     projector.makeCompressed();
@@ -450,7 +452,9 @@ namespace u4
       auto STproj = u4::STprojection(gArr, canoBasis);
       //std::cout << STproj << std::endl;
       // and solve its null space
-#ifdef USE_SLEPC
+#if defined(NULLSPACE_SOLVER_SNS)
+      Eigen::MatrixXd transformation = qcx_utils::null_space_sns(STproj, p.zeta());
+#elif defined(NULLSPACE_SOLVER_SLEPC)
       Eigen::MatrixXd transformation = qcx_utils::null_space_slepc(STproj, p.zeta());
 #else
       Eigen::MatrixXd transformation = qcx_utils::null_space(STproj);
@@ -690,7 +694,7 @@ namespace u4
 
     int row_num = new_indices.size(), col_num = indices.size();
 
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
     std::vector<Eigen::Triplet<double>> ija;
 #else
     Eigen::MatrixXd projector(row_num, col_num);
@@ -702,37 +706,37 @@ namespace u4
       {
         // action of E24
         if (u4::E24_13_12(gArr[indices[j]], gArr[new_indices[i]]))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, gArr[indices[j]].e24_13_12());
 #else
           projector(i, j) = gArr[indices[j]].e24_13_12();
 #endif
         else if (u4::E24_13_22(gArr[indices[j]], gArr[new_indices[i]]))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, gArr[indices[j]].e24_13_22());
 #else
           projector(i, j) = gArr[indices[j]].e24_13_22();
 #endif
         else if (u4::E24_23_12(gArr[indices[j]], gArr[new_indices[i]]))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, gArr[indices[j]].e24_23_12());
 #else
           projector(i, j) = gArr[indices[j]].e24_23_12();
 #endif
         else if (u4::E24_23_22(gArr[indices[j]], gArr[new_indices[i]]))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, gArr[indices[j]].e24_23_22());
 #else
           projector(i, j) = gArr[indices[j]].e24_23_22();
 #endif
         else if (u4::E24_33_12(gArr[indices[j]], gArr[new_indices[i]]))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, gArr[indices[j]].e24_33_12());
 #else
           projector(i, j) = gArr[indices[j]].e24_33_12();
 #endif
         else if (u4::E24_33_22(gArr[indices[j]], gArr[new_indices[i]]))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, gArr[indices[j]].e24_33_22());
 #else
           projector(i, j) = gArr[indices[j]].e24_33_22();
@@ -740,13 +744,13 @@ namespace u4
 
         // action of E13
         else if (u4::E13_12(gArr[indices[j]], gArr[new_indices[i]]))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, gArr[indices[j]].e13_12());
 #else
           projector(i, j) = gArr[indices[j]].e13_12();
 #endif
         else if (u4::E13_22(gArr[indices[j]], gArr[new_indices[i]]))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, gArr[indices[j]].e13_22());
 #else
           projector(i, j) = gArr[indices[j]].e13_22();
@@ -754,19 +758,19 @@ namespace u4
 
         // action of E34
         else if (u4::E34_13(gArr[indices[j]], gArr[new_indices[i]]))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, gArr[indices[j]].e34_13());
 #else
           projector(i, j) = gArr[indices[j]].e34_13();
 #endif
         else if (u4::E34_23(gArr[indices[j]], gArr[new_indices[i]]))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, gArr[indices[j]].e34_23());
 #else
           projector(i, j) = gArr[indices[j]].e34_23();
 #endif
         else if (u4::E34_33(gArr[indices[j]], gArr[new_indices[i]]))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, gArr[indices[j]].e34_33());
 #else
           projector(i, j) = gArr[indices[j]].e34_33();
@@ -774,14 +778,14 @@ namespace u4
 
         // action of E12
         else if (u4::E12(gArr[indices[j]], gArr[new_indices[i]]))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, gArr[indices[j]].e12());
 #else
           projector(i, j) = gArr[indices[j]].e12();
 #endif
 
         else
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ;
 #else
           projector(i, j) = 0.0;
@@ -789,7 +793,7 @@ namespace u4
       }
     }
 
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
     Eigen::SparseMatrix<double> projector(row_num, col_num);
     projector.setFromTriplets(ija.begin(), ija.end());
     projector.makeCompressed();

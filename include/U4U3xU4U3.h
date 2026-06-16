@@ -24,7 +24,7 @@
 #endif
 
 #include <Eigen/Dense>
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
 #include <Eigen/Sparse>
 #endif
 
@@ -35,8 +35,10 @@
 #include <so3Coeffs/SO3_CGC.h>
 
 #include <nullspace_solver_qr.h>
-#ifdef USE_SLEPC
+#if defined(NULLSPACE_SOLVER_SLEPC)
 #include <nullspace_solver_slepc.h>
+#elif defined(NULLSPACE_SOLVER_SNS)
+#include <nullspace_solver_sns.h>
 #endif
 
 #include "U4basis.h"
@@ -381,7 +383,7 @@ namespace u4
 
     int row_num = new_indices.size();
 
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
     std::vector<Eigen::Triplet<double>> ija;
 #else
     Eigen::MatrixXd mat(row_num, col_num);
@@ -395,37 +397,37 @@ namespace u4
         int g1 = indices[j].first, g2 = indices[j].second;
         // action of E34
         if (u4::E34_13(gArr1[g1], gArr1[new_g1]) && new_g2 == g2)
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, gArr1[g1].e34_13());
 #else
           mat(i, j) = gArr1[g1].e34_13();
 #endif
         else if (u4::E34_23(gArr1[g1], gArr1[new_g1]) && new_g2 == g2)
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, gArr1[g1].e34_23());
 #else
           mat(i, j) = gArr1[g1].e34_23();
 #endif
         else if (u4::E34_33(gArr1[g1], gArr1[new_g1]) && new_g2 == g2)
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, gArr1[g1].e34_33());
 #else
           mat(i, j) = gArr1[g1].e34_33();
 #endif
         else if (new_g1 == g1 && u4::E34_13(gArr2[g2], gArr2[new_g2]))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, gArr2[g2].e34_13());
 #else
           mat(i, j) = gArr2[g2].e34_13();
 #endif
         else if (new_g1 == g1 && u4::E34_23(gArr2[g2], gArr2[new_g2]))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, gArr2[g2].e34_23());
 #else
           mat(i, j) = gArr2[g2].e34_23();
 #endif
         else if (new_g1 == g1 && u4::E34_33(gArr2[g2], gArr2[new_g2]))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, gArr2[g2].e34_33());
 #else
           mat(i, j) = gArr2[g2].e34_33();
@@ -433,25 +435,25 @@ namespace u4
 
         // action of E23
         else if (u4::E23_12(gArr1[g1], gArr1[new_g1]) && new_g2 == g2)
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, gArr1[g1].e23_12());
 #else
           mat(i, j) = gArr1[g1].e23_12();
 #endif
         else if (u4::E23_22(gArr1[g1], gArr1[new_g1]) && new_g2 == g2)
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, gArr1[g1].e23_22());
 #else
           mat(i, j) = gArr1[g1].e23_22();
 #endif
         else if (new_g1 == g1 && u4::E23_12(gArr2[g2], gArr2[new_g2]))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, gArr2[g2].e23_12());
 #else
           mat(i, j) = gArr2[g2].e23_12();
 #endif
         else if (new_g1 == g1 && u4::E23_22(gArr2[g2], gArr2[new_g2]))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, gArr2[g2].e23_22());
 #else
           mat(i, j) = gArr2[g2].e23_22();
@@ -459,20 +461,20 @@ namespace u4
 
         // action of E12
         else if (u4::E12(gArr1[g1], gArr1[new_g1]) && new_g2 == g2)
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, gArr1[g1].e12());
 #else
           mat(i, j) = gArr1[g1].e12();
 #endif
         else if (new_g1 == g1 && u4::E12(gArr2[g2], gArr2[new_g2]))
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ija.emplace_back(i, j, gArr2[g2].e12());
 #else
           mat(i, j) = gArr2[g2].e12();
 #endif
 
         else
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
           ;
 #else
           mat(i, j) = 0.0;
@@ -480,7 +482,7 @@ namespace u4
       }
     }
 
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
     Eigen::SparseMatrix<double> mat(row_num, col_num);
     mat.setFromTriplets(ija.begin(), ija.end());
 
@@ -528,7 +530,7 @@ namespace u4
     std::cout << "mat: " << mat.rows() << " x " << mat.cols() << std::endl;
     std::cout << "\telements: " << mat.rows() * mat.cols() << std::endl;
 
-#ifdef USE_SLEPC
+#ifdef NULLSPACE_SPARSE
     long nnz = mat.nonZeros();
 #else
     long nnz = 0;
@@ -539,7 +541,9 @@ namespace u4
     std::cout << "\tnonzero elements: " << nnz << std::endl;
 #endif
 
-#ifdef USE_SLEPC
+#if defined(NULLSPACE_SOLVER_SNS)
+    Eigen::MatrixXd nullspace = qcx_utils::null_space_sns(mat, etamax);
+#elif defined(NULLSPACE_SOLVER_SLEPC)
     Eigen::MatrixXd nullspace = qcx_utils::null_space_slepc(mat, etamax);
 #else
     Eigen::MatrixXd nullspace = qcx_utils::null_space(mat);
