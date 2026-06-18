@@ -9,9 +9,7 @@
 #include <vector>
 
 #include <Eigen/Dense>
-#ifdef NULLSPACE_SPARSE
-#include <Eigen/Sparse>
-#endif
+#include <Eigen/Sparse>   // Eigen::Triplet — single-pass STprojection build (both return paths)
 
 #include "U4basis.h"
 
@@ -40,10 +38,10 @@ namespace u4
 
   // finding the transformation by solving a system of linear equations 
   // resulted from acting S+ = E13 + E24 and T+ = E12 + E34
-  inline auto STprojection(const std::vector<u4::gelfand>& gArr, 
+  inline auto STprojection(const std::vector<u4::gelfand>& gArr,
                            const std::vector<int>& indices)
   {
-
+    /*
     std::vector<int> new_indices;
 
     for (int i = 0; i < gArr.size(); i++)
@@ -233,6 +231,59 @@ namespace u4
     Eigen::SparseMatrix<double> projector(row_num, col_num);
     projector.setFromTriplets(ija.begin(), ija.end());
     projector.makeCompressed();
+#endif
+    */
+
+    // Single pass: evaluate the raising-operator predicate chain once per
+    // (candidate row i, column j); on the first match emit a triplet and mark
+    // the row used. Row indices are assigned lazily so only rows with >=1 entry
+    // get a slot -- reproducing new_indices' order without a separate
+    // identification pass or any re-evaluation of the predicates.
+    std::vector<Eigen::Triplet<double>> ija;
+    int row_num = 0, col_num = indices.size();
+
+    for (int i = 0; i < gArr.size(); i++)
+    {
+      const auto& g_new = gArr[i];
+      bool row_has_entry = false;
+
+      for (int j = 0; j < col_num; j++)
+      {
+        const auto& g = gArr[indices[j]];
+        double val;
+
+        // action of E24
+        if      (u4::E24_13_12(g, g_new)) val = g.e24_13_12();
+        else if (u4::E24_13_22(g, g_new)) val = g.e24_13_22();
+        else if (u4::E24_23_12(g, g_new)) val = g.e24_23_12();
+        else if (u4::E24_23_22(g, g_new)) val = g.e24_23_22();
+        else if (u4::E24_33_12(g, g_new)) val = g.e24_33_12();
+        else if (u4::E24_33_22(g, g_new)) val = g.e24_33_22();
+        // action of E13
+        else if (u4::E13_12(g, g_new))    val = g.e13_12();
+        else if (u4::E13_22(g, g_new))    val = g.e13_22();
+        // action of E34
+        else if (u4::E34_13(g, g_new))    val = g.e34_13();
+        else if (u4::E34_23(g, g_new))    val = g.e34_23();
+        else if (u4::E34_33(g, g_new))    val = g.e34_33();
+        // action of E12
+        else if (u4::E12(g, g_new))       val = g.e12();
+        else continue;                    // no entry at (i, j)
+
+        ija.emplace_back(row_num, j, val);
+        row_has_entry = true;
+      }
+
+      if (row_has_entry) row_num++;
+    }
+
+#ifdef NULLSPACE_SPARSE
+    Eigen::SparseMatrix<double> projector(row_num, col_num);
+    projector.setFromTriplets(ija.begin(), ija.end());
+    projector.makeCompressed();
+#else
+    Eigen::MatrixXd projector = Eigen::MatrixXd::Zero(row_num, col_num);
+    for (const auto& t : ija) projector(t.row(), t.col()) = t.value();
 #endif
 
     return projector;

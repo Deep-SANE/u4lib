@@ -2,6 +2,7 @@
 #ifndef U4LIB_U4BASIS_H
 #define U4LIB_U4BASIS_H
 
+#include <cassert>
 #include <cmath>
 #include <cstddef>
 #include <iostream>
@@ -166,15 +167,58 @@ namespace u4
     return gArr;
   }
 
-  // find the location (index) of a Gelfand state within the Gelfand basis above
+  // find the location (index) of a Gelfand state within the Gelfand basis above.
+  // Computed directly from the enumeration order in gelfandBasis() instead of an
+  // O(dim) linear scan:
+  //   outer 3 loops (n13,n23,n33) have independent ranges fixed by the irrep top
+  //     row -- each top row enumerated before g's contributes one full U(3)
+  //     sub-block of size d3 = dim of the U(3) irrep (n13,n23,n33);
+  //   inner 3 loops (n12,n22,n11) give the U(3) Gelfand position within g's block.
   inline std::size_t findGelfand(const u4::gelfand& g,
-                          const std::vector<u4::gelfand>& gArr)
+                          [[maybe_unused]] const std::vector<u4::gelfand>& gArr)
   {
+/*
+    // the irrep top row is shared by every state in the basis
+    const int n14_ = g.n14(), n24_ = g.n24(), n34_ = g.n34(), n44_ = g.n44();
+    const int a13 = g.n13(), a23 = g.n23(), a33 = g.n33(),
+              a12 = g.n12(), a22 = g.n22(), a11 = g.n11();
+
+    // dim of U(3) irrep (p,q,r) = number of (n12,n22,n11) states under it
+    auto d3 = [](int p, int q, int r) {
+      return (p - q + 1) * (q - r + 1) * (p - r + 2) / 2;
+    };
+
+    std::size_t index = 0;
+
+    // top rows (n13,n23,n33) enumerated before g's: each a complete d3 block
+    for (int n13 = n14_; n13 > a13; n13--)
+      for (int n23 = n24_; n23 >= n34_; n23--)
+        for (int n33 = n34_; n33 >= n44_; n33--)
+          index += d3(n13, n23, n33);
+    for (int n23 = n24_; n23 > a23; n23--)
+      for (int n33 = n34_; n33 >= n44_; n33--)
+        index += d3(a13, n23, n33);
+    for (int n33 = n34_; n33 > a33; n33--)
+      index += d3(a13, a23, n33);
+
+    // position of (n12,n22,n11) within the fixed top row (a13,a23,a33)
+    for (int n12 = a13; n12 > a12; n12--)
+      for (int n22 = a23; n22 >= a33; n22--)
+        index += (n12 - n22 + 1);
+    for (int n22 = a23; n22 > a22; n22--)
+      index += (a12 - n22 + 1);
+    index += (a12 - a11);
+
+    assert(index < gArr.size() && u4::E11(g, gArr[index]));
+    return index;
+*/
+
     std::size_t i;
     for (i = 0; i < gArr.size(); i++)
       if (u4::E11(g, gArr[i])) break;
 
     return i;
+
   }
   
 

@@ -8,6 +8,7 @@
 #include <cstddef>
 #include <functional>
 #include <limits>
+#include <map>
 #include <tuple>
 #include <unordered_map>
 #include <utility>
@@ -24,9 +25,7 @@
 #endif
 
 #include <Eigen/Dense>
-#ifdef NULLSPACE_SPARSE
-#include <Eigen/Sparse>
-#endif
+#include <Eigen/Sparse>   // Eigen::Triplet — single-pass E34E23E12 build (both paths)
 
 #include <U3basis.h>
 #include <U3decomposition.h>
@@ -43,6 +42,11 @@
 
 #include "U4basis.h"
 #include "U4decomposition.h"
+
+#ifdef TIME_WIGU4U3   // flag in Definitions.h (pulled in via U4basis.h)
+#include <chrono>
+#include <iostream>
+#endif
 
 namespace u4
 {
@@ -236,6 +240,7 @@ namespace u4
   {
     int col_num = indices.size();
 
+    /*
     std::vector<std::pair<int, int>> new_indices; // store the parent states
 
     for (int k = 0; k < indices.size(); k++)
@@ -500,6 +505,82 @@ namespace u4
     }
 #endif
 
+#endif
+
+    return mat;
+    */
+
+    // Single pass: each valid raise of an inner Gelfand label of state 1 or
+    // state 2 yields exactly one parent (row) plus its matrix element, so the
+    // triplets are emitted directly. parent_row maps a parent state to its row
+    // index, assigned on first appearance -- an O(log n) map lookup replaces the
+    // old O(n) std::find dedup, and the separate fill pass is gone. Raise <->
+    // operator correspondence: n11<->E12, n12<->E23_12, n22<->E23_22,
+    // n13<->E34_13, n23<->E34_23, n33<->E34_33. Each (parent,column) is reachable
+    // by at most one raise, so no triplet is emitted twice.
+    std::map<std::pair<int, int>, int> parent_row;
+    std::vector<Eigen::Triplet<double>> ija;
+    int row_num = 0;
+
+    auto add = [&](int pi, int pj, int col, double val)
+    {
+      auto [it, inserted] = parent_row.try_emplace({pi, pj}, row_num);
+      if (inserted) row_num++;
+      ija.emplace_back(it->second, col, val);
+    };
+
+    for (int k = 0; k < col_num; k++)
+    {
+      int g1 = indices[k].first, g2 = indices[k].second;
+      const u4::gelfand& G1 = gArr1[g1];
+      const u4::gelfand& G2 = gArr2[g2];
+
+      // parents of the first state (operator acts on g1, g2 unchanged)
+      u4::gelfand t = G1; t.n11(t.n11() + 1); 
+      if (t.check()) add(u4::findGelfand(t, gArr1), g2, k, G1.e12());
+      t = G1; t.n12(t.n12() + 1);
+      if (t.check()) add(u4::findGelfand(t, gArr1), g2, k, G1.e23_12());
+      t = G1; t.n22(t.n22() + 1);
+      if (t.check()) add(u4::findGelfand(t, gArr1), g2, k, G1.e23_22());
+      t = G1; t.n13(t.n13() + 1);
+      if (t.check()) add(u4::findGelfand(t, gArr1), g2, k, G1.e34_13());
+      t = G1; t.n23(t.n23() + 1);
+      if (t.check()) add(u4::findGelfand(t, gArr1), g2, k, G1.e34_23());
+      t = G1; t.n33(t.n33() + 1);
+      if (t.check()) add(u4::findGelfand(t, gArr1), g2, k, G1.e34_33());
+
+      // parents of the second state (operator acts on g2, g1 unchanged)
+      t = G2; t.n11(t.n11() + 1);
+      if (t.check()) add(g1, u4::findGelfand(t, gArr2), k, G2.e12());
+      t = G2; t.n12(t.n12() + 1);
+      if (t.check()) add(g1, u4::findGelfand(t, gArr2), k, G2.e23_12());
+      t = G2; t.n22(t.n22() + 1);
+      if (t.check()) add(g1, u4::findGelfand(t, gArr2), k, G2.e23_22());
+      t = G2; t.n13(t.n13() + 1);
+      if (t.check()) add(g1, u4::findGelfand(t, gArr2), k, G2.e34_13());
+      t = G2; t.n23(t.n23() + 1);
+      if (t.check()) add(g1, u4::findGelfand(t, gArr2), k, G2.e34_23());
+      t = G2; t.n33(t.n33() + 1);
+      if (t.check()) add(g1, u4::findGelfand(t, gArr2), k, G2.e34_33());
+    }
+
+#ifdef NULLSPACE_SPARSE
+    Eigen::SparseMatrix<double> mat(row_num, col_num);
+    mat.setFromTriplets(ija.begin(), ija.end());
+#ifdef U4LIB_SAVE_MAT
+    {
+      std::ofstream fmat("mat.ija");
+      fmat << row_num << std::endl;
+      fmat << col_num << std::endl;
+      fmat << ija.size() << std::endl;
+      for (const auto& elem : ija)
+        fmat << elem.row() << " " << elem.col() << " " << std::setprecision(12)
+             << elem.value() << std::endl;
+    }
+#endif
+#else
+    Eigen::MatrixXd mat = Eigen::MatrixXd::Zero(row_num, col_num);
+    for (const auto& t : ija) mat(t.row(), t.col()) = t.value();
 #endif
 
     return mat;
@@ -2588,12 +2669,33 @@ namespace u4
       irrep u4b(ht_key[3], ht_key[4], ht_key[5], 0);
       irrep u4c(ht_key[6], ht_key[7], ht_key[8], 0);
       */
+#ifdef TIME_WIGU4U3
+      static std::chrono::duration<double> wigu4u3_time(0);
+      static double wigu4u3_last_print = 0.0;
+      auto start = std::chrono::high_resolution_clock::now();
+#endif
+
       auto gArrA = u4::gelfandBasis(u4a);
       auto gArrB = u4::gelfandBasis(u4b);
       auto gArrC = u4::gelfandBasis(u4c);
 
-      return WigU4U3(u4a, u4b, u4c, etamax, -1, gArrA, gArrB, gArrC);
-    }  
+      auto result = WigU4U3(u4a, u4b, u4c, etamax, -1, gArrA, gArrB, gArrC);
+
+#ifdef TIME_WIGU4U3
+      auto end = std::chrono::high_resolution_clock::now();
+      wigu4u3_time += end - start; // duration in seconds
+
+      // Print occasionally
+      if (wigu4u3_time.count() - wigu4u3_last_print >= 10.0)
+      {
+        std::cout << "Accumulated WigU4U3 time: " << wigu4u3_time.count()
+                  << " s\n";
+        wigu4u3_last_print = wigu4u3_time.count();
+      }
+#endif
+
+      return result;
+    }
 
   public:
     db_value_type get(

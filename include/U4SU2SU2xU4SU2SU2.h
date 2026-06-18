@@ -14,6 +14,10 @@
 #include "U4SU2SU2_to_U4U3U2U1.h"
 #include "U4U3xU4U3.h"
 
+#ifdef TIME_WIGU4SU2SU2   // flag in Definitions.h (pulled in via U4basis.h)
+#include <chrono>
+#endif
+
 #include <qcx_Cache.h>
 #include <qcx_Int.h>
 #include <so3Coeffs/SO3_CGC.h>
@@ -232,6 +236,12 @@ namespace u4
                               const u4::physicalvector& pB,
                               const u4::physicalvector& pC)
     {
+#ifdef TIME_WIGU4SU2SU2
+      static std::chrono::duration<double> wigu4su2su2_time(0);
+      static double wigu4su2su2_last_print = 0.0;
+      auto start = std::chrono::high_resolution_clock::now();
+#endif
+
       auto& cgcs = qcx_utils::cgcs();
       auto& wigU3U2db = u3::wigU3U2db();
       auto& wigU4U3db = u4::wigU4U3db();
@@ -263,14 +273,22 @@ namespace u4
       for (int iA = 0; iA < canoA.size(); iA++)
       {
         const auto& gA = gArrA[canoA[iA]];
+        int jj1 = gA.Lambdax2(), mm1 = gA.MLambdax2();
 
         for (int iB = 0; iB < canoB.size(); iB++)
         {
           const auto& gB = gArrB[canoB[iB]];
+          int jj2 = gB.Lambdax2(), mm2 = gB.MLambdax2();
 
           for (int iC = 0; iC < canoC.size(); iC++)
           {
             const auto& gC = gArrC[canoC[iC]];
+            int jj3 = gC.Lambdax2(), mm3 = gC.MLambdax2();
+
+            // Cheap CG selection (weight + triangle) before the expensive
+            // wigU4U3db / wigU3U2db lookups: cgc == 0 -> no contribution.
+            double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
+            if (std::fabs(cgc) == 0.0) continue;
 
             auto accU4 = wigU4U3db.get(
               gA.n14(), gA.n24(), gA.n34(), gA.n44(), gA.n13(), gA.n23(), gA.n33(),
@@ -278,33 +296,31 @@ namespace u4
               gC.n14(), gC.n24(), gC.n34(), gC.n44(), gC.n13(), gC.n23(), gC.n33());
             if (accU4.size() == 0) continue;
 
-            int jj1 = gA.Lambdax2(), mm1 = gA.MLambdax2(),
-                jj2 = gB.Lambdax2(), mm2 = gB.MLambdax2(),
-                jj3 = gC.Lambdax2(), mm3 = gC.MLambdax2();
+            auto accU3 = wigU3U2db.get(
+              gA.n13(), gA.n23(), gA.n33(), gA.n12(), gA.n22(),
+              gB.n13(), gB.n23(), gB.n33(), gB.n12(), gB.n22(),
+              gC.n13(), gC.n23(), gC.n33(), gC.n12(), gC.n22());
+            if (accU3.size() == 0) continue;
 
-            if ((mm1 + mm2) == mm3 && 
-                 std::fabs(jj1 - jj2) <= jj3 && (jj1 + jj2) >= jj3)
+            // y(e) = cgc * sum_r accU4(r,e)*accU3(r) depends only on e, so
+            // compute it once per e instead of per (z1,z2,z3); hoist trans.
+            for (int e = 0; e < etamax; e++)
             {
-              double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
+              double y = 0.0;
+              for (int r = 0; r < accU4.rows(); r++)
+                y += accU4(r, e) * accU3(r);
+              double yc = y * cgc;
 
-              auto accU3 = wigU3U2db.get(
-                gA.n13(), gA.n23(), gA.n33(), gA.n12(), gA.n22(), 
-                gB.n13(), gB.n23(), gB.n33(), gB.n12(), gB.n22(),
-                gC.n13(), gC.n23(), gC.n33(), gC.n12(), gC.n22());
-              if (accU3.size() == 0) continue;
-
-              for (int e = 0; e < etamax; e++)   
-                for (int z1 = 0; z1 < ZA; z1++)
-                  for (int z2 = 0; z2 < ZB; z2++)
-                    for (int z3 = 0; z3 < ZC; z3++)
-                    {
-                      double y = 0.0;
-                      for (int r = 0; r < accU4.rows(); r++)
-                        y += accU4(r,e) * accU3(r);
-                            
-                      coeffs(z1, z2, z3, e) += y * cgc 
-                        * transA(iA, z1) * transB(iB, z2) * transC(iC, z3);
-                    }
+              for (int z1 = 0; z1 < ZA; z1++)
+              {
+                double a = transA(iA, z1);
+                for (int z2 = 0; z2 < ZB; z2++)
+                {
+                  double ab = a * transB(iB, z2);
+                  for (int z3 = 0; z3 < ZC; z3++)
+                    coeffs(z1, z2, z3, e) += yc * ab * transC(iC, z3);
+                }
+              }
             }
           }
         }
@@ -322,6 +338,19 @@ namespace u4
         if (std::fabs(coeffs[i]) <= 1e-12) coeffs[i] = 0.0;
         else coeffs[i] /= (cgcS * cgcT);
       }
+
+#ifdef TIME_WIGU4SU2SU2
+      auto end = std::chrono::high_resolution_clock::now();
+      wigu4su2su2_time += end - start; // duration in seconds
+
+      // Print occasionally
+      if (wigu4su2su2_time.count() - wigu4su2su2_last_print >= 10.0)
+      {
+        std::cout << "Accumulated WigU4SU2SU2 time: " << wigu4su2su2_time.count()
+                  << " s\n";
+        wigu4su2su2_last_print = wigu4su2su2_time.count();
+      }
+#endif
 
       return coeffs.data();
     }
