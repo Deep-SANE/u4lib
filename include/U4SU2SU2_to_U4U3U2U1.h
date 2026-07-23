@@ -514,24 +514,24 @@ namespace u4
       // ensure the nullspace is solved correctly
       assert(p.zeta() == transformation.cols());
 
-      // lower MS 
+      // lower MS
       for (int mms = p.SS() - 2; mms >= MMS; mms -= 2)
       {
-        auto [canoBasis_new, transformation_new] = 
+        auto [canoBasis_new, transformation_new] =
           u4::lowerMS(p, mms, p.TT(), gArr, canoBasis, transformation);
 
-        transformation = transformation_new;
-        canoBasis = canoBasis_new;
+        transformation = std::move(transformation_new);
+        canoBasis = std::move(canoBasis_new);
       }
 
-      // lower MT 
+      // lower MT
       for (int mmt = p.TT() - 2; mmt >= MMT; mmt -= 2)
       {
-        auto [canoBasis_new, transformation_new] = 
+        auto [canoBasis_new, transformation_new] =
           u4::lowerMT(p, MMS, mmt, gArr, canoBasis, transformation);
 
-        transformation = transformation_new;
-        canoBasis = canoBasis_new;
+        transformation = std::move(transformation_new);
+        canoBasis = std::move(canoBasis_new);
       }
 
       return std::make_pair(canoBasis, transformation);

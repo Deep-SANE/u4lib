@@ -9,6 +9,7 @@
 #include <functional>
 #include <limits>
 #include <map>
+#include <memory>
 #include <tuple>
 #include <unordered_map>
 #include <utility>
@@ -192,6 +193,43 @@ namespace u4
 
       return X;
       // return std::pair(exist, X);
+    }
+
+    // Non-owning view of the (rhomax x etamax) block for a U(3) triple --
+    // same lookup as access() but with no MatrixXd copy. The block is
+    // contiguous (row-major storage, full width), so it maps directly.
+    // size() == 0 signals "not found" (as with access()). Valid while the
+    // coeffs object is alive; hot consumers hold it via
+    // WigU4U3_db::get_coeffs and resolve blocks locally.
+    using BlockView = Eigen::Map<const Eigen::Matrix<
+        double, Eigen::Dynamic, Eigen::Dynamic, Eigen::RowMajor>>;
+
+    BlockView find_block(const u3::irrep& u3a, const u3::irrep& u3b,
+                         const u3::irrep& u3c) const
+    {
+      auto rhomax = u3::Rho(u3a, u3b, u3c);
+      if (rhomax > 0)
+      {
+        std::array<qcx_utils::UInt8, 9> safe_key = {
+                            u3a.n13(), u3a.n23(), u3a.n33(),
+                            u3b.n13(), u3b.n23(), u3b.n33(),
+                            u3c.n13(), u3c.n23(), u3c.n33()};
+
+        uint64_t key_1 =
+          (uint64_t(safe_key[0]) << 56) | (uint64_t(safe_key[1]) << 48) |
+          (uint64_t(safe_key[2]) << 40) | (uint64_t(safe_key[3]) << 32) |
+          (uint64_t(safe_key[4]) << 24) | (uint64_t(safe_key[5]) << 16) |
+          (uint64_t(safe_key[6]) << 8) | uint64_t(safe_key[7]);
+
+        key_type key = {key_1, safe_key[8]};
+
+        auto iter = map_.find(key);
+        if (iter != map_.end())
+          return BlockView(coeffs_.data() + iter->second * etamax_,
+                           rhomax, etamax_);
+      }
+
+      return BlockView(nullptr, 0, 0);
     }
 
     int size() const { return map_.size(); }
@@ -2605,7 +2643,11 @@ namespace u4
 
     // using ht_key_type = std::array<uint8_t, 9>;
     using ht_key_type = std::pair<uint64_t, uint8_t>;
-    using ht_value_type = WigU4U3_coeffs;
+    // Shared-pointer values: get_coeffs hands the whole table out with a
+    // refcount bump (one concurrent-map visit per U(4) irrep triple); hot
+    // consumers (WigU4SU2SU2/U6/Z6) then resolve U(3) blocks locally via
+    // WigU4U3_coeffs::find_block. Mirrors u3lib's WigU3U2_db.
+    using ht_value_type = std::shared_ptr<const WigU4U3_coeffs>;
 
 #ifdef U4LIB_ENABLE_WIGU4U3_CACHE
     qcx_utils::Cache<ht_key_type, ht_value_type> cache_;
@@ -2679,7 +2721,8 @@ namespace u4
       auto gArrB = u4::gelfandBasis(u4b);
       auto gArrC = u4::gelfandBasis(u4c);
 
-      auto result = WigU4U3(u4a, u4b, u4c, etamax, -1, gArrA, gArrB, gArrC);
+      auto result = std::make_shared<const WigU4U3_coeffs>(
+          WigU4U3(u4a, u4b, u4c, etamax, -1, gArrA, gArrB, gArrC));
 
 #ifdef TIME_WIGU4U3
       auto end = std::chrono::high_resolution_clock::now();
@@ -2698,6 +2741,53 @@ namespace u4
     }
 
   public:
+    // Fetch the whole coefficient table for a U(4) irrep triple: one
+    // concurrent-map visit, shared-pointer handout (no copy). Returns nullptr
+    // when the coupling is forbidden (etamax == 0). Hot consumers hold the
+    // pointer and resolve U(3) blocks locally with find_block().
+    std::shared_ptr<const WigU4U3_coeffs> get_coeffs(
+      u4::irrep u4a, u4::irrep u4b, u4::irrep u4c)
+    {
+      u4a.normalize();
+      u4b.normalize();
+      u4c.normalize();
+
+      auto etamax = Eta(u4a, u4b, u4c);
+      if (etamax == 0)
+        return nullptr;
+
+      std::array<qcx_utils::UInt8, 9>
+        ht_key_safe = {u4a.n14(), u4a.n24(), u4a.n34(),
+                       u4b.n14(), u4b.n24(), u4b.n34(),
+                       u4c.n14(), u4c.n24(), u4c.n34()};
+
+      uint64_t key_1 =
+        (uint64_t(ht_key_safe[0]) << 56) | (uint64_t(ht_key_safe[1]) << 48) |
+        (uint64_t(ht_key_safe[2]) << 40) | (uint64_t(ht_key_safe[3]) << 32) |
+        (uint64_t(ht_key_safe[4]) << 24) | (uint64_t(ht_key_safe[5]) << 16) |
+        (uint64_t(ht_key_safe[6]) << 8) | uint64_t(ht_key_safe[7]);
+
+      ht_key_type ht_key = {key_1, ht_key_safe[8]};
+
+      std::shared_ptr<const WigU4U3_coeffs> result;
+
+#ifdef U4LIB_ENABLE_WIGU4U3_CACHE
+      auto producer = [&u4a, &u4b, &u4c, etamax](ht_key_type)
+      {
+        return compute(u4a, u4b, u4c, etamax);
+      };
+
+      auto accessor = [&result](const auto& element)
+      { result = element.second; };
+
+      cache_.visit(ht_key, producer, accessor);
+#else
+      result = compute(u4a, u4b, u4c, etamax);
+#endif
+
+      return result;
+    }
+
     db_value_type get(
       int n14a, int n24a, int n34a, int n44a, int n13a, int n23a, int n33a,
       int n14b, int n24b, int n34b, int n44b, int n13b, int n23b, int n33b,
@@ -2721,73 +2811,19 @@ namespace u4
       u3::irrep u3b(n13b - n44b, n23b - n44b, n33b - n44b);
       u3::irrep u3c(n13c - n44c, n23c - n44c, n33c - n44c);
 
-      auto etamax = Eta(u4a, u4b, u4c);
       auto rhomax = u3::Rho(u3a, u3b, u3c);
+      if (rhomax == 0) return db_value_type();
 
-      if (etamax == 0 || rhomax == 0) return db_value_type();
-
-      bool flag = false;
-
-      std::array<qcx_utils::UInt8, 9> 
-        ht_key_safe = {u4a.n14(), u4a.n24(), u4a.n34(),
-                       u4b.n14(), u4b.n24(), u4b.n34(),
-                       u4c.n14(), u4c.n24(), u4c.n34()};
-
-      uint64_t key_1 = 
-        (uint64_t(ht_key_safe[0]) << 56) | (uint64_t(ht_key_safe[1]) << 48) |
-        (uint64_t(ht_key_safe[2]) << 40) | (uint64_t(ht_key_safe[3]) << 32) |
-        (uint64_t(ht_key_safe[4]) << 24) | (uint64_t(ht_key_safe[5]) << 16) |
-        (uint64_t(ht_key_safe[6]) << 8) | uint64_t(ht_key_safe[7]);
-
-      ht_key_type ht_key = {key_1, ht_key_safe[8]};
-      /*
-      ht_key_type ht_key = {ht_key_safe[0], ht_key_safe[1], ht_key_safe[2],
-                            ht_key_safe[3], ht_key_safe[4], ht_key_safe[5],
-                            ht_key_safe[6], ht_key_safe[7], ht_key_safe[8]};
-      */
-
-#ifdef U4LIB_ENABLE_WIGU4U3_CACHE
-      auto producer = [&u4a, &u4b, &u4c, &etamax](ht_key_type ht_key) 
-      { 
-        return compute(u4a, u4b, u4c, etamax); 
-      };
-
-      auto accessor = [&flag, &u3a, &u3b, &u3c](const auto& element)
-      {
-        const auto& coeffs = element.second;
-
-        auto acc = coeffs.access(u3a, u3b, u3c);
-
-        // flag = acc.first;
-        // if (flag) *p_result_ = acc.second;
-        if (acc.size() > 0)
-        {
-          flag = true;
-          *p_result_ = acc;
-        }
-      };
-
-      cache_.visit(ht_key, producer, accessor);
-#else
-      auto coeffs = compute(ht_key);
-
-      auto acc = coeffs.access(u3a, u3b, u3c);
-
-      // flag = acc.first;
-      // if (flag) *p_result_ = acc.second;
-      if (acc.size() > 0)
-      {
-        flag = true;
-        *p_result_ = acc;
-      }
-#endif
-
-      if (flag)
-        assert(p_result_->cols() == etamax && p_result_->rows() == rhomax);
-      else
+      auto coeffs = get_coeffs(u4a, u4b, u4c);
+      if (!coeffs)   // etamax == 0
         return db_value_type();
 
-      return *p_result_;
+      db_value_type result = coeffs->access(u3a, u3b, u3c);
+
+      if (result.size() > 0)
+        assert(result.rows() == rhomax);
+
+      return result;
     }
 
     friend WigU4U3_db& wigU4U3db();

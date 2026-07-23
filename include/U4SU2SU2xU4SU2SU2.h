@@ -41,6 +41,12 @@ namespace u4
                              gArrB = u4::gelfandBasis(pArrB[0].irr()),
                              gArrC = u4::gelfandBasis(pArrC[0].irr());
 
+    // the U4U3 table is keyed by the U(4) irrep triple only -- fetch it once
+    // for the whole function and resolve U(3) blocks locally
+    auto u4CoeffsTable =
+        wigU4U3db.get_coeffs(pArrA[0].irr(), pArrB[0].irr(), pArrC[0].irr());
+    assert(u4CoeffsTable);
+
     // find transformation for physical states belong to the 1st irrep
     std::vector<std::vector<int>> canoBasisA(pArrA.size());
     std::vector<Eigen::MatrixXd> transformationA(pArrA.size());
@@ -107,13 +113,13 @@ namespace u4
                 {
                   const auto& gC = gArrC[canoC[iC]];
 
-                  auto accU4 = wigU4U3db.get(
-                    gA.n14(), gA.n24(), gA.n34(), gA.n44(), 
-                    gA.n13(), gA.n23(), gA.n33(),
-                    gB.n14(), gB.n24(), gB.n34(), gB.n44(),
-                    gB.n13(), gB.n23(), gB.n33(),
-                    gC.n14(), gC.n24(), gC.n34(), gC.n44(),
-                    gC.n13(), gC.n23(), gC.n33());
+                  auto accU4 = u4CoeffsTable->find_block(
+                    u3::irrep(gA.n13() - gA.n44(), gA.n23() - gA.n44(),
+                              gA.n33() - gA.n44()),
+                    u3::irrep(gB.n13() - gB.n44(), gB.n23() - gB.n44(),
+                              gB.n33() - gB.n44()),
+                    u3::irrep(gC.n13() - gC.n44(), gC.n23() - gC.n44(),
+                              gC.n33() - gC.n44()));
                   if (accU4.size() == 0) continue;
 
                   int jj1 = gA.Lambdax2(), mm1 = gA.MLambdax2(),
@@ -270,6 +276,12 @@ namespace u4
 
       U4SU2SU2<coeffs_t> coeffs(ZA, ZB, ZC, etamax);
 
+      // The U4U3 cache key is the U(4) irrep triple, constant for the whole
+      // Gelfand loop nest: fetch the table once, resolve U(3) blocks locally
+      // (no per-iteration concurrent-map visits, no MatrixXd copies).
+      auto u4Coeffs = wigU4U3db.get_coeffs(pA.irr(), pB.irr(), pC.irr());
+      assert(u4Coeffs);   // etamax > 0 guaranteed by the caller
+
       for (int iA = 0; iA < canoA.size(); iA++)
       {
         const auto& gA = gArrA[canoA[iA]];
@@ -286,14 +298,14 @@ namespace u4
             int jj3 = gC.Lambdax2(), mm3 = gC.MLambdax2();
 
             // Cheap CG selection (weight + triangle) before the expensive
-            // wigU4U3db / wigU3U2db lookups: cgc == 0 -> no contribution.
+            // wigU4U3 / wigU3U2db lookups: cgc == 0 -> no contribution.
             double cgc = cgcs.get({jj1, jj2, jj3, mm1, mm2, mm3});
             if (std::fabs(cgc) == 0.0) continue;
 
-            auto accU4 = wigU4U3db.get(
-              gA.n14(), gA.n24(), gA.n34(), gA.n44(), gA.n13(), gA.n23(), gA.n33(),
-              gB.n14(), gB.n24(), gB.n34(), gB.n44(), gB.n13(), gB.n23(), gB.n33(),
-              gC.n14(), gC.n24(), gC.n34(), gC.n44(), gC.n13(), gC.n23(), gC.n33());
+            auto accU4 = u4Coeffs->find_block(
+              u3::irrep(gA.n13() - gA.n44(), gA.n23() - gA.n44(), gA.n33() - gA.n44()),
+              u3::irrep(gB.n13() - gB.n44(), gB.n23() - gB.n44(), gB.n33() - gB.n44()),
+              u3::irrep(gC.n13() - gC.n44(), gC.n23() - gC.n44(), gC.n33() - gC.n44()));
             if (accU4.size() == 0) continue;
 
             auto accU3 = wigU3U2db.get(

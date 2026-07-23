@@ -107,25 +107,37 @@ namespace u4
             for (int eAB = 0; eAB < etaABmax; eAB++)
               for (int eCD = 0; eCD < etaCDmax; eCD++)
                 for (int eAC_BD = 0; eAC_BD < etaAC_BDmax; eAC_BD++)
+                {
+                  // destination is fixed across the three summation loops:
+                  // resolve the 6-dim flatten once (accumulation order and
+                  // multiplication association unchanged -> bit-identical)
+                  double& dest = U(eAC, eBD, eAB_CD, eAB, eCD, eAC_BD);
+
                   for (int eAC_B = 0; eAC_B < etamaxAC_B; eAC_B++)
                     for (int eAB_C = 0; eAB_C < etamaxsAB_C[i]; eAB_C++)
-                      for (int eABC_D = 0; eABC_D < etaABC_Dmax; eABC_D++)
-                      {
+                    {
 #if defined(U4LIB_ENABLE_U4U6_CACHE) && defined(U4LIB_ENABLE_U4Z6_CACHE)
-                        U(eAC, eBD, eAB_CD, eAB, eCD, eAC_BD)
-                        += U6_1(eAC_B, eABC_D, eBD, eAC_BD)
-                         * Z6(eAB, eAB_C, eAC, eAC_B)
-                         * U6_2(eAB_C, eABC_D, eCD, eAB_CD);
+                      // Z6 does not depend on eABC_D
+                      const double z6 = Z6(eAB, eAB_C, eAC, eAC_B);
+
+                      for (int eABC_D = 0; eABC_D < etaABC_Dmax; eABC_D++)
+                        dest += U6_1(eAC_B, eABC_D, eBD, eAC_BD)
+                              * z6
+                              * U6_2(eAB_C, eABC_D, eCD, eAB_CD);
 #else
-                        U(eAC, eBD, eAB_CD, eAB, eCD, eAC_BD)
-                        += U6_1[((eAC_B * etaABC_Dmax + eABC_D) * etaBDmax +
-                                  eBD) * etaAC_BDmax + eAC_BD]
-                         * Z6[((eAB * etamaxsAB_C[i] + eAB_C) * etaACmax +
-                                eAC) * etamaxAC_B + eAC_B]
-                         * U6_2[((eAB_C * etaABC_Dmax + eABC_D) * etaCDmax +
-                                  eCD) * etaAB_CDmax + eAB_CD];
+                      const double z6 =
+                          Z6[((eAB * etamaxsAB_C[i] + eAB_C) * etaACmax +
+                              eAC) * etamaxAC_B + eAC_B];
+
+                      for (int eABC_D = 0; eABC_D < etaABC_Dmax; eABC_D++)
+                        dest += U6_1[((eAC_B * etaABC_Dmax + eABC_D) * etaBDmax +
+                                      eBD) * etaAC_BDmax + eAC_BD]
+                              * z6
+                              * U6_2[((eAB_C * etaABC_Dmax + eABC_D) * etaCDmax +
+                                      eCD) * etaAB_CDmax + eAB_CD];
 #endif
-                      }
+                    }
+                }
     }
 
     for (int i = 0; i < U.size(); i++)

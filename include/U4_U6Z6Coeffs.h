@@ -42,6 +42,15 @@ namespace u4
     auto& wigU4U3db = u4::wigU4U3db();
     auto& u3u6db = u3::u3u6db();
 
+    // The four U4U3 tables used below are keyed by U(4) irrep triples only:
+    // fetch each once (one concurrent-map visit apiece) and resolve U(3)
+    // blocks locally in the loop nest.
+    auto cA_BC = wigU4U3db.get_coeffs(u4A, u4BC, u4ABC);
+    auto cAB   = wigU4U3db.get_coeffs(u4A, u4B, u4AB);
+    auto cAB_C = wigU4U3db.get_coeffs(u4AB, u4C, u4ABC);
+    auto cBC   = wigU4U3db.get_coeffs(u4B, u4C, u4BC);
+    assert(cA_BC && cAB && cAB_C && cBC);   // etamaxes > 0 per preconditions
+
     Eigen::MatrixXd A(etaA_BCmax, etaA_BCmax);
     Eigen::MatrixXd B(etaA_BCmax, etaABmax * etaAB_Cmax * etaBCmax);
     B.setZero();
@@ -54,11 +63,12 @@ namespace u4
       {
         for (int n33A = u4A.n34(); n33A >= u4A.n44() && !done; n33A--)
         {
-          auto accA_BC = wigU4U3db.get(
-              u4A.n14(), u4A.n24(), u4A.n34(), u4A.n44(), n13A, n23A, n33A,
-              u4BC.n14(), u4BC.n24(), u4BC.n34(), u4BC.n44(), u4BC.n14(),
-              u4BC.n24(), u4BC.n34(), u4ABC.n14(), u4ABC.n24(), u4ABC.n34(),
-              u4ABC.n44(), u4ABC.n14(), u4ABC.n24(), u4ABC.n34());
+          auto accA_BC = cA_BC->find_block(
+              u3::irrep(n13A - u4A.n44(), n23A - u4A.n44(), n33A - u4A.n44()),
+              u3::irrep(u4BC.n14() - u4BC.n44(), u4BC.n24() - u4BC.n44(),
+                        u4BC.n34() - u4BC.n44()),
+              u3::irrep(u4ABC.n14() - u4ABC.n44(), u4ABC.n24() - u4ABC.n44(),
+                        u4ABC.n34() - u4ABC.n44()));
           if (accA_BC.size() == 0) continue;
           
           // std::cout << "accA_BC = " << accA_BC << std::endl;
@@ -91,13 +101,13 @@ namespace u4
                     {
                       for (int n33AB = u4AB.n34(); n33AB >= u4AB.n44(); n33AB--)
                       {
-                        auto accAB = wigU4U3db.get(
-                          u4A.n14(), u4A.n24(), u4A.n34(), u4A.n44(), 
-                          n13A, n23A, n33A, 
-                          u4B.n14(), u4B.n24(), u4B.n34(), u4B.n44(), 
-                          n13B, n23B, n33B, u4AB.n14(),
-                          u4AB.n24(), u4AB.n34(), u4AB.n44(), 
-                          n13AB, n23AB, n33AB);
+                        auto accAB = cAB->find_block(
+                          u3::irrep(n13A - u4A.n44(), n23A - u4A.n44(),
+                                    n33A - u4A.n44()),
+                          u3::irrep(n13B - u4B.n44(), n23B - u4B.n44(),
+                                    n33B - u4B.n44()),
+                          u3::irrep(n13AB - u4AB.n44(), n23AB - u4AB.n44(),
+                                    n33AB - u4AB.n44()));
                         if (accAB.size() == 0) continue;
                           
                         // std::cout << "accAB = " << accAB << std::endl;
@@ -117,22 +127,25 @@ namespace u4
                           {
                             for (int n33C = u4C.n34(); n33C >= u4C.n44(); n33C--)
                             {
-                              auto accAB_C = wigU4U3db.get(
-                                u4AB.n14(), u4AB.n24(), u4AB.n34(), u4AB.n44(),
-                                n13AB, n23AB, n33AB,
-                                u4C.n14(), u4C.n24(), u4C.n34(), u4C.n44(), 
-                                n13C, n23C, n33C, 
-                                u4ABC.n14(), u4ABC.n24(), u4ABC.n34(), u4ABC.n44(),
-                                u4ABC.n14(), u4ABC.n24(), u4ABC.n34());
+                              auto accAB_C = cAB_C->find_block(
+                                u3::irrep(n13AB - u4AB.n44(),
+                                          n23AB - u4AB.n44(),
+                                          n33AB - u4AB.n44()),
+                                u3::irrep(n13C - u4C.n44(), n23C - u4C.n44(),
+                                          n33C - u4C.n44()),
+                                u3::irrep(u4ABC.n14() - u4ABC.n44(),
+                                          u4ABC.n24() - u4ABC.n44(),
+                                          u4ABC.n34() - u4ABC.n44()));
                               if (accAB_C.size() == 0) continue;
 
-                              auto accBC = wigU4U3db.get(
-                                u4B.n14(), u4B.n24(), u4B.n34(), u4B.n44(),
-                                n13B, n23B, n33B, 
-                                u4C.n14(), u4C.n24(), u4C.n34(), u4C.n44(),
-                                n13C, n23C, n33C, 
-                                u4BC.n14(), u4BC.n24(), u4BC.n34(), u4BC.n44(), 
-                                u4BC.n14(), u4BC.n24(), u4BC.n34());
+                              auto accBC = cBC->find_block(
+                                u3::irrep(n13B - u4B.n44(), n23B - u4B.n44(),
+                                          n33B - u4B.n44()),
+                                u3::irrep(n13C - u4C.n44(), n23C - u4C.n44(),
+                                          n33C - u4C.n44()),
+                                u3::irrep(u4BC.n14() - u4BC.n44(),
+                                          u4BC.n24() - u4BC.n44(),
+                                          u4BC.n34() - u4BC.n44()));
                               if (accBC.size() == 0) continue;
                                   
                               u3::irrep u3c(n13C - n33C, n23C - n33C, 0);
@@ -508,6 +521,14 @@ namespace u4
     auto& wigU4U3db = u4::wigU4U3db();
     auto& u3z6db = u3::u3z6db();
 
+    // Fetch the four U4U3 tables once (U(4) irrep-triple keys), resolve U(3)
+    // blocks locally in the loop nest (see U6 above).
+    auto cAC_B = wigU4U3db.get_coeffs(u4AC, u4B, u4ABC);
+    auto cAB   = wigU4U3db.get_coeffs(u4A, u4B, u4AB);
+    auto cAB_C = wigU4U3db.get_coeffs(u4AB, u4C, u4ABC);
+    auto cAC   = wigU4U3db.get_coeffs(u4A, u4C, u4AC);
+    assert(cAC_B && cAB && cAB_C && cAC);   // etamaxes > 0 per preconditions
+
     Eigen::MatrixXd A(etaAC_Bmax, etaAC_Bmax);
     Eigen::MatrixXd B(etaAC_Bmax, etaABmax * etaAB_Cmax * etaACmax);
     B.setZero();
@@ -520,11 +541,13 @@ namespace u4
       {
         for (int n33B = u4B.n34(); n33B >= u4B.n44() && !done; n33B--)
         {
-          auto accAC_B = wigU4U3db.get(
-              u4AC.n14(), u4AC.n24(), u4AC.n34(), u4AC.n44(), u4AC.n14(),
-              u4AC.n24(), u4AC.n34(), u4B.n14(), u4B.n24(), u4B.n34(),
-              u4B.n44(), n13B, n23B, n33B, u4ABC.n14(), u4ABC.n24(),
-              u4ABC.n34(), u4ABC.n44(), u4ABC.n14(), u4ABC.n24(), u4ABC.n34());
+          auto accAC_B = cAC_B->find_block(
+              u3::irrep(u4AC.n14() - u4AC.n44(), u4AC.n24() - u4AC.n44(),
+                        u4AC.n34() - u4AC.n44()),
+              u3::irrep(n13B - u4B.n44(), n23B - u4B.n44(),
+                        n33B - u4B.n44()),
+              u3::irrep(u4ABC.n14() - u4ABC.n44(), u4ABC.n24() - u4ABC.n44(),
+                        u4ABC.n34() - u4ABC.n44()));
           if (accAC_B.size() == 0) continue;
           
           // std::cout << "accAC_B = " << accAC_B << std::endl;
@@ -557,13 +580,13 @@ namespace u4
                     {
                       for (int n33AB = u4AB.n34(); n33AB >= u4AB.n44(); n33AB--)
                       {
-                        auto accAB = wigU4U3db.get(
-                          u4A.n14(), u4A.n24(), u4A.n34(), u4A.n44(), 
-                          n13A, n23A, n33A, 
-                          u4B.n14(), u4B.n24(), u4B.n34(), u4B.n44(), 
-                          n13B, n23B, n33B, 
-                          u4AB.n14(), u4AB.n24(), u4AB.n34(), u4AB.n44(), 
-                          n13AB, n23AB, n33AB);
+                        auto accAB = cAB->find_block(
+                          u3::irrep(n13A - u4A.n44(), n23A - u4A.n44(),
+                                    n33A - u4A.n44()),
+                          u3::irrep(n13B - u4B.n44(), n23B - u4B.n44(),
+                                    n33B - u4B.n44()),
+                          u3::irrep(n13AB - u4AB.n44(), n23AB - u4AB.n44(),
+                                    n33AB - u4AB.n44()));
                         if (accAB.size() == 0) continue;
                           
                         // std::cout << "accAB = " << accAB << std::endl;
@@ -583,22 +606,25 @@ namespace u4
                           {
                             for (int n33C = u4C.n34(); n33C >= u4C.n44(); n33C--)
                             {
-                              auto accAB_C = wigU4U3db.get(
-                                u4AB.n14(), u4AB.n24(), u4AB.n34(), u4AB.n44(),
-                                n13AB, n23AB, n33AB,
-                                u4C.n14(), u4C.n24(), u4C.n34(), u4C.n44(),
-                                n13C, n23C, n33C, 
-                                u4ABC.n14(), u4ABC.n24(), u4ABC.n34(), u4ABC.n44(),
-                                u4ABC.n14(), u4ABC.n24(), u4ABC.n34());
+                              auto accAB_C = cAB_C->find_block(
+                                u3::irrep(n13AB - u4AB.n44(),
+                                          n23AB - u4AB.n44(),
+                                          n33AB - u4AB.n44()),
+                                u3::irrep(n13C - u4C.n44(), n23C - u4C.n44(),
+                                          n33C - u4C.n44()),
+                                u3::irrep(u4ABC.n14() - u4ABC.n44(),
+                                          u4ABC.n24() - u4ABC.n44(),
+                                          u4ABC.n34() - u4ABC.n44()));
                               if (accAB_C.size() == 0) continue;
 
-                              auto accAC = wigU4U3db.get(
-                                u4A.n14(), u4A.n24(), u4A.n34(), u4A.n44(),
-                                n13A, n23A, n33A, 
-                                u4C.n14(), u4C.n24(), u4C.n34(), u4C.n44(),
-                                n13C, n23C, n33C, 
-                                u4AC.n14(), u4AC.n24(), u4AC.n34(), u4AC.n44(),
-                                u4AC.n14(), u4AC.n24(), u4AC.n34());
+                              auto accAC = cAC->find_block(
+                                u3::irrep(n13A - u4A.n44(), n23A - u4A.n44(),
+                                          n33A - u4A.n44()),
+                                u3::irrep(n13C - u4C.n44(), n23C - u4C.n44(),
+                                          n33C - u4C.n44()),
+                                u3::irrep(u4AC.n14() - u4AC.n44(),
+                                          u4AC.n24() - u4AC.n44(),
+                                          u4AC.n34() - u4AC.n44()));
                               if (accAC.size() == 0) continue;
                                   
                               u3::irrep u3c(n13C - n33C, n23C - n33C, 0);
