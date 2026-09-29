@@ -4,6 +4,7 @@
 *.aux
 *.bbl
 *.blg
+*.d
 *.docx
 *.exe
 *.fdb_latexmk
@@ -12,6 +13,7 @@
 *.o
 *.out
 *.pdf
+*.so
 *.swp
 *.xlsx
 
@@ -26,3 +28,7 @@ bin/
 # GDB history file:
 
 .gdb_history
+
+# Jupyter notebook checkpoints:
+
+.ipynb_checkpoints
