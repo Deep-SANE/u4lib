@@ -271,9 +271,19 @@ namespace u4
       return 0;
   }
 
-  // Multiplicity of (S,T)
+  // Multiplicity of (S,T). Returns 0 for (SS,TT) outside the admissible grid
+  // for this irrep (the same bounds physicalBasis enumerates). The underlying
+  // Omega sum is unguarded and would otherwise return spurious nonzero values
+  // for disallowed (wrong-parity / out-of-range) (SS,TT).
   inline int Zeta(const u4::irrep& u4, int SS, int TT)
   {
+    const int st_max = u4.n14() + u4.n24() - u4.n34() - u4.n44();  // = 2*S_max
+    const int sum_max = 2 * (u4.n14() - u4.n44());
+    const int st_min = st_max % 2;                                 // parity floor
+    if (SS < st_min || SS > st_max || TT < st_min || TT > st_max) return 0;
+    if ((SS - st_min) % 2 != 0 || (TT - st_min) % 2 != 0) return 0; // wrong parity
+    if (SS + TT > sum_max) return 0;
+
     return Omega(SS, TT, u4.n14() - u4.n34(), u4.n24() - u4.n44()) -
            Omega(SS, TT, u4.n14() - u4.n44() + 1, u4.n24() - u4.n34() - 1) -
            Omega(SS, TT, u4.n14() - u4.n24() - 1, u4.n34() - u4.n44() - 1);
