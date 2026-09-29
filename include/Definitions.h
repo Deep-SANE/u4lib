@@ -130,7 +130,7 @@ namespace u4
   	  s << "rho\teta\n";
   	  for (size_t r = 0; r < x.rhomax(); r++)
         for (size_t e = 0; e < x.etamax(); e++)
-          s << (r + 1) << "\t" << (e + 1) << "\t" << x(r, e) << "\n";
+          s << r << "\t" << e << "\t" << x(r, e) << "\n";
   	  return s;
   	}
   };
@@ -237,8 +237,8 @@ namespace u4
   	  for (size_t i = 0; i < x.size(); i++)
   	  {
   	    x.ndi_.to_multi(i, multi);
-  	    s << multi[0] + 1 << "\t" << multi[1] + 1 << "\t"
-  	      << multi[2] + 1 << "\t" << multi[3] + 1 << "\t -> "
+  	    s << multi[0] << "\t" << multi[1] << "\t"
+  	      << multi[2] << "\t" << multi[3] << "\t -> "
   	      << x[i] << "\n";
   	  }
 	  return s;
@@ -317,8 +317,8 @@ namespace u4
   	  for (size_t i = 0; i < x.size(); i++)
   	  {
   	    x.ndi_.to_multi(i, multi);
-  	    s << multi[0] + 1 << "\t" << multi[1] + 1 << "\t"
-  	      << multi[2] + 1 << "\t" << multi[3] + 1 << "\t -> "
+  	    s << multi[0] << "\t" << multi[1] << "\t"
+  	      << multi[2] << "\t" << multi[3] << "\t -> "
   	      << x[i] << "\n";
   	  }
 	    return s;
@@ -397,8 +397,8 @@ namespace u4
   	  for (size_t i = 0; i < x.size(); i++)
   	  {
   	    x.ndi_.to_multi(i, multi);
-  	    s << multi[0] + 1 << "\t" << multi[1] + 1 << "\t"
-  	      << multi[2] + 1 << "\t" << multi[3] + 1 << "\t -> "
+  	    s << multi[0] << "\t" << multi[1] << "\t"
+  	      << multi[2] << "\t" << multi[3] << "\t -> "
   	      << x[i] << "\n";
   	  }
 	    return s;
@@ -483,9 +483,9 @@ namespace u4
   	  for (size_t i = 0; i < x.size(); i++)
   	  {
   	    x.ndi_.to_multi(i, multi);
-  	    s << multi[0] + 1 << "\t" << multi[1] + 1 << "\t"
-  	      << multi[2] + 1 << "\t" << multi[3] + 1 << "\t"
-  	      << multi[4] + 1 << "\t" << multi[5] + 1 << "\t -> "
+  	    s << multi[0] << "\t" << multi[1] << "\t"
+  	      << multi[2] << "\t" << multi[3] << "\t"
+  	      << multi[4] << "\t" << multi[5] << "\t -> "
   	      << x[i] << "\n";
   	  }
 	    return s;
