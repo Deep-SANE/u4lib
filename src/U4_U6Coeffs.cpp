@@ -17,9 +17,7 @@
 
 int main(int argc, char* argv[])
 {
-  qcx_utils::initialize(&argc, &argv);
-  u3::initialize();
-  u4::initialize();
+  u4::initialize(&argc, &argv);
 
   std::cout
       << "This program compute U6-recoupling coefficients of three U(4) irreps"
@@ -143,6 +141,4 @@ int main(int argc, char* argv[])
   }
 
   u4::finalize();
-  u3::finalize();
-  qcx_utils::finalize();
 }

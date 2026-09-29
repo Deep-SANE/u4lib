@@ -19,9 +19,7 @@
 
 int main(int argc, char* argv[])
 {
-  qcx_utils::initialize(&argc, &argv);
-  u3::initialize();
-  u4::initialize();
+  u4::initialize(&argc, &argv);
 
   int n14a, n24a, n34a, n44a;
   std::cout << "Please enter the first irrep [n14a,n24a,n34a,n44a]: ";
@@ -111,6 +109,4 @@ int main(int argc, char* argv[])
             << duration.count() / 60.0 << " minutes" << std::endl;
 
   u4::finalize();
-  u3::finalize();
-  qcx_utils::finalize();
 }

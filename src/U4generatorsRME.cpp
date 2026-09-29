@@ -11,9 +11,7 @@
 
 int main(int argc, char* argv[])
 {
-  qcx_utils::initialize(&argc, &argv);
-  u3::initialize();
-  u4::initialize();
+  u4::initialize(&argc, &argv);
 
   /*
       int n14,n24,n34,n44;
@@ -80,6 +78,4 @@ int main(int argc, char* argv[])
     std::cout << bra_zeta[i] << "\t\t" << RME.row(i) << std::endl;
 
   u4::finalize();
-  u3::finalize();
-  qcx_utils::finalize();
 }

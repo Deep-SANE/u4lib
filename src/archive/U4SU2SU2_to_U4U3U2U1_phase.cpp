@@ -13,9 +13,7 @@
   
 int main(int argc, char* argv[])
 {
-  qcx_utils::initialize(&argc, &argv);
-  u3::initialize();
-  u4::initialize();
+  u4::initialize(&argc, &argv);
 
   int P1, P2, P3;
   std::cout << "Please enter SU(4) quantum numbers (P1,P2,P3): ";
@@ -101,6 +99,4 @@ int main(int argc, char* argv[])
             << duration.count() / 60.0 << " minutes" << std::endl;
 
   u4::finalize();
-  u3::finalize();
-  qcx_utils::finalize();
 }

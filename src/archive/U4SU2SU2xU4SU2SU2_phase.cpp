@@ -39,9 +39,7 @@ Eigen::MatrixXd diff(int z1, const Eigen::MatrixXd& m1,
 
 int main(int argc, char* argv[])
 {
-  qcx_utils::initialize(&argc, &argv);
-  u3::initialize();
-  u4::initialize();
+  u4::initialize(&argc, &argv);
 
   auto& wigU4SU2SU2db = u4::wigU4SU2SU2db();
 
@@ -113,6 +111,4 @@ int main(int argc, char* argv[])
   }
 
   u4::finalize();
-  u3::finalize();
-  qcx_utils::finalize();
 }

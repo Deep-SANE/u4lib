@@ -9,9 +9,7 @@
 
 int main(int argc, char* argv[])
 {
-  qcx_utils::initialize(&argc, &argv);
-  u3::initialize();
-  u4::initialize();
+  u4::initialize(&argc, &argv);
 
   u4::irrep u4a(2, 1, 1, 0);
   u4::irrep u4b(2, 1, 1, 0);
@@ -28,29 +26,24 @@ int main(int argc, char* argv[])
 
   assert(coeffs.size() == 17);
 
-  auto [allow, coeff] = coeffs.access({1, 1, 1}, {1, 1, 1}, {1, 1, 1});
-  assert(allow);
+  auto coeff = coeffs.access({1, 1, 1}, {1, 1, 1}, {1, 1, 1});
+  assert(coeff.size() > 0);
   std::cout << "Single thread:\n" << coeff << std::endl;
 
 std::cout << "Multiple threads:" << std::endl;
 #pragma omp parallel num_threads(4)
   {
-    qcx_utils::initialize_thread();
-    u3::initialize_thread();
     u4::initialize_thread();
 
-    auto [allow_t, coeff_t] = u4::wigU4U3db().get(2, 1, 1, 0, 1, 1, 1,
+    auto coeff_t = u4::wigU4U3db().get(2, 1, 1, 0, 1, 1, 1,
                                                   2, 1, 1, 0, 1, 1, 1,
                                                   2, 1, 1, 0, 1, 1, 1);
-    assert(allow_t);
+    assert(coeff_t.size() > 0);
+    assert(coeff_t.isApprox(coeff, 1e-10));
     std::cout << coeff_t << std::endl;
 
     u4::finalize_thread();
-    u3::finalize_thread();
-    qcx_utils::finalize_thread();
   }
 
   u4::finalize();
-  u3::finalize();
-  qcx_utils::finalize();
 }
