@@ -130,7 +130,7 @@ namespace u4
   	  s << "rho\teta\n";
   	  for (size_t r = 0; r < x.rhomax(); r++)
         for (size_t e = 0; e < x.etamax(); e++)
-          s << r << "\t" << e << "\t" << x(r, e) << "\n";
+          s << (r + 1) << "\t" << (e + 1) << "\t" << x(r, e) << "\n";
   	  return s;
   	}
   };
