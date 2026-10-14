@@ -1,6 +1,6 @@
 # u4lib
 
-**u4lib** is an **AI-assisted computational framework for U(4)/SU(4) algebra**
+**u4lib** is an **AI-enabled computational framework for U(4)/SU(4) algebra**
 (the Wigner supermultiplet symmetry): irreps and their invariants, canonical and
 physical bases, generators and their matrix elements, basis transformations,
 tensor-product decompositions, and the **Wigner coupling** and **Racah
@@ -70,4 +70,4 @@ The agent resolves the steps through the repository-local [install skill](agents
 ## Documentation & AI Agent Skills
 
 - **Full Reference Manual:** For exhaustive mathematical derivations, phase conventions, getter signatures, and solver backends, consult [doc/Manual.pdf](doc/Manual.pdf).
-- **AI-Assisted Calculations:** `u4lib` provides a repository-local skill package under [`agents/`](agents/AGENTS.md) that enables code-executing AI assistants to plan and drive calculations through natural-language prompts. A complete table of representative prompts with checked reference values is provided in **Table II of the [Manual](doc/Manual.pdf)** as well as in [`agents/AGENTS.md`](agents/AGENTS.md).
+- **AI-Enabled Calculations:** `u4lib` provides a repository-local skill package under [`agents/`](agents/AGENTS.md) that enables code-executing AI assistants to plan and drive calculations through natural-language prompts. A complete table of representative prompts with checked reference values is provided in **Table II of the [Manual](doc/Manual.pdf)** as well as in [`agents/AGENTS.md`](agents/AGENTS.md).
