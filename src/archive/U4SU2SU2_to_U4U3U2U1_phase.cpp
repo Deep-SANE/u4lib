@@ -9,7 +9,7 @@
 #include <U4basis.h>
 #include <U4SU2SU2_to_U4U3U2U1.h>
 
-#include <qcx_utils.h>
+#include <utils.h>
   
 int main(int argc, char* argv[])
 {

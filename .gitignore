@@ -1,34 +1,30 @@
-# files with extensions in all directories:
+# Generated configuration (written by `make config`)
+config/config.generated.mk
 
-*.a
-*.aux
-*.bbl
-*.blg
-*.d
-*.docx
-*.exe
-*.fdb_latexmk
-*.fls
-*.log
-*.o
-*.out
-*.pdf
-*.so
-*.swp
-*.xlsx
-
-# '.DS_Store' file in all directories:
-
-.DS_Store
-
-# all built executable binary files:
-
+# Build outputs
 bin/
+python/u4lib.so
+python/u4lib.d
+*.o
 
-# GDB history file:
+# Compiler dependency files (except make.d directories)
+*.d
+!config/make.d/
+!config/make.d/**
 
-.gdb_history
+# TeX build artifacts (keep doc/Manual.pdf)
+doc/*.aux
+doc/*.log
+doc/*.out
+doc/*.bbl
+doc/*.blg
+doc/*.fls
+doc/*.fdb_latexmk
 
-# Jupyter notebook checkpoints:
-
+# macOS / editor / notebook cruft
+.DS_Store
+__pycache__/
+*.pyc
 .ipynb_checkpoints
+.gdb_history
+*.swp

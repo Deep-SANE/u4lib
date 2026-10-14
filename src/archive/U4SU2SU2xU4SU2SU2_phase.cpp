@@ -5,7 +5,7 @@
 #include <U4basis.h>
 #include <U4SU2SU2xU4SU2SU2.h>
 
-#include <qcx_utils.h> 
+#include <utils.h> 
 
 
 /* This program tests the following conjugation relation

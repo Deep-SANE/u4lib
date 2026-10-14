@@ -1,0 +1,40 @@
+{
+  "status": "scaffolding (design + tasks drafted; not yet runnable -- see build_checklist)",
+  "version": "claude-pilot-u4",
+  "mirrors": "u3lib/agents/benchmarks (same methodology, SU(4) library and tasks)",
+  "library": "u4lib",
+  "prerequisite_library": "u3lib (u4lib layers on it; the runtime must expose both extensions)",
+  "design": "Per task: matched control vs treatment, 2-3 repeats per condition. Start with the hardest task(s), where the earlier u3lib pilots showed the skill package helps.",
+  "conditions": [
+    "control = u4lib with NO agent materials (README stripped of all agent references; no u4lib/agents directory)",
+    "treatment = u4lib with the repository-local agents/ skill package (16 skills) + the README's Agent-assisted section/references"
+  ],
+  "condition_workspace_difference": "Treatment-only u4lib/agents/ directory + the README agent references; all library code, headers, and tests identical. (u4lib already ships both the agents/ catalog and the README Agent-assisted section; the control workspace is produced by removing them.)",
+  "treatment_skill_count": 16,
+  "model": "claude-sonnet-5-5",
+  "model_name": "Claude Sonnet 5.5",
+  "model_note": "Mid-tier model, matching the u3lib Sonnet pilots (better than Haiku, far cheaper than Opus). Pin with claude --model claude-sonnet-5-5.",
+  "candidate_tasks": {
+    "01-basis": "C++ SU(4) basis inventory: dim, (S,T) branching multiplicities via Zeta, and the U(4) Gelfand enumeration.",
+    "02-canonical": "Python SU(4) > U(3) canonical reduced coupling adapter (wigU4U3db), indexed by (rho, eta).",
+    "03-physical": "Python SU(2)xSU(2) spin-isospin reduced coupling adapter (wigU4SU2SU2db), indexed by (zetaA,zetaB,zetaC,eta).",
+    "04-recoupling": "Python U/Z three-irrep recoupling (u4u6db / u4z6db) with full channel discovery and orthogonality.",
+    "05-u9": "C++ four-irrep 9-coefficient batch exporter (u4u9db) -- hardest; stresses the U4U9 span-lifetime gotcha + six eta axes. Best discriminator, analogous to u3 task 5."
+  },
+  "recommended_first": ["05-u9", "04-recoupling"],
+  "headline_metrics": ["task_success_within_time_cap", "total_input_plus_output_tokens"],
+  "token_metric": "claude -p JSON: input + cache_creation + cache_read + output; total_cost_usd recorded too.",
+  "time_cap_seconds": 1800,
+  "execution_protocol": {
+    "mode": "claude -p (non-interactive), model pinned, host-mode isolated temp workspace, fixtures withheld until grading",
+    "runner": "a u4 copy of u3lib/agents/benchmarks/runner/run_claude_host.py (paths -> u4lib; runtime must expose u4lib.so AND u3lib.so)"
+  },
+  "build_checklist": [
+    "1. Frozen workspaces: snapshots/{control,treatment}/workspace, each = common.md + environment.sh + empty consumer/ + the u4lib library (and the u3lib it depends on + qcx-utils). treatment includes u4lib/agents + README agent refs; control strips both.",
+    "2. Host runtime: a dir with BOTH u4lib.so and u3lib.so built for the miniforge interpreter (u4 initialize cascades into u3), plus a host environment.sh pointing at host toolchain + that runtime on PYTHONPATH. (u4lib.so already built at u4lib/python/u4lib.so; verify it imports with u3lib.so alongside.)",
+    "3. Grader: evaluator/grade.py for the SU(4) tasks + evaluator/fixtures-pilot.json with precomputed expected values (generate with u4lib on the host, analogous to u3lib's evaluator/generate.py).",
+    "4. Runner: run_claude_host_u4.py (copy of the u3 host runner; SNAP/U4LIB_DIR/PYTHONPATH -> u4; model claude-sonnet-5-5).",
+    "5. Schedule: results/pilot-claude-u4-<task>/schedule.json (seeded, balanced)."
+  ],
+  "results": "results/ (per-task subdirs, once runnable)"
+}

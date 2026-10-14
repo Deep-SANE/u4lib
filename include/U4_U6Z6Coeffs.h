@@ -252,7 +252,7 @@ namespace u4
     using value_type = coeffs_t;
 
 #ifdef U4LIB_ENABLE_U4U6_CACHE
-    qcx_utils::Cache<key_type, value_type> cache_;
+    utils::Cache<key_type, value_type> cache_;
 #endif
 
     inline static value_type* p_result_ = nullptr;
@@ -363,7 +363,7 @@ namespace u4
       
       
 #ifdef U4LIB_ENABLE_U4U6_CACHE
-      std::array<qcx_utils::UInt8, 18> safe_key = {
+      std::array<utils::UInt8, 18> safe_key = {
         u4A.n14(), u4A.n24(), u4A.n34(),
         u4B.n14(), u4B.n24(), u4B.n34(),
         u4ABC.n14(), u4ABC.n24(), u4ABC.n34(),
@@ -437,7 +437,7 @@ namespace u4
         return {};
       
 #ifdef U4LIB_ENABLE_U4U6_CACHE
-      std::array<qcx_utils::UInt8, 18> safe_key = {
+      std::array<utils::UInt8, 18> safe_key = {
         u4A.n14(), u4A.n24(), u4A.n34(),
         u4B.n14(), u4B.n24(), u4B.n34(),
         u4ABC.n14(), u4ABC.n24(), u4ABC.n34(),
@@ -731,7 +731,7 @@ namespace u4
     using value_type = coeffs_t;
 
 #ifdef U4LIB_ENABLE_U4Z6_CACHE
-    qcx_utils::Cache<key_type, value_type> cache_;
+    utils::Cache<key_type, value_type> cache_;
 #endif
 
     inline static value_type* p_result_ = nullptr;
@@ -842,7 +842,7 @@ namespace u4
       
 
 #ifdef U4LIB_ENABLE_U4Z6_CACHE
-      std::array<qcx_utils::UInt8, 18> safe_key = {
+      std::array<utils::UInt8, 18> safe_key = {
         u4B.n14(), u4B.n24(), u4B.n34(),
         u4A.n14(), u4A.n24(), u4A.n34(),
         u4ABC.n14(), u4ABC.n24(), u4ABC.n34(),
@@ -916,7 +916,7 @@ namespace u4
         return {};
 
 #ifdef U4LIB_ENABLE_U4Z6_CACHE
-      std::array<qcx_utils::UInt8, 18> safe_key = {
+      std::array<utils::UInt8, 18> safe_key = {
         u4B.n14(), u4B.n24(), u4B.n34(),
         u4A.n14(), u4A.n24(), u4A.n34(),
         u4ABC.n14(), u4ABC.n24(), u4ABC.n34(),

@@ -307,9 +307,9 @@ namespace u4
     physicalvector() : zeta_(0), SS_(0), TT_(0) { }
 
     // initialization
-    physicalvector(const u4::irrep& irr, qcx_utils::UInt8 SS, qcx_utils::UInt8 TT)
+    physicalvector(const u4::irrep& irr, utils::UInt8 SS, utils::UInt8 TT)
       : irr_(irr), SS_(SS), TT_(TT), 
-        zeta_(qcx_utils::UInt8(Zeta(irr, SS, TT)))
+        zeta_(utils::UInt8(Zeta(irr, SS, TT)))
     { }
 
     // assignment operator

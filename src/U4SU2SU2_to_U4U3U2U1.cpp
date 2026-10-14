@@ -2,6 +2,7 @@
 #include <iomanip>
 #include <iostream>
 #include <vector>
+#include <omp.h>
 
 #include <u3lib.h>
 
@@ -9,7 +10,7 @@
 #include <U4basis.h>
 #include <U4SU2SU2_to_U4U3U2U1.h>
 
-#include <qcx_utils.h>
+#include <utils.h>
   
 int main(int argc, char* argv[])
 {
@@ -118,6 +119,33 @@ int main(int argc, char* argv[])
   else
   {
     std::cout << "Wrong mode" << std::endl;
+  }
+
+  // -------------------------------------------------------------------------
+  // Multi-threading demonstration:
+  // Each thread calls u4::initialize_thread() before computing transformations
+  // or coefficients, prints results with its thread index, and calls
+  // u4::finalize_thread().
+  // -------------------------------------------------------------------------
+  std::cout << "\n[Multi-threading demonstration]" << std::endl;
+#pragma omp parallel num_threads(4)
+  {
+    u4::initialize_thread();
+    int tid = omp_get_thread_num();
+
+    // Call transformation coefficients inside
+    auto [cano_sub, trans_sub] = u4::phys_to_cano(p, p.SS(), p.TT(), gArr);
+
+#pragma omp critical
+    {
+      std::cout << "[Thread " << tid << "] State |(" << p.P1() << "," << p.P2() << "," << p.P3()
+                << ") SS=" << p.SS() << ", TT=" << p.TT() << "> expanded in "
+                << cano_sub.size() << " Gelfand states; first row norm: "
+                << (trans_sub.rows() > 0 ? trans_sub.row(0).norm() : 0.0)
+                << std::endl;
+    }
+
+    u4::finalize_thread();
   }
 
   u4::finalize();

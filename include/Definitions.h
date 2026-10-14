@@ -3,7 +3,7 @@
 
 #include <Eigen/Dense>
 
-#include <qcx_ND.h>
+#include <ND.h>
 
 namespace u4
 {
@@ -139,7 +139,7 @@ namespace u4
   class U4SU2SU2
   {
     T coeffs_;
-    qcx_utils::NDIndex4 ndi_;
+    utils::NDIndex4 ndi_;
 
   public:
     U4SU2SU2()
@@ -249,7 +249,7 @@ namespace u4
   class U4U6
   {
     T coeffs_;
-    qcx_utils::NDIndex4 ndi_;
+    utils::NDIndex4 ndi_;
 
   public:
     U4U6()
@@ -329,7 +329,7 @@ namespace u4
   class U4Z6
   {
     T coeffs_;
-    qcx_utils::NDIndex4 ndi_;
+    utils::NDIndex4 ndi_;
 
   public:
     U4Z6()
@@ -409,7 +409,7 @@ namespace u4
   class U4U9
   {
     T coeffs_;
-    qcx_utils::NDIndex6 ndi_;
+    utils::NDIndex6 ndi_;
 
   public:
     U4U9()

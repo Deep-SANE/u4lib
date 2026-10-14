@@ -18,7 +18,7 @@
 #include "U4_U6Z6Coeffs.h"
 #include "U4basis.h"
 
-#include <qcx_ND.h>
+#include <ND.h>
 #include <so3Coeffs/SO3_CGC.h>
 #include <so3Coeffs/SO3_Racah.h>
 
@@ -166,7 +166,7 @@ namespace u4
     using value_type = coeffs_t;
 
 #ifdef U4LIB_ENABLE_U4U9_CACHE
-    qcx_utils::Cache<key_type, value_type> cache_;
+    utils::Cache<key_type, value_type> cache_;
     using return_type = std::span<const double>;
 #else
     using return_type = std::vector<double>;
@@ -300,7 +300,7 @@ namespace u4
       assert(etaACBDmax == Eta(u4AC, u4BD, u4ABCD));
 
 #ifdef U4LIB_ENABLE_U4U9_CACHE
-      std::array<qcx_utils::UInt8, 27> safe_key = {
+      std::array<utils::UInt8, 27> safe_key = {
         u4A.n14(),    u4A.n24(),    u4A.n34(),   u4B.n14(),
         u4B.n24(),    u4B.n34(),    u4C.n14(),   u4C.n24(),
         u4C.n34(),    u4D.n14(),    u4D.n24(),   u4D.n34(),
@@ -393,7 +393,7 @@ namespace u4
         return {};
 
 #ifdef U4LIB_ENABLE_U4U9_CACHE
-      std::array<qcx_utils::UInt8, 27> safe_key = {
+      std::array<utils::UInt8, 27> safe_key = {
         u4A.n14(),    u4A.n24(),    u4A.n34(),   u4B.n14(),
         u4B.n24(),    u4B.n34(),    u4C.n14(),   u4C.n24(),
         u4C.n34(),    u4D.n14(),    u4D.n24(),   u4D.n34(),

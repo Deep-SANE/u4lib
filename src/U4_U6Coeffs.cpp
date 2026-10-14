@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <omp.h>
 
 #include <u3lib.h>
 
@@ -13,7 +14,7 @@
 #include <U4_U6Z6Coeffs.h>
 #include <U4basis.h>
 
-#include <qcx_utils.h> 
+#include <utils.h> 
 
 int main(int argc, char* argv[])
 {
@@ -134,6 +135,32 @@ int main(int argc, char* argv[])
     // Output the time in seconds
     std::cout << "Elapsed time: " << duration.count() << " seconds or "
               << duration.count() / 60.0 << " minutes" << std::endl;
+
+    // -----------------------------------------------------------------------
+    // Multi-threading demonstration:
+    // Each thread calls u4::initialize_thread() before database access,
+    // evaluates coefficients inside, prints them out along with thread index,
+    // and calls u4::finalize_thread().
+    // -----------------------------------------------------------------------
+    std::cout << "\n[Multi-threading demonstration]" << std::endl;
+#pragma omp parallel num_threads(4)
+    {
+      u4::initialize_thread();
+      int tid = omp_get_thread_num();
+
+      auto blk = u4::u4u6db().get_U4U6(u4a, u4b, u4ab_c[i_ab_c], u4c, u4ab[i_ab],
+                                       etamaxsab[i_ab], etamaxsab_c[i_ab_c],
+                                       u4bc[i_bc], etamaxsbc[i_bc], etamaxa_bc);
+
+#pragma omp critical
+      {
+        std::cout << "[Thread " << tid << "] Evaluated U6 block with size " << blk.size()
+                  << ", (0,0,0,0) = " << (blk.size() > 0 ? blk(0,0,0,0) : 0.0)
+                  << std::endl;
+      }
+
+      u4::finalize_thread();
+    }
   }
   else
   {

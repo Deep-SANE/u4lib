@@ -1,4 +1,4 @@
-include $(QCX_CONFIG_DIR)/make.d/pretty.mk
+include $(CONFIG_DIR)/make.d/pretty.mk
 
 BIN = ../bin
 
@@ -9,7 +9,7 @@ PRGS = $(addprefix $(BIN)/,$(basename $(SRCS)))
 all: $(PRGS)
 
 $(BIN)/%: %.cpp | $(BIN)
-	$(call qcx_print,CXX,$@)
+	$(call pretty_print,CXX,$@)
 	$(Q)$(CXX) $(CXXFLAGS) -o $@ $< $(LDFLAGS)
 
 $(BIN):

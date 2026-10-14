@@ -6,6 +6,7 @@
 #include <string>
 #include <tuple>
 #include <vector>
+#include <omp.h>
 
 #include <u3lib.h>
 
@@ -14,7 +15,7 @@
 #include <U4basis.h>
 #include <U4SU2SU2xU4SU2SU2.h>
 
-#include <qcx_utils.h> 
+#include <utils.h> 
 
 int main(int argc, char* argv[])
 {
@@ -182,6 +183,44 @@ int main(int argc, char* argv[])
   // Output the time in seconds
   std::cout << "Elapsed time: " << duration.count() << " seconds or "
             << duration.count() / 60.0 << " minutes" << std::endl;
+
+  // -------------------------------------------------------------------------
+  // Multi-threading demonstration:
+  // Each thread calls u4::initialize_thread() before database access,
+  // evaluates coefficients inside, prints them out along with thread index,
+  // and calls u4::finalize_thread().
+  // -------------------------------------------------------------------------
+  std::cout << "\n[Multi-threading demonstration]" << std::endl;
+#pragma omp parallel num_threads(4)
+  {
+    u4::initialize_thread();
+    int tid = omp_get_thread_num();
+
+#pragma omp for
+    for (int t = 0; t < static_cast<int>(tArr.size()); ++t)
+    {
+      int i = std::get<0>(tArr[t]), j = std::get<1>(tArr[t]),
+          k = std::get<2>(tArr[t]);
+
+      auto blk = u4::wigU4SU2SU2db().get_U4SU2SU2(u4A.P1(), u4A.P2(), u4A.P3(), pArrA[i].SS(), pArrA[i].TT(),
+                                                  u4B.P1(), u4B.P2(), u4B.P3(), pArrB[j].SS(), pArrB[j].TT(),
+                                                  u4C.P1(), u4C.P2(), u4C.P3(), pArrC[k].SS(), pArrC[k].TT());
+
+#pragma omp critical
+      {
+        std::cout << "[Thread " << tid << "] wigU4SU2SU2db block (" << i << "," << j << "," << k << ") "
+                  << "< (" << u4A.P1() << "," << u4A.P2() << "," << u4A.P3() << ") ("
+                  << pArrA[i].SS() << "," << pArrA[i].TT() << ") ; ("
+                  << u4B.P1() << "," << u4B.P2() << "," << u4B.P3() << ") ("
+                  << pArrB[j].SS() << "," << pArrB[j].TT() << ") || ("
+                  << u4C.P1() << "," << u4C.P2() << "," << u4C.P3() << ") ("
+                  << pArrC[k].SS() << "," << pArrC[k].TT() << ") > (0,0,0,0) = "
+                  << (blk.size() > 0 ? blk(0, 0, 0, 0) : 0.0) << std::endl;
+      }
+    }
+
+    u4::finalize_thread();
+  }
 
   u4::finalize();
 }

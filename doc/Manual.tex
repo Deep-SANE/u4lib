@@ -1,0 +1,447 @@
+\documentclass[aps,onecolumn,10pt,superscriptaddress,floatfix,nobibnote]{revtex4}
+\usepackage{subfigure}
+\usepackage{epsfig}
+\usepackage{epstopdf}
+\usepackage{color}
+\usepackage{graphicx}
+\usepackage{longtable}
+\usepackage{CJK}
+\usepackage{amsmath,bbold}
+\usepackage{float}
+\usepackage{physics}
+%\usepackage{url}
+
+%Add colors
+\newcommand{\red}[1]{{ \color{red} #1 }}
+\newcommand{\blue}[1]{{ \color{blue} #1 }}
+\newcommand{\black}[1]{{ \color{black} #1 }}
+\newcommand{\green}[1]{{ \color{green} #1 }}
+\newcommand{\magenta}[1]{{ \color{magenta} #1 }}
+\newcommand{\violet}[1]{{ \color{violet} #1 }}
+%End Add colors
+
+\usepackage{hyperref}
+\hypersetup{colorlinks=true,linkcolor=red, citecolor=blue,  urlcolor=blue}
+
+\usepackage{listings}
+\usepackage{xcolor}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\ttfamily\footnotesize,
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    numbers=left,
+    numbersep=5pt,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+
+\lstset{style=mystyle}
+
+\begin{document}
+
+\title{\texttt{u4lib}: An AI-Assisted Computational Framework for U(4) Supermultiplet Symmetry,\\ Wigner Coupling, and Racah Recoupling Coefficients}
+
+\author{Phong Dang}
+\affiliation{Department of Physics and Astronomy, Louisiana State University, Baton Rouge, LA 70803, USA}
+
+\author{Daniel Langr}
+\affiliation{Department of Computer Systems, Faculty of Information Technology, Czech Technical University in Prague, Prague, Czech Republic}
+
+\author{Tomas Dytrych}
+\affiliation{Nuclear Physics Institute, Czech Academy of Sciences, 250 68 \v{R}e\v{z}, Czech Republic}
+\affiliation{Department of Physics and Astronomy, Louisiana State University, Baton Rouge, LA 70803, USA}
+
+\begin{abstract}
+\texttt{u4lib} is an AI-assisted C++ framework for U(4)/SU(4) representation-theory
+computations --- Wigner's supermultiplet symmetry --- in nuclear structure and
+related applications. Besides the fast and accurate evaluation of U(4) Wigner
+coupling and Racah recoupling coefficients, implemented with the procedure of
+Dang \textit{et al.} \cite{Dang2024EPJP2}, the library exposes the full algebraic
+toolkit around those coefficients: irreducible representations (irreps) and their
+dimensions, Casimir invariants and conjugation; the canonical Gelfand--Tsetlin
+basis and the physical $\mathrm{SU(2)}\times\mathrm{SU(2)}$ spin-isospin basis,
+with their inner and outer multiplicities; the matrix elements of the U(4)
+generators on canonical states; the reduced matrix elements of the physical
+generators $\mathbf{S}$, $\mathbf{T}$, and the Gamow--Teller-type tensor
+$\mathbf{U}$; the tensor-product decomposition; and the transformation between
+the physical and canonical bases. \texttt{u4lib} layers on \texttt{u3lib} (SU(3))
+and mirrors its design: the C++ API is header-only and mirrored one-to-one by
+Python bindings, and a repository-local catalog of agent skills lets a
+code-executing AI assistant drive any capability from a natural-language request.
+This document is the reference manual for the public release.
+\end{abstract}
+
+\keywords{U(4); SU(4); Wigner supermultiplet; spin-isospin; Wigner coefficients; Racah coefficients; Gelfand--Tsetlin basis; nuclear structure}
+
+\maketitle
+
+\section*{PROGRAM SUMMARY}
+\noindent
+\textit{Program title}: \texttt{u4lib}
+
+\noindent
+\textit{Licensing provisions}: MIT License.
+
+\noindent
+\textit{Code repository}: \url{https://github.com/Deep-SANE/u4lib}
+
+\noindent
+\textit{Programming language}: C++ (C++20), with Python bindings via pybind11.
+
+\noindent
+\textit{External libraries}: \texttt{u3lib} (prerequisite, providing Eigen3, Boost
+headers, OpenMP, fmt, libwignernj, and core utilities); and a null-space solver
+backend --- dense Eigen3 QR (the default) or \texttt{sns}. The Python extension
+additionally uses pybind11.
+
+\noindent
+\textit{Nature of problem}: Fast, accurate, and reproducible evaluation of the
+Wigner coupling coefficients for the two group--subgroup chains
+$\mathrm{SU(4)}\supset\mathrm{U(3)}$ (canonical) and
+$\mathrm{SU(4)}\supset\mathrm{SU(2)}\times\mathrm{SU(2)}$ (physical,
+spin-isospin), the U(4) Racah recoupling coefficients ($U$-, $Z$-, and
+$9$-coefficients), and the associated representation-theoretic quantities
+(dimensions, Casimirs, multiplicities, basis enumeration, generator matrix
+elements, and basis transformations) needed by symmetry-adapted
+nuclear-structure calculations.
+
+\noindent
+\textit{Solution method}: The coupling and recoupling coefficients are built from
+the highest-weight canonical reduced coefficients, obtained as the orthonormal
+null space of the linear system enforced by the raising generators, and
+propagated by the recursion relations of Ref.~\cite{Dang2024EPJP2}; the physical
+$\mathrm{SU(2)}\times\mathrm{SU(2)}$-coupled coefficients follow from the
+physical$\,\to\,$canonical basis transformation.
+
+\section{Introduction}
+\label{sec:intro}
+
+\texttt{u4lib} evaluates the coupling and recoupling coefficients of the unitary
+group U(4) and its special unitary subgroup SU(4), together with the
+representation theory on which they rest. SU(4) is Wigner's supermultiplet
+symmetry, combining spin and isospin; its coefficients are consumed in large
+numbers by symmetry-adapted nuclear-structure calculations, where speed,
+accuracy, and a stable, documented set of phase and normalization conventions are
+essential.
+
+The coefficients are computed with the procedure introduced in
+Ref.~\cite{Dang2024EPJP2}. The mathematical formulation, definitions, and
+governing equations are given in that paper and are not reproduced here; this
+manual is a reference for the software. \texttt{u4lib} packages the engine as a
+reusable framework: in addition to the coefficients it provides irreps and their
+invariants, the canonical (Gelfand--Tsetlin) and physical
+($\mathrm{SU(2)}\times\mathrm{SU(2)}$-coupled) bases, the generator matrix
+elements, the tensor-product decomposition, and the physical$\,\to\,$canonical
+transformation. \texttt{u4lib} layers on \texttt{u3lib} and mirrors its design; the
+C++ API is header-only, Python bindings mirror it one-to-one, and an agent-skill
+catalog exposes every capability to an AI assistant. The remainder documents the
+repository structure (Sec.~\ref{sec:structure}), the classes and interface
+(Sec.~\ref{sec:classes}), the Python bindings (Sec.~\ref{sec:python}), the
+agent-assisted interface (Sec.~\ref{sec:agents}), and the build
+(Sec.~\ref{sec:build}).
+
+\section{Library structure}
+\label{sec:structure}
+
+\texttt{u4lib} is a header-only C++ library with a thin build layer; it mirrors
+\texttt{u3lib} and requires it as a prerequisite. The top-level directories are:
+\begin{itemize}
+    \item \verb|include/| --- the library itself (all algorithms live here; user
+    programs include these headers directly):
+    \begin{itemize}
+        \item \verb|U4irrep.h| --- the irrep classes \verb|su4::irrep|, \verb|u4::irrep|;
+        \item \verb|U4gelfand.h|, \verb|internal/gelfand/| --- the Gelfand state class \verb|u4::gelfand|;
+        \item \verb|U4basis.h| --- basis enumeration (\verb|gelfandBasis|, \verb|physicalBasis|), the inner multiplicity \verb|Zeta|, the \verb|u4::physicalvector| class, and the generator-action predicates;
+        \item \verb|U4decomposition.h| --- the outer multiplicity \verb|Eta| and the tensor-product \verb|decomposition|;
+        \item \verb|U4U3xU4U3.h|, \verb|U4SU2SU2xU4SU2SU2.h| --- the canonical and physical coupling coefficients and their databases;
+        \item \verb|U4_U6Z6Coeffs.h|, \verb|U4_U9Coeffs.h| --- the $U$-, $Z$-, and $9$-coefficient recoupling coefficients and their databases;
+        \item \verb|U4SU2SU2_to_U4U3U2U1.h| --- the physical$\,\to\,$canonical transformation;
+        \item \verb|U4generatorsRME.h| --- the physical-generator reduced matrix elements \verb|RME_S|, \verb|RME_T|, \verb|RME_U|;
+        \item \verb|Definitions.h| --- the structured coefficient containers;
+        \item \verb|u4lib.h| --- the umbrella header and the \verb|initialize|/\verb|finalize| lifecycle.
+    \end{itemize}
+    \item \verb|src/| --- small example driver programs (one \verb|.cpp| per task) that call the headers and print results; compiled to \verb|bin/|.
+    \item \verb|python/| --- the pybind11 extension (\verb|pyu4lib.cpp| $\to$ \verb|u4lib.so|), its build (\verb|make python|, \verb|build.sh|), build notes (\verb|BUILD_NOTES.md|), and a tutorial notebook (\verb|tutorial.ipynb|).
+    \item \verb|agents/| --- the AI-agent skill catalog: an index (\verb|AGENTS.md|), shared runtime instructions, and one skill per capability.
+    \item \verb|test/| --- the regression suite (\verb|test_*.cpp|, the \verb|*_cases.h| case sets, and \verb|reference/| documented values), run by \verb|make test|.
+    \item \verb|doc/| --- this manual (LaTeX source).
+    \item \verb|bin/| --- build output (not source).
+\end{itemize}
+
+\section{Classes and library interface}
+\label{sec:classes}
+
+This section documents every public class and its methods, and the
+database/container interface through which coefficients are reached. All types
+are in the namespace \verb|u4| (SU(4)-only base members in \verb|su4|). The
+algebraic types and their methods do not require initialization; the coefficient
+\emph{databases} do. Table~\ref{tab:main-funcs} is an at-a-glance map of the main
+entry points.
+
+\begin{table*}[tp]
+    \centering
+    \begin{tabular}{p{3.4cm}p{4.8cm}p{6.0cm}p{2.0cm}}
+    \hline\hline
+         Header & Entry point & Task & Reference\\
+        \hline
+         \verb|U4irrep.h| & \verb|dim|, \verb|C1/C2/C3/C4|, \verb|conjugate| & irrep dimension, Casimirs, conjugation & ---\\
+         \verb|U4basis.h| & \verb|Zeta|, \verb|gelfandBasis|, \verb|physicalBasis| & inner (spin-isospin) multiplicity; basis enumeration & \cite{Dang2024EPJP2}\\
+         \verb|U4decomposition.h| & \verb|Eta|, \verb|decomposition| & outer multiplicity; $A\otimes B$ series & \cite{Dang2024EPJP2}\\
+         \verb|U4U3xU4U3.h| & \verb|wigU4U3db| & $\mathrm{SU(4)}{\supset}\mathrm{U(3)}$ canonical reduced CG & \cite{Dang2024EPJP2}\\
+         \verb|U4SU2SU2xU4SU2SU2.h| & \verb|wigU4SU2SU2db| & $\mathrm{SU(2)}{\times}\mathrm{SU(2)}$ physical CG & \cite{Dang2024EPJP2}\\
+         \verb|U4_U6Z6Coeffs.h| & \verb|u4u6db|, \verb|u4z6db| & $U$- and $Z$-recoupling (three irreps) & \cite{Dang2024EPJP2}\\
+         \verb|U4_U9Coeffs.h| & \verb|u4u9db| & $9$-coefficient recoupling (four irreps) & \cite{Dang2024EPJP2}\\
+         \verb|U4SU2SU2_to_U4U3U2U1.h| & \verb|phys_to_cano| & physical $\to$ canonical transformation & \cite{Dang2024EPJP2}\\
+         \verb|U4generatorsRME.h| & \verb|RME_S|, \verb|RME_T|, \verb|RME_U| & reduced matrix elements of $\mathbf{S}$, $\mathbf{T}$, $\mathbf{U}$ & ---\\
+    \hline\hline
+    \end{tabular}
+    \caption{Main entry points of \texttt{u4lib}.}
+    \label{tab:main-funcs}
+\end{table*}
+
+\subsection{Lifecycle}
+In \verb|u4lib.h|:
+\begin{itemize}
+    \item \verb|initialize()| / \verb|initialize(&argc,&argv)| --- set up the Wigner backend, the SO(3) caches, and the U(3) \emph{and} U(4) coefficient databases (the cascade descends into \texttt{u3lib});
+    \item \verb|finalize()| --- tear everything down in reverse;
+    \item \verb|initialize_thread()| / \verb|finalize_thread()| --- per-thread setup for multithreaded use;
+    \item \verb|clear()| --- drop cached coefficients while keeping the databases alive;
+    \item \verb|is_initialized()| --- query the state.
+\end{itemize}
+\textit{Co-use with \texttt{u3lib}:} Within \texttt{u4lib}, the lifecycle automatically cascades to \texttt{u3lib}. However, if an application also drives standalone \texttt{u3lib} directly in the same process, both libraries must be initialized at application startup and finalized only after all coefficient work is complete. Calling \verb|finalize()| on one library while the other is still active will destroy the shared Wigner backend and crash the process.
+
+\subsection{Irreps: \texttt{su4::irrep} and \texttt{u4::irrep}}
+(\verb|U4irrep.h|.) \verb|su4::irrep| stores an SU(4) irrep $(P_1,P_2,P_3)$;
+\verb|u4::irrep| derives from it and adds the fourth label $n_{44}$ (fixing the total quanta).
+\begin{itemize}
+    \item \textbf{Constructors.} \verb|su4::irrep()|, \verb|su4::irrep(P1,P2,P3)|; \verb|u4::irrep()|, \verb|u4::irrep(n14,n24,n34,n44)|, \verb|u4::irrep(P1,P2,P3)| (normalized representative), and \verb|u4::irrep(su4::irrep, A)| (fix the total quanta $A$).
+    \item \textbf{Labels.} \verb|P1()|, \verb|P2()|, \verb|P3()|; \verb|n14()|, \verb|n24()|, \verb|n34()|, \verb|n44()|.
+    \item \textbf{Dimension and invariants.} \verb|dim()| (both classes); \verb|C2()|, \verb|C3()|, \verb|C4()| --- the SU(4) Casimirs of orders 2, 3, 4 (both classes, shift-invariant); \verb|C1()| --- the first-order (U(1)) Casimir $=n_{14}{+}n_{24}{+}n_{34}{+}n_{44}$ (total quanta), \textbf{available on \texttt{u4::irrep} only} (SU(4) is U(4) with the U(1) trace generator removed, so \verb|su4::irrep| has no \verb|C1()|); \verb|quanta()| (synonym of \verb|C1()|).
+    \item \textbf{Other.} \verb|zero()|; \verb|conjugate()| (returns $(P_3,P_2,P_1)$); \verb|conjugate_phase_power()|; \verb|normalize()| (\verb|u4::irrep|, set $n_{44}=0$); comparison operators and stream output; \verb|writeBinary|/\verb|readBinary|.
+\end{itemize}
+
+\subsection{Gelfand states: \texttt{u4::gelfand}}
+(\verb|U4gelfand.h|.) The canonical basis state with top U(4) labels
+$[n_{14},n_{24},n_{34},n_{44}]$ and U(3)$\supset$U(2)$\supset$U(1) sublabels
+$[n_{13},n_{23},n_{33}]$, $[n_{12},n_{22}]$, $n_{11}$.
+\begin{itemize}
+    \item \textbf{Constructor.} \verb|u4::gelfand(n14,n24,n34,n44,n13,n23,n33,n12,n22,n11)|.
+    \item \textbf{Labels / validity.} \verb|n14()|\,$\dots$\,\verb|n11()|; \verb|check()| (betweenness condition); \verb|normalize()| (shift $n_{44}\to0$).
+    \item \textbf{Subgroup labels.} \verb|P1()|, \verb|P2()|, \verb|P3()|; \verb|Lambdax2()|, \verb|MLambdax2()| ($2\times$ the embedded SU(2) angular momentum and its projection).
+    \item \textbf{Conjugation.} \verb|conjugate()|, \verb|conjugate_phase()|.
+    \item \textbf{Generator matrix elements.} The matrix elements of the U(4) generators $E_{ij}$ acting on the state, returned by the 44 methods \verb|e11()|\,$\dots$\,\verb|e44()|, \verb|e12/e21|, \verb|e23_*|, \verb|e13_*|, \verb|e34_*|, \verb|e24_*|, \verb|e14_*| (and their lowering partners), where a suffix selects the target branch. The raising-action predicates \verb|E12|, \verb|E23_12|, $\dots$, \verb|E14_33_22| in \verb|U4basis.h| identify the target state.
+\end{itemize}
+
+\subsection{Physical states: \texttt{u4::physicalvector}}
+(\verb|U4basis.h|.) The $\mathrm{SU(2)}\times\mathrm{SU(2)}$ reduced spin-isospin
+state $\ket{(P_1 P_2 P_3)\,\zeta\,S\,T}$. Spin and isospin are stored
+\textbf{doubled}: $SS=2S$, $TT=2T$.
+\begin{itemize}
+    \item \textbf{Constructor.} \verb|u4::physicalvector(irrep, SS, TT)|.
+    \item \textbf{Accessors.} \verb|irr()|; \verb|P1()|, \verb|P2()|, \verb|P3()|, \verb|n14()|\,$\dots$\,\verb|n44()|; \verb|SS()|, \verb|TT()|; \verb|zeta()| (=\verb|zetamax()|, the multiplicity of $(S,T)$).
+\end{itemize}
+
+\subsection{Free functions}
+\begin{itemize}
+    \item \textbf{Multiplicities.} \verb|u4::Zeta(irrep,SS,TT)| --- the inner (spin-isospin) multiplicity $\zeta_{\max}$ of $(S,T)$, guarded to return $0$ off the admissible grid; \verb|u4::Eta(A,B,C)| (\verb|U4decomposition.h|) --- outer multiplicity $\eta_{\max}$ of $C$ in $A\otimes B$.
+    \item \textbf{Bases.} \verb|u4::gelfandBasis(irrep)| --- all Gelfand states; \verb|u4::physicalBasis(irrep)| --- all physical states with nonzero $\zeta$; \verb|u4::findGelfand(g,gArr)| --- index of a state.
+    \item \textbf{Decomposition.} \verb|u4::decomposition(A,B)| $\to$ (list of $C$, list of $\eta_{\max}$); the full Kronecker series with $\sum_C\eta_{\max}(C)\dim C=\dim A\dim B$.
+    \item \textbf{Generator RMEs.} \verb|RME_S|, \verb|RME_T|, \verb|RME_U| (\verb|U4generatorsRME.h|) take two \verb|physicalvector| states (bra, ket) and two \verb|std::vector<int>| out-parameters, and return an \verb|Eigen::MatrixXd| of shape $\zeta'_{\max}\times\zeta_{\max}$. $\mathbf{S}$ and $\mathbf{T}$ are diagonal in $(S,T)$: $\langle\|\mathbf{S}\|\rangle=\sqrt{S(S{+}1)(2S{+}1)(2T{+}1)}$ and $\langle\|\mathbf{T}\|\rangle=\sqrt{T(T{+}1)(2T{+}1)(2S{+}1)}$; $\mathbf{U}$ is the rank-$(1,1)$ Gamow--Teller-type tensor ($\Delta S,\Delta T\in\{-1,0,+1\}$).
+    \item \textbf{Transformation.} \verb|u4::phys_to_cano(p,MMS,MMT,gArr)| and \verb|u4::phys_to_cano_allM(p,gArr)| (\verb|U4SU2SU2_to_U4U3U2U1.h|) expand a physical state (at doubled projections $MMS,MMT$) in the Gelfand basis; they return the canonical-state indices into \verb|gArr=gelfandBasis(p.irr())| and an amplitude matrix with one orthonormal column per $\zeta$.
+\end{itemize}
+
+\subsection{Coefficient containers}
+(\verb|Definitions.h|.) Every database call returns one of these structured
+containers; indices are zero-based and bounded by the \verb|*max()| counts.
+\begin{itemize}
+    \item \verb|U4U3| (canonical coupling) --- \verb|rhomax()|, \verb|etamax()|; \verb|operator()(rho,eta)|; \verb|data()|; \verb|size()|, \verb|empty()|.
+    \item \verb|U4SU2SU2| (physical coupling) --- \verb|zetaAmax()|, \verb|zetaBmax()|, \verb|zetaCmax()|, \verb|etamax()|; \verb|operator()(zetaA,zetaB,zetaC,eta)|; \verb|data()|.
+    \item \verb|U4U6| ($U$-recoupling) --- \verb|etaABmax()|, \verb|etaAB_Cmax()|, \verb|etaBCmax()|, \verb|etaA_BCmax()|; \verb|operator()(etaAB,etaAB_C,etaBC,etaA_BC)|; \verb|data()|.
+    \item \verb|U4Z6| ($Z$-recoupling) --- \verb|rhoABmax()|, \verb|rhoAB_Cmax()|, and (reusing the container's getter names) \verb|rhoBCmax()| $\equiv$ the AC channel, \verb|rhoA_BCmax()| $\equiv$ the AC\_B channel; \verb|operator()(etaAB,etaAB_C,etaAC,etaAC_B)|; \verb|data()|.
+    \item \verb|U4U9| ($9$-coefficient recoupling) --- \verb|etaACmax()|, \verb|etaBDmax()|, \verb|etaABCDmax()|, \verb|etaABmax()|, \verb|etaCDmax()|, \verb|etaACBDmax()|; \verb|operator()(etaAC,etaBD,etaABCD,etaAB,etaCD,etaACBD)|; \verb|data()|.
+\end{itemize}
+In C++ the \verb|U4U9| result is a view into a thread-local scratch buffer that
+the next database call overwrites; copy it before the next call. The others own
+their buffers. (The Python bindings copy \verb|U4U9| automatically.)
+
+\subsection{Coefficient databases}
+Reached through singletons; each returns a container above.
+\begin{itemize}
+    \item \verb|u4::wigU4U3db().get_U4U3(| $n_{14}^a,n_{24}^a,n_{34}^a,n_{44}^a,n_{13}^a,n_{23}^a,n_{33}^a,\ \dots^{b},\ \dots^{c}$ \verb|)| $\to$ \verb|U4U3| --- $\mathrm{SU(4)}\supset\mathrm{U(3)}$ reduced coupling for $a\otimes b\to c$ (each state by its U(4) labels and U(3) sublabels), indexed by $(\rho,\eta)$.
+    \item \verb|u4::wigU4SU2SU2db().get_U4SU2SU2(| $P_1^a,P_2^a,P_3^a,SS^a,TT^a,\ \dots^{b},\ \dots^{c}$ \verb|)| $\to$ \verb|U4SU2SU2| --- physical spin-isospin reduced coupling ($SS=2S$, $TT=2T$), indexed by $(\zeta_A,\zeta_B,\zeta_C,\eta)$.
+    \item \verb|u4::u4u6db().get_U4U6(| $A,B,ABC,C,AB,\ \eta_{AB},\eta_{AB\_C},\ BC,\eta_{BC},\eta_{A\_BC}$ \verb|)| $\to$ \verb|U4U6| --- recouples $(AB)C\leftrightarrow A(BC)$ (note that $ABC$ precedes $C$).
+    \item \verb|u4::u4z6db().get_U4Z6(| $B,A,ABC,C,AB,\ \eta_{AB},\eta_{AB\_C},\ AC,\eta_{AC},\eta_{AC\_B}$ \verb|)| $\to$ \verb|U4Z6| --- recouples $(AB)C\leftrightarrow(AC)B$ (note the leading $B,A$, exchanging the first pair).
+    \item \verb|u4::u4u9db().get_U4U9(| $A,B,C,D,$ $AB,CD,AC,BD,ABCD,$ $\eta_{AC},\eta_{BD},\eta_{ABCD},$ $\eta_{AB},\eta_{CD},\eta_{ACBD}$ \verb|)| $\to$ \verb|U4U9|.
+\end{itemize}
+The multiplicity maxima are the \verb|Eta| values for the corresponding
+channels, supplied in the fixed interleaved positions shown; a mismatch trips an
+internal assertion. In \verb|get_U4U9|, note that the 3rd multiplicity argument $\eta_{ABCD}$ corresponds to the $(AB)(CD)\to ABCD$ coupling route and the 6th ($\eta_{ACBD}$) to $(AC)(BD)\to ABCD$; swapping them trips an internal assertion. A forbidden or empty coupling returns an empty container
+(safe to query for shape, not to index).
+
+A minimal C++ session:
+\begin{lstlisting}[language=C++]
+u4::initialize(&argc, &argv);
+// (1,0,0) S=1/2 T=1/2  x  (1,0,0) S=1/2 T=1/2  ->  (2,0,0) S=1 T=1
+auto blk = u4::wigU4SU2SU2db().get_U4SU2SU2(1,0,0,1,1, 1,0,0,1,1, 2,0,0,2,2);
+double x = blk(0, 0, 0, 0);     // = 1
+u4::finalize();
+\end{lstlisting}
+
+\subsection{Conventions and normalization}
+\label{sub:conv}
+Phase and normalization conventions follow Ref.~\cite{Dang2024EPJP2}; documented
+values and the generation procedure are in \verb|test/reference/|.
+\begin{itemize}
+    \item \textbf{Doubled spin-isospin.} All spin and isospin labels are doubled: $SS=2S$, $TT=2T$ (and $MMS=2M_S$, $MMT=2M_T$). \verb|Zeta| returns $0$ off the parity-correct $(S,T)$ grid; enumerate valid states with \verb|physicalBasis| rather than scanning it.
+    \item \textbf{Multiplicity indexing.} Counts come from \verb|Zeta|/\verb|Eta|; container accessors use zero-based indices $0,\dots,\text{max}{-}1$.
+    \item \textbf{Canonical-coupling phase.} For each $\eta$ block the phase and normalization are fixed by the highest-weight reduced coefficients --- the orthonormal null space of the system imposed by the raising generators annihilating the highest-weight coupled state. For $\eta_{\max}>1$ (and self-conjugate irreps) the solver fixes \emph{a} valid orthonormal $\eta$ basis; any alternative must be applied consistently to every $\eta$-carrying coefficient. Conjugation of a Gelfand state satisfies $C\ket{g} = (-1)^{n_{14}+n_{34}-n_{13}-n_{23}-n_{33}-n_{12}-n_{22}-n_{11}}\ket{g.\mathrm{conjugate}()}$ (\verb|gelfand::conjugate_phase()|).
+    \item \textbf{Physical\,$\to$\,canonical phase.} A physical state $\ket{R\,\zeta\,S\,M_S\,T\,M_T}$ ($R=(P_1,P_2,P_3)$) is expanded in canonical Gelfand states. The highest-weight state $\ket{R\,\zeta\,S\,S\,T\,T}$ is the null space of $S_+=E_{13}{+}E_{24}$ and $T_+=E_{12}{+}E_{34}$; $S_-$ and $T_-$ fix the lower-$M$ phases within a $\zeta$ multiplet. For $P_1\neq P_3$ the construction preserves $\zeta$; for a self-conjugate irrep ($P_1=P_3$), conjugation acts as a projection-independent symmetric matrix $D$ ($D^2=\mathbb{1}$) that may mix $\zeta$ (e.g. $(P_1,P_2,P_3)=(1,1,1)$, $S=T=1$).
+    \item \textbf{Generator RME factor.} \verb|RME_S|/\verb|RME_T|/\verb|RME_U| carry an extra $\sqrt{(2S'{+}1)(2T'{+}1)}$ relative to the Wigner--Eckart reduced element.
+    \item \textbf{Assertions are on.} Invalid labels or out-of-range indices abort in C++; the Python bindings guard database access and raise instead.
+\end{itemize}
+
+\section{Python bindings}
+\label{sec:python}
+
+The module \verb|u4lib| mirrors the C++ API one-to-one; build it with
+\verb|make python| and the interpreter whose ABI matches the extension (keep
+\texttt{u3lib}'s \verb|python/| importable, since \verb|u4lib| imports it).
+Irreps (\verb|su4.irrep|, \verb|irrep|), \verb|gelfand|, \verb|physicalvector|,
+the free functions \verb|Eta|, \verb|Zeta|, \verb|decomposition|,
+\verb|gelfandBasis|, \verb|physicalBasis|, the physical-generator RMEs
+\verb|RME_S|/\verb|RME_T|/\verb|RME_U|, the transformation
+\verb|phys_to_cano|/\verb|phys_to_cano_allM|, and the five database accessors are
+all exposed with the same names and semantics as Sec.~\ref{sec:classes}. The structured containers
+provide \verb|__call__| (multiplicity-indexed), flat \verb|data()| as a NumPy
+array, and a printing method; database access before \verb|initialize()| or
+after \verb|finalize()| raises \verb|RuntimeError| rather than aborting.
+\begin{lstlisting}[language=Python]
+import u4lib as u4
+u4.initialize()
+try:
+    blk = u4.wigU4SU2SU2db().get_U4SU2SU2(1,0,0,1,1, 1,0,0,1,1, 2,0,0,2,2)
+    x = blk(0, 0, 0, 0)                 # (zetaA,zetaB,zetaC,eta) = 1
+finally:
+    u4.finalize()
+\end{lstlisting}
+A worked introduction covering irreps, bases, coupling, and recoupling is
+provided as a Jupyter notebook, \verb|python/tutorial.ipynb|; ABI and toolchain
+details are in \verb|python/BUILD_NOTES.md|.
+
+\section{Agent-assisted interface}
+\label{sec:agents}
+
+\texttt{u4lib} ships a repository-local catalog of \emph{agent skills} under
+\verb|agents/|: an index (\verb|agents/AGENTS.md|), shared runtime instructions,
+and one skill per capability. Each skill states its inputs, the exact library
+call, the convention, and a built-in numerical check. A code-executing AI
+assistant pointed at the catalog carries out the requested computation using the
+configured local library; no network service is involved.
+
+It is important to be precise about what the agent does and does not do. \textbf{The
+agent performs no physics and no mathematics itself.} It does not derive or
+approximate coupling coefficients, Casimirs, or matrix elements. Its role is
+\emph{orchestration}: from a natural-language request it selects the matching
+skill, constructs valid inputs in the library's conventions, invokes the
+compiled C++/Python routine, and reports the returned numbers with their labels
+and the check that was run. All numerical work is done by the library; the agent
+is an interface that routes a request to the correct tool and formats the result,
+and it declines or asks for clarification when a request is ill-posed (for
+example, a request for the first-order Casimir of an SU(4) irrep, which is not
+defined).
+
+Table~\ref{tab:prompts} lists each skill with a representative prompt; the
+parenthetical results were checked against the library, so each prompt doubles
+as a self-test. Spin and isospin use the doubled labels $SS=2S$, $TT=2T$.
+
+\begin{table*}[tp]
+    \centering
+    \small
+    \begin{tabular}{p{3.1cm}p{13.2cm}}
+    \hline\hline
+    Skill & Example prompt (expected result) \\
+    \hline
+    \verb|dim| & ``Dimension of the SU(4) irrep $(1,0,1)$ -- equivalently the U(4) irrep $[2,1,1,0]$?'' ($15$, the adjoint; shift-invariant) \\
+    \verb|casimirs| & ``$C_2,C_3,C_4$ for the SU(4) adjoint $(1,0,1)$, and $C_1,C_2,C_3,C_4$ for the U(4) irrep $[2,1,1,0]$.'' (SU(4): $16,0,72$; U(4): $C_1{=}4,\,16,0,72$ -- $C_1$ is U(4)-only) \\
+    \verb|cano-list| & ``Enumerate the canonical U(4) Gelfand basis of $(1,0,0)$ with each state's weights and subgroup labels.'' ($4$ states $={}$\,dim) \\
+    \verb|phys-list| & ``List the physical spin-isospin basis $(\zeta,S,T)$ of $(2,0,0)$ and verify the dimension sum rule.'' ($(S,T){=}(1,1),(0,0)$, each $\zeta{=}1$; $\sum\zeta(2S{+}1)(2T{+}1){=}10$) \\
+    \verb|cano-generators| & ``Act with $E_{12}$ on the Gelfand state $\ket{2,0,0,0;2,0,0;2,0;1}$ of $(2,0,0)$; give the resulting state and matrix element.'' ($\sqrt2$) \\
+    \verb|phys-generators| & ``Compute $\langle(2,0,0)\,S{=}1\,T{=}1\|\mathbf{S}\|(2,0,0)\,S{=}1\,T{=}1\rangle$ and the diagonal $\langle\|\mathbf{U}\|\rangle$.'' ($\sqrt{18}\approx4.243$ and $3$) \\
+    \verb|phys-to-cano| & ``Express the highest-weight $\ket{(2,0,0)\,\zeta{=}1\,S{=}1\,T{=}1}$ in the canonical Gelfand basis.'' (a single state, amplitude $1$) \\
+    \verb|inner-mult| & ``Spin-isospin multiplicity $\zeta$ of $(S,T){=}(1,1)$ in the adjoint $(1,0,1)$?'' ($1$) \\
+    \verb|outer-mult| & ``Outer multiplicity $\eta$ of $(1,0,1)$ in $(1,0,1)\otimes(1,0,1)$?'' ($2$) \\
+    \verb|decomposition| & ``Full decomposition of $(1,0,0)\otimes(1,0,0)$ with outer multiplicities; check the dimension sum rule.'' ($(2,0,0){+}(0,1,0)$, $\sum\eta\cdot\dim{=}16$) \\
+    \verb|cano-coupling| & ``$\mathrm{SU(4)}{\supset}\mathrm{U(3)}$ reduced coupling for the highest weights of $(1,0,0)\times(1,0,0)\to(2,0,0)$; verify it equals $1$.'' \\
+    \verb|phys-coupling| & ``Spin-isospin coupling $(1,0,0)\,S{=}\tfrac12 T{=}\tfrac12 \times (1,0,0)\,S{=}\tfrac12 T{=}\tfrac12 \to (2,0,0)\,S{=}1 T{=}1$; verify it equals $1$.'' \\
+    \verb|u6recoupling| & ``$U$-recoupling for $(1,0,0){\cdot}(1,0,0){\cdot}(1,0,0)$ through $(2,0,0)$ to $(3,0,0)$.'' ($1$) \\
+    \verb|z6recoupling| & ``$Z$-recoupling between the $AB$--$C$ and $AC$--$B$ routes for $(1,0,0){\cdot}(1,0,0){\cdot}(1,0,0)\to(3,0,0)$.'' ($1$) \\
+    \verb|u9recoupling| & ``$9$-coefficient recoupling for four fundamentals $(1,0,0)$ coupling to $(4,0,0)$.'' ($1$) \\
+    \verb|conjugation| & ``Conjugate the SU(4) irrep $(2,0,0)$ and a Gelfand state of it, reporting the phases.'' (irrep $\to(0,0,2)$, phase power $3$) \\
+    \hline\hline
+    \end{tabular}
+    \caption{The \texttt{u4lib} agent skills with a representative prompt for each.}
+    \label{tab:prompts}
+\end{table*}
+
+\section{Build and installation}
+\label{sec:build}
+
+\texttt{u4lib} is header-only and layers on \texttt{u3lib} (a prerequisite); user
+programs include the headers in \verb|include/| directly. The source code is
+hosted publicly at \url{https://github.com/Deep-SANE/u4lib}. Dependencies and
+compiler flags are resolved uniformly via \verb|make config| (or
+\verb|./config/configure.sh|), which inspects the local environment, locates
+\texttt{u3lib}, and writes \verb|config/config.generated.mk| without requiring
+manual environment variables. The main make targets are \verb|make| (builds
+example CLI utilities $\to$ \verb|bin/|), \verb|make test| (rebuilds and runs
+the regression test suite), and \verb|make python| (compiles the pybind11
+extension \verb|python/u4lib.so|). The regression tests check dimensions, Gelfand
+structure, $\mathrm{SU(2)}\times\mathrm{SU(2)}$ branching, canonical/physical
+coupling orthonormality across $\zeta$ and $\eta$, conjugation identities, and
+documented analytic values; numerical agreement is tolerance-based.
+
+All core external dependencies are provided by \texttt{u3lib}:
+\begin{itemize}
+    \item \texttt{u3lib} (prerequisite) --- provides the base group-theoretic infrastructure, shared utilities, and the libwignernj SU(2) Wigner backend.
+    \item \textbf{Null-space solver} (selected via \verb|NULLSPACE_SOLVER=qr|$\mid$\verb|sns|, default \verb|qr|):
+    \begin{itemize}
+        \item Dense QR (default) --- dense QR null-space solver via Eigen3; requires no external sparse solver.
+        \item \texttt{sns} (\url{https://gitlab.fit.cvut.cz/krastale/dp-sparse-nullspace}) --- sparse null-space solver enabled via \verb|USE_SNS=1|.
+    \end{itemize}
+    \item Eigen3, Boost (headers), OpenMP, and fmt --- inherited from \texttt{u3lib}.
+    \item pybind11 (Python bindings) --- \url{https://github.com/pybind/pybind11}.
+\end{itemize}
+
+\texttt{u4lib} ships as an independent, self-contained repository with a uniform
+\verb|make config|/\verb|make|/\verb|make test|/\verb|make install| interface and no
+required environment variables.
+
+\begin{acknowledgments}
+This work is dedicated to the memory of Jerry P. Draayer (who passed on September 13, 2026), whose pioneering contributions to algebraic nuclear physics and Wigner's supermultiplet model inspired this framework.
+This library implements the U(4) coupling and recoupling procedure of
+Ref.~\cite{Dang2024EPJP2}. The authors also gratefully acknowledge Feng Pan and Michela Negro for their valuable discussions and contributions.
+\end{acknowledgments}
+
+\begin{thebibliography}{9}
+\bibitem{Dang2024EPJP2} P. Dang, J. P. Draayer, F. Pan, T. Dytrych, D. Langr,
+D. Kekejian, K. S. Becker, and N. Thompson, ``Coupling and Recoupling
+Coefficients for Wigner's U(4) Supermultiplet Symmetry,'' Eur. Phys. J. Plus
+\textbf{139}, 933 (2024).
+\end{thebibliography}
+
+\end{document}

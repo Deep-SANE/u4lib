@@ -21,10 +21,14 @@
 //    is_initialized()             True only between initialize() and finalize()
 //    Eta(P1a,P2a,P3a, ...b, ...c) coupling multiplicity, by SU(4) labels
 //    Eta(a, b, c)                 coupling multiplicity, by irrep objects
+//    decomposition(a, b)          output irreps and their Eta multiplicities
 //    Zeta(P1, P2, P3, SS, TT)     (S,T) branching multiplicity, by labels
 //    Zeta(irrep, SS, TT)          (S,T) branching multiplicity, by irrep object
 //    physicalBasis(irrep)         list of physicalvector (zeta, SS, TT) states
 //    gelfandBasis(irrep)          list of gelfand states spanning the irrep
+//    RME_S/RME_T/RME_U(bra, ket)  (matrix, bra_zeta, ket_zeta) RME of S/T/U
+//    phys_to_cano(p, MMS, MMT, gArr)  (canoBasis, T) Gelfand expansion
+//    phys_to_cano_allM(p, gArr)   same for all (MMS,MMT), nested [iS][iT]
 //
 //  physicalvector(irrep, SS, TT)  a physical (SS,TT)-reduced basis state
 //    irr(), P1(), P2(), P3(), n14(), n24(), n34(), n44(),
@@ -94,8 +98,11 @@
 #include <pybind11/stl.h>        // std::vector <-> list (physical/gelfand bases)
 
 #include <u4lib.h>            // umbrella: initialize/finalize (cascades u4 -> u3
-                             // -> qcx_utils) + all coefficient DBs
+                             // -> utils) + all coefficient DBs
 #include <U4basis.h>         // Zeta, physicalvector, physical/gelfand bases
+#include <U4decomposition.h> // U(4) tensor-product decompositions
+#include <U4generatorsRME.h>      // RME_S, RME_T, RME_U (physical generator RMEs)
+#include <U4SU2SU2_to_U4U3U2U1.h> // phys_to_cano, phys_to_cano_allM
 
 namespace py = pybind11;
 using namespace py::literals;
@@ -143,7 +150,7 @@ PYBIND11_MODULE(u4lib, m)
       "before use.";
 
   // ---- lifecycle -----------------------------------------------------------
-  //  initialize() cascades u4 -> u3 -> qcx_utils, so one call sets up the
+  //  initialize() cascades u4 -> u3 -> utils, so one call sets up the
   //  Wigner backend, SO3 caches, and the U(3) and U(4) coefficient databases.
   m.def("initialize", []() { u4::initialize(); },
         "Initialize u4lib (call once before any coefficient call).");
@@ -331,6 +338,13 @@ PYBIND11_MODULE(u4lib, m)
         },
         "a"_a, "b"_a, "c"_a, "Coupling multiplicity eta (by irrep objects).");
 
+  m.def("decomposition",
+        [](const u4::irrep& a, const u4::irrep& b) {
+          return u4::decomposition(a, b);
+        },
+        "a"_a, "b"_a,
+        "Return (output U(4) irreps, Eta multiplicities) for the product a x b.");
+
   // ---- Zeta : (S,T) branching multiplicity of (SS,TT) in the irrep ---------
   //  SS = 2*spin, TT = 2*isospin (doubled quantum numbers).
   m.def("Zeta",
@@ -375,6 +389,65 @@ PYBIND11_MODULE(u4lib, m)
         "List of physicalvector states (zeta, SS, TT) spanning the irrep.");
   m.def("gelfandBasis", &u4::gelfandBasis, "irrep"_a,
         "List of gelfand states spanning the irrep.");
+
+  // ---- physical generator reduced matrix elements (S, T and U) -------------
+  //  <(P1,P2,P3) zeta' S' T' || G || (P1,P2,P3) zeta S T> for the spin (S),
+  //  isospin (T) and Gamow-Teller-like (U) generators, bra and ket in the SAME
+  //  irrep. Returns a tuple (RME, bra_zeta, ket_zeta): RME is a
+  //  (bra.zeta() x ket.zeta()) matrix indexed by zero-based (S,T) multiplicity;
+  //  bra_zeta/ket_zeta are the 1-based zeta labels for the rows/columns.
+  //  Requires an initialized session.
+  m.def("RME_S",
+        [](u4::physicalvector bra, u4::physicalvector ket) {
+          require_init();
+          std::vector<int> bra_zeta, ket_zeta;
+          Eigen::MatrixXd rme = u4::RME_S(bra, ket, bra_zeta, ket_zeta);
+          return py::make_tuple(rme, bra_zeta, ket_zeta);
+        },
+        "bra"_a, "ket"_a,
+        "Reduced matrix element of S: (matrix, bra_zeta, ket_zeta).");
+  m.def("RME_T",
+        [](u4::physicalvector bra, u4::physicalvector ket) {
+          require_init();
+          std::vector<int> bra_zeta, ket_zeta;
+          Eigen::MatrixXd rme = u4::RME_T(bra, ket, bra_zeta, ket_zeta);
+          return py::make_tuple(rme, bra_zeta, ket_zeta);
+        },
+        "bra"_a, "ket"_a,
+        "Reduced matrix element of T: (matrix, bra_zeta, ket_zeta).");
+  m.def("RME_U",
+        [](u4::physicalvector bra, u4::physicalvector ket) {
+          require_init();
+          std::vector<int> bra_zeta, ket_zeta;
+          Eigen::MatrixXd rme = u4::RME_U(bra, ket, bra_zeta, ket_zeta);
+          return py::make_tuple(rme, bra_zeta, ket_zeta);
+        },
+        "bra"_a, "ket"_a,
+        "Reduced matrix element of U: (matrix, bra_zeta, ket_zeta).");
+
+  // ---- physical -> canonical (Gelfand) expansion ---------------------------
+  //  Express |(P1,P2,P3) zeta S T; MS MT> in the Gelfand basis.
+  //  phys_to_cano(p, MMS, MMT, gArr) returns (canoBasis, T): canoBasis are
+  //  indices into gArr of the Gelfand states at this (MMS,MMT), and column k of
+  //  the T matrix is the k-th (S,T) multiplicity copy (zeta = k+1). MMS/MMT are
+  //  the doubled projections (2*MS, 2*MT). phys_to_cano_allM returns the same
+  //  for every (MMS,MMT) as nested lists indexed [iS][iT] with iS=(SS-MMS)/2,
+  //  iT=(TT-MMT)/2. Requires an initialized session.
+  m.def("phys_to_cano",
+        [](const u4::physicalvector& p, int MMS, int MMT,
+           const std::vector<u4::gelfand>& gArr) {
+          require_init();
+          return u4::phys_to_cano(p, MMS, MMT, gArr);
+        },
+        "p"_a, "MMS"_a, "MMT"_a, "gArr"_a,
+        "Expand |... S T; MS MT> in the Gelfand basis: (canoBasis indices, T).");
+  m.def("phys_to_cano_allM",
+        [](const u4::physicalvector& p, const std::vector<u4::gelfand>& gArr) {
+          require_init();
+          return u4::phys_to_cano_allM(p, gArr);
+        },
+        "p"_a, "gArr"_a,
+        "phys_to_cano for every (MMS,MMT) as nested lists [iS][iT].");
 
   // ==========================================================================
   //  Coefficient container classes (Definitions.h). Structured results of the

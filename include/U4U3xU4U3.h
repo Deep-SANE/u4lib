@@ -36,7 +36,6 @@
 
 #include <nullspace_solver_qr.h>
 #if defined(NULLSPACE_SOLVER_SLEPC)
-#include <nullspace_solver_slepc.h>
 #elif defined(NULLSPACE_SOLVER_SNS)
 #include <nullspace_solver_sns.h>
 #endif
@@ -124,7 +123,7 @@ namespace u4
 
       assert(rhomax > 0);
 
-      std::array<qcx_utils::UInt8, 9> safe_key = {
+      std::array<utils::UInt8, 9> safe_key = {
                             u3a.n13(), u3a.n23(), u3a.n33(), 
                             u3b.n13(), u3b.n23(), u3b.n33(), 
                             u3c.n13(), u3c.n23(), u3c.n33()};
@@ -165,7 +164,7 @@ namespace u4
       auto rhomax = u3::Rho(u3a, u3b, u3c);
       if (rhomax > 0)
       {
-        std::array<qcx_utils::UInt8, 9> safe_key = {
+        std::array<utils::UInt8, 9> safe_key = {
                             u3a.n13(), u3a.n23(), u3a.n33(), 
                             u3b.n13(), u3b.n23(), u3b.n33(), 
                             u3c.n13(), u3c.n23(), u3c.n33()};
@@ -210,7 +209,7 @@ namespace u4
       auto rhomax = u3::Rho(u3a, u3b, u3c);
       if (rhomax > 0)
       {
-        std::array<qcx_utils::UInt8, 9> safe_key = {
+        std::array<utils::UInt8, 9> safe_key = {
                             u3a.n13(), u3a.n23(), u3a.n33(),
                             u3b.n13(), u3b.n23(), u3b.n33(),
                             u3c.n13(), u3c.n23(), u3c.n33()};
@@ -633,7 +632,7 @@ namespace u4
                                          const std::vector<u4::gelfand>& gArr3,
                                          int etamax, u4::WigU4U3_coeffs& coeffs)
   {
-    auto& cgcs = qcx_utils::cgcs();
+    auto& cgcs = utils::cgcs();
     auto& wigU3U2db = u3::wigU3U2db();
 
     std::vector<std::pair<int, int>> indices =
@@ -661,11 +660,9 @@ namespace u4
 #endif
 
 #if defined(NULLSPACE_SOLVER_SNS)
-    Eigen::MatrixXd nullspace = qcx_utils::null_space_sns(mat, etamax);
-#elif defined(NULLSPACE_SOLVER_SLEPC)
-    Eigen::MatrixXd nullspace = qcx_utils::null_space_slepc(mat, etamax);
+    Eigen::MatrixXd nullspace = utils::null_space_sns(mat, etamax);
 #else
-    Eigen::MatrixXd nullspace = qcx_utils::null_space(mat);
+    Eigen::MatrixXd nullspace = utils::null_space(mat);
 #endif
 
 #ifdef U4LIB_NULLSPACE_LOG
@@ -805,7 +802,7 @@ namespace u4
       std::vector<Eigen::MatrixXd>& E43E42E41,
       u4::WigU4U3_coeffs& coeffs)
   {
-    auto& cgcs = qcx_utils::cgcs();
+    auto& cgcs = utils::cgcs();
     auto& wigU3U2db = u3::wigU3U2db();
 
     int jj3 = gArr3[parent_g3].Lambdax2(), mm3 = gArr3[parent_g3].MLambdax2();
@@ -1080,7 +1077,7 @@ namespace u4
       std::vector<Eigen::MatrixXd>& E43E42E41,
       u4::WigU4U3_coeffs& coeffs)
   {
-    auto& cgcs = qcx_utils::cgcs();
+    auto& cgcs = utils::cgcs();
     auto& wigU3U2db = u3::wigU3U2db();
 
     int jj3 = gArr3[parent_g3].Lambdax2(), mm3 = gArr3[parent_g3].MLambdax2();
@@ -1616,7 +1613,7 @@ namespace u4
       std::vector<Eigen::MatrixXd>& E43E42E41,
       u4::WigU4U3_coeffs& coeffs)
   {
-    auto& cgcs = qcx_utils::cgcs();
+    auto& cgcs = utils::cgcs();
     auto& wigU3U2db = u3::wigU3U2db();
 
     int jj3 = gArr3[parent_g3].Lambdax2(), mm3 = gArr3[parent_g3].MLambdax2();
@@ -2172,9 +2169,10 @@ namespace u4
                                        int etamax, int w3,
                                        WigU4U3_coeffs& coeffs)
   {
-    auto& cgcs = qcx_utils::cgcs();
+    auto& cgcs = utils::cgcs();
     auto& wigU3U2db = u3::wigU3U2db();
 
+    /*
     // trace states with same [w3,w2,w1] (z-weight)
     int W1max = gArr3[0].n14(), W1min = gArr3[0].n44(),
         W2max = gArr3[0].n14() + gArr3[0].n24(),
@@ -2202,6 +2200,19 @@ namespace u4
                 gArr3[same_weight_gArr3_temp.back()].n13())
           same_weight_gArr3 = same_weight_gArr3_temp;
       }
+    }
+    */
+
+    // Keep all GT states at the common point on this fixed-w3 slice.
+    const int W1 = gArr3[0].n24();
+    const int W2 = W1 + gArr3[0].n34();
+    std::vector<int> same_weight_gArr3;
+    for (int i = 0; i < gArr3.size(); i++)
+    {
+      if (gArr3[i].n11() == W1 &&
+          gArr3[i].n12() + gArr3[i].n22() == W2 &&
+          gArr3[i].n13() + gArr3[i].n23() + gArr3[i].n33() == w3)
+        same_weight_gArr3.push_back(i);
     }
     /*
         for (int i = 0; i < same_weight_gArr3.size(); i++)
@@ -2650,7 +2661,7 @@ namespace u4
     using ht_value_type = std::shared_ptr<const WigU4U3_coeffs>;
 
 #ifdef U4LIB_ENABLE_WIGU4U3_CACHE
-    qcx_utils::Cache<ht_key_type, ht_value_type> cache_;
+    utils::Cache<ht_key_type, ht_value_type> cache_;
 #endif
 
     inline static db_value_type* p_result_ = nullptr;
@@ -2756,7 +2767,7 @@ namespace u4
       if (etamax == 0)
         return nullptr;
 
-      std::array<qcx_utils::UInt8, 9>
+      std::array<utils::UInt8, 9>
         ht_key_safe = {u4a.n14(), u4a.n24(), u4a.n34(),
                        u4b.n14(), u4b.n24(), u4b.n34(),
                        u4c.n14(), u4c.n24(), u4c.n34()};

@@ -18,8 +18,8 @@
 #include <chrono>
 #endif
 
-#include <qcx_Cache.h>
-#include <qcx_Int.h>
+#include <Cache.h>
+#include <Int.h>
 #include <so3Coeffs/SO3_CGC.h>
 
 namespace u4
@@ -32,7 +32,7 @@ namespace u4
               const std::vector<u4::physicalvector>& pArrB,
               const std::vector<u4::physicalvector>& pArrC)
   {
-    auto& cgcs = qcx_utils::cgcs();
+    auto& cgcs = utils::cgcs();
     auto& wigU3U2db = u3::wigU3U2db();
     auto& wigU4U3db = u4::wigU4U3db();
 
@@ -185,7 +185,7 @@ namespace u4
     using value_type = coeffs_t; //Eigen::MatrixXd;
 
 #ifdef U4LIB_ENABLE_WIGU4SU2SU2_CACHE
-    qcx_utils::Cache<key_type, value_type> cache_;
+    utils::Cache<key_type, value_type> cache_;
 #endif
 
     inline static value_type* p_result_ = nullptr;
@@ -248,7 +248,7 @@ namespace u4
       auto start = std::chrono::high_resolution_clock::now();
 #endif
 
-      auto& cgcs = qcx_utils::cgcs();
+      auto& cgcs = utils::cgcs();
       auto& wigU3U2db = u3::wigU3U2db();
       auto& wigU4U3db = u4::wigU4U3db();
 
@@ -383,7 +383,7 @@ namespace u4
         return {};
 
 #ifdef U4LIB_ENABLE_WIGU4SU2SU2_CACHE
-      std::array<qcx_utils::UInt8, 15> safe_key = {P1a, P2a, P3a, SSa, TTa,
+      std::array<utils::UInt8, 15> safe_key = {P1a, P2a, P3a, SSa, TTa,
                                                    P1b, P2b, P3b, SSb, TTb,
                                                    P1c, P2c, P3c, SSc, TTc};
 
@@ -437,7 +437,7 @@ namespace u4
         return {};
 
 #ifdef U4LIB_ENABLE_WIGU4SU2SU2_CACHE
-      std::array<qcx_utils::UInt8, 15> safe_key = {P1a, P2a, P3a, SSa, TTa,
+      std::array<utils::UInt8, 15> safe_key = {P1a, P2a, P3a, SSa, TTa,
                                                    P1b, P2b, P3b, SSb, TTb,
                                                    P1c, P2c, P3c, SSc, TTc};
 

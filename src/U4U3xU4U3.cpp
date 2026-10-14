@@ -5,6 +5,7 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <omp.h>
 
 #include <so3Coeffs/SO3_CGC.h>
  
@@ -15,7 +16,7 @@
 #include <U4decomposition.h>
 #include <U4U3xU4U3.h>
 
-#include <qcx_utils.h> 
+#include <utils.h> 
 
 int main(int argc, char* argv[])
 {
@@ -107,6 +108,44 @@ int main(int argc, char* argv[])
   // Output the time in seconds
   std::cout << "Elapsed time: " << duration.count() << " seconds or "
             << duration.count() / 60.0 << " minutes" << std::endl;
+
+  // -------------------------------------------------------------------------
+  // Multi-threading demonstration:
+  // Each thread calls u4::initialize_thread() before database access,
+  // evaluates coefficients inside, prints them out along with thread index,
+  // and calls u4::finalize_thread().
+  // -------------------------------------------------------------------------
+  std::cout << "\n[Multi-threading demonstration]" << std::endl;
+#pragma omp parallel num_threads(4)
+  {
+    u4::initialize_thread();
+    int tid = omp_get_thread_num();
+
+#pragma omp for
+    for (int n13a = u4a.n14(); n13a >= u4a.n24(); n13a--)
+      for (int n23a = u4a.n24(); n23a >= u4a.n34(); n23a--) 
+        for (int n33a = u4a.n34(); n33a >= u4a.n44(); n33a--) 
+          for (int n13b = u4b.n14(); n13b >= u4b.n24(); n13b--)
+            for (int n23b = u4b.n24(); n23b >= u4b.n34(); n23b--)
+              for (int n33b = u4b.n34(); n33b >= u4b.n44(); n33b--)
+                for (int n13c = u4c.n14(); n13c >= u4c.n24(); n13c--)
+                  for (int n23c = u4c.n24(); n23c >= u4c.n34(); n23c--)   
+                    for (int n33c = u4c.n34(); n33c >= u4c.n44(); n33c--)
+                    {
+                      auto row = u4::wigU4U3db().get(u4a.n14(), u4a.n24(), u4a.n34(), u4a.n44(), n13a, n23a, n33a,
+                                                     u4b.n14(), u4b.n24(), u4b.n34(), u4b.n44(), n13b, n23b, n33b,
+                                                     u4c.n14(), u4c.n24(), u4c.n34(), u4c.n44(), n13c, n23c, n33c);
+                      if (row.size() == 0) continue;
+
+#pragma omp critical
+                      {
+                        std::cout << "[Thread " << tid << "] wigU4U3db block: (" << row.rows() << "x" << row.cols()
+                                  << "), (0,0) = " << row(0, 0) << std::endl;
+                      }
+                    }
+
+    u4::finalize_thread();
+  }
 
   u4::finalize();
 }

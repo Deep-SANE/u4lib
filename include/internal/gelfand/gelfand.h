@@ -32,10 +32,10 @@ namespace u4
 
       gelfand() = default;
 
-      gelfand(qcx_utils::UInt8 n14, 
-        qcx_utils::UInt8 n24, qcx_utils::UInt8 n34, qcx_utils::UInt8 n44, 
-        qcx_utils::UInt8 n13, qcx_utils::UInt8 n23, qcx_utils::UInt8 n33,
-        qcx_utils::UInt8 n12, qcx_utils::UInt8 n22, qcx_utils::UInt8 n11)
+      gelfand(utils::UInt8 n14, 
+        utils::UInt8 n24, utils::UInt8 n34, utils::UInt8 n44, 
+        utils::UInt8 n13, utils::UInt8 n23, utils::UInt8 n33,
+        utils::UInt8 n12, utils::UInt8 n22, utils::UInt8 n11)
           : Rep(n14, n24, n34, n44, n13, n23, n33, n12, n22, n11)
       { }
 

@@ -15,7 +15,6 @@
 
 #include <nullspace_solver_qr.h>
 #if defined(NULLSPACE_SOLVER_SLEPC)
-#include <nullspace_solver_slepc.h>
 #elif defined(NULLSPACE_SOLVER_SNS)
 #include <nullspace_solver_sns.h>
 #endif
@@ -490,6 +489,48 @@ namespace u4
     return std::make_pair(canoBasis_new, transformation_new);
   }
 
+  /*
+   * Phase conventions for phys_to_cano and phys_to_cano_allM:
+   *
+   * Once a highest state |R,zeta,S,S,T,T> is chosen, S_- and T_- fix
+   * relative phases within that zeta multiplet. Lowering the projections
+   * must not be confused with full SU(4) irrep conjugation.
+   * Here R=(P1,P2,P3), bar R=(P3,P2,P1), with normalized U(4) rows.
+   * S,MS,T,MT below are ordinary quantum numbers; the function arguments
+   * SS,MMS,TT,MMT are doubled integers.
+   *
+   * Define C on Gelfand states by
+   *   C|g> = g.conjugate_phase() |g.conjugate()>,
+   * where the sign is (-1)^(n14+n34-n13-n23-n33-n12-n22-n11).
+   * This agrees with the canonical singlet coefficients
+   *   <g,h | R x bar R; scalar>
+   *     = delta(h,g.conjugate()) * g.conjugate_phase() / sqrt(dim R).
+   * The signed map satisfies C_barR C_R = (-1)^(P1+P3) I; it is not
+   * bare componentwise complex conjugation.
+   *
+   * For P1 != P3, the physical construction preserves zeta:
+   *   C|R,zeta,S,MS,T,MT>
+   *     = epsilon_R * (-1)^(S-MS+T-MT) |bar R,zeta,S,-MS,T,-MT>,
+   *   epsilon_R = (-1)^(P1+P2+P3) for P1>P3,
+   *               (-1)^P2         for P1<P3.
+   * The direction-dependent factors ensure that conjugating twice gives
+   * the same sign as the Gelfand map, including when P1+P3 is odd.
+   *
+   * For P1=P3, the null-space solver fixes a valid multiplicity basis,
+   * but does not require it to diagonalize conjugation:
+   *   C|R,zeta,S,MS,T,MT> = (-1)^(S-MS+T-MT)
+   *     * sum_zeta' D[zeta',zeta] |R,zeta',S,-MS,T,-MT>.
+   * In this real basis, D is projection-independent, symmetric, and D*D=I.
+   * It can mix zeta states: for R=(1,1,1), S=T=1, the current basis gives
+   * D approximately [[-0.6,-0.8],[-0.8,0.6]]. Do not generally replace D
+   * by a scalar phase or the identity.
+   * If T_(MS,MT) contains the physical-state columns in the Gelfand basis,
+   *   D = (-1)^(S-MS+T-MT) * transpose(T_(-MS,-MT)) * C_GT * T_(MS,MT),
+   * where C_GT is the signed Gelfand map above. Diagonalizing D would
+   * require a consistent zeta-basis change in the coupling coefficients.
+   * For an antilinear C, coefficients of superpositions are conjugated too;
+   * the basis coefficients computed here are real.
+   */
   // get the transformation for MS <= S and MT <= T
   inline std::pair<std::vector<int>, Eigen::MatrixXd> 
     phys_to_cano(const u4::physicalvector& p, int MMS, int MMT, 
@@ -504,11 +545,9 @@ namespace u4
       //std::cout << STproj << std::endl;
       // and solve its null space
 #if defined(NULLSPACE_SOLVER_SNS)
-      Eigen::MatrixXd transformation = qcx_utils::null_space_sns(STproj, p.zeta());
-#elif defined(NULLSPACE_SOLVER_SLEPC)
-      Eigen::MatrixXd transformation = qcx_utils::null_space_slepc(STproj, p.zeta());
+      Eigen::MatrixXd transformation = utils::null_space_sns(STproj, p.zeta());
 #else
-      Eigen::MatrixXd transformation = qcx_utils::null_space(STproj);
+      Eigen::MatrixXd transformation = utils::null_space(STproj);
 #endif
 
       // ensure the nullspace is solved correctly
