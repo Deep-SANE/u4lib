@@ -12,11 +12,11 @@ Quantify and evaluate the impact of repository-local agent skills on autonomous 
 
 The benchmark suite focuses on the three most mathematically and architecturally demanding tasks:
 
-- **Task 1 (Python) — Three-irrep recoupling (`tasks/01-recoupling.md`)**:
+- **Task 1 (Python) — Three-irrep recoupling (`tasks/01-u6z6recoupling.md`)**:
   Implement `consumer/recouple.py` to evaluate $U$ and $Z$ Racah recoupling matrices with full channel discovery and matrix orthogonality verification.
-- **Task 2 (C++) — Four-irrep 9-coefficient batch exporter (`tasks/02-u9.md`)**:
+- **Task 2 (C++) — Four-irrep 9-coefficient batch exporter (`tasks/02-u9recoupling.md`)**:
   Build `consumer/u9_batch` to read requests from stdin, evaluate complete 9-coefficient recoupling blocks with multiple outer multiplicities, and serialize them deterministically.
-- **Task 3 (C++) — OpenMP batch service for canonical and physical coupling (`tasks/03-coupling-mt.md`)**:
+- **Task 3 (C++) — OpenMP batch service for canonical and physical coupling (`tasks/03-coupling-omp.md`)**:
   Build `consumer/coupling_batch` to evaluate mixed batches of canonical and physical coupling coefficients concurrently across multiple threads using OpenMP (`initialize_thread()` / `finalize_thread()`) with deterministic ordering.
 
 ## 3. Evaluation Protocol & Metrics
@@ -35,6 +35,6 @@ The benchmark suite focuses on the three most mathematically and architecturally
 
 ## 5. Directory Layout
 
-- `tasks/` — Task specifications (`01-recoupling.md`, `02-u9.md`, `03-coupling-mt.md`, and `common.md`).
+- `tasks/` — Task specifications (`01-u6z6recoupling.md`, `02-u9recoupling.md`, `03-coupling-omp.md`, and `common.md`).
 - `evaluator/` — Grader (`grade.py`), test fixture generator (`generate.py`), and precomputed reference fixtures (`fixtures-pilot.json`, `fixtures.json`).
 - `runner/` — Generic sandbox experiment runner and execution harness.
