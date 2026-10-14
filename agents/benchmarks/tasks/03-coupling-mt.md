@@ -1,4 +1,4 @@
-# Task 6: C++ OpenMP batch service for canonical and physical coupling
+# Task 3: C++ OpenMP batch service for canonical and physical coupling
 
 Build `consumer/coupling_batch`. Read requests from stdin until EOF; each line is
 one request, tagged by a leading token:
