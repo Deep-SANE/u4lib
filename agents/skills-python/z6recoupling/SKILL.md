@@ -9,7 +9,7 @@ Read [shared runtime instructions](../runtime.md) before execution.
 
 Routes: `(A B)AB C -> T` and `(A C)AC B -> T`. Compute the four `u4.Eta` counts (all positive), then call `get_U4Z6` — the getter **starts with B, A** (exchanging the first pair):
 `get_U4Z6(B, A, T, C, AB, eAB, eAB_C, AC, eAC, eAC_B)`.
-Accessor: `block(iAB, iAB_C, iAC, iAC_B)`. Note that container shape getters `rhoBCmax()`/`rhoA_BCmax()` refer here to the AC and AC_B channels.
+Accessor: `block(iAB, iAB_C, iAC, iAC_B)`. The container shape getters `rhoACmax()`/`rhoAC_Bmax()` count the AC and AC_B channels, respectively.
 
 ```python
 import u4lib as u4

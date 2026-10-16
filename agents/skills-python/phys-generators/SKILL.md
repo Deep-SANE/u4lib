@@ -13,7 +13,7 @@ of rank (1,1) — with bra and ket in the **same** irrep. This is the SU(4)
 analogue of u3lib's `L`/`Q`. **Labels are doubled: `SS=2S`, `TT=2T`.** Each
 returns a tuple `(RME, bra_zeta, ket_zeta)`: `RME` is a `(bra.zeta() x ket.zeta())`
 NumPy matrix indexed by zero-based multiplicity, and `bra_zeta`/`ket_zeta` are the
-1-based zeta labels for the rows/columns. `RME_U` expands into the canonical
+zero-based zeta labels `0..zeta-1` for the rows/columns. `RME_U` expands into the canonical
 basis, so run inside a `u4.initialize()` / `u4.finalize()` session.
 
 ## Selection rules and conventions

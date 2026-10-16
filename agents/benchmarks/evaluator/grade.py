@@ -29,7 +29,7 @@ def load(consumer,name):
 
 def submission_files(consumer):
  assert (consumer/'README.md').is_file(),'missing consumer README.md'
- tests=list(consumer.glob('test_*.py'))+list(consumer.glob('test_*.cpp'))+list(consumer.glob('test_*.cc'))
+ tests=[p for p in consumer.glob('test*') if p.is_file() and p.suffix in ('.py','.cpp','.cc','.sh','')]
  tests += [p for d in (consumer/'tests', consumer/'test') if d.is_dir() for p in d.rglob('*') if p.is_file()]
  assert tests,'missing local test file'
 

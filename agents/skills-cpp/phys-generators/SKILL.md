@@ -21,7 +21,7 @@ physical SU(4) generators with bra and ket in the **same** irrep: the spin `S`
 15th-generator Gamow-Teller-type tensor of rank (1,1). This is the SU(4)
 analogue of u3lib's `L`/`Q`. **Labels are doubled: `SS=2S`, `TT=2T`.** Each
 returns an `Eigen::MatrixXd` of shape `(bra.zeta() x ket.zeta())` and fills the
-out-parameters `bra_zeta`/`ket_zeta` with the 1-based zeta labels. `RME_U`
+out-parameters `bra_zeta`/`ket_zeta` with the zero-based zeta labels `0..zeta()-1`. `RME_U`
 expands into the canonical basis, so call `u4::initialize(&argc,&argv)` first and
 `u4::finalize()` after; the driver
 [src/U4generatorsRME.cpp](../../../src/U4generatorsRME.cpp) is the reference
