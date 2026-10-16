@@ -21,6 +21,12 @@ doc/*.blg
 doc/*.fls
 doc/*.fdb_latexmk
 
+# Benchmark reproduction artifacts (keep results.{csv,json} + runner scripts).
+# Per-run agent workspaces and frozen snapshots are large and machine-specific.
+agents/benchmarks/*/task*-*/
+agents/benchmarks/*/schedule*.json
+agents/benchmarks/snapshots/
+
 # macOS / editor / notebook cruft
 .DS_Store
 __pycache__/
