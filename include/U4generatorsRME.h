@@ -22,9 +22,9 @@ namespace u4
     Eigen::MatrixXd RME(bra.zeta(), ket.zeta());
 
     // running through the multiplicity labels
-    for (int i = 1; i <= bra.zeta(); i++)
+    for (int i = 0; i < bra.zeta(); i++)
       bra_zeta.push_back(i);
-    for (int j = 1; j <= ket.zeta(); j++)
+    for (int j = 0; j < ket.zeta(); j++)
       ket_zeta.push_back(j);
     for (int i = 0; i < RME.rows(); i++)
     {
@@ -57,9 +57,9 @@ namespace u4
     Eigen::MatrixXd RME(bra.zeta(), ket.zeta());
 
     // running through the multiplicity labels
-    for (int i = 1; i <= bra.zeta(); i++)
+    for (int i = 0; i < bra.zeta(); i++)
       bra_zeta.push_back(i);
-    for (int j = 1; j <= ket.zeta(); j++)
+    for (int j = 0; j < ket.zeta(); j++)
       ket_zeta.push_back(j);
     for (int i = 0; i < RME.rows(); i++)
     {
@@ -98,10 +98,10 @@ namespace u4
     int kz = ket.zeta();
 
     // running through the multiplicity labels
-    for (int i = 1; i <= bz; i++)
+    for (int i = 0; i < bz; i++)
       bra_zeta.push_back(i);
 
-    for (int j = 1; j <= kz; j++)
+    for (int j = 0; j < kz; j++)
       ket_zeta.push_back(j);
 
     // compute non-zero RME's

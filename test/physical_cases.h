@@ -1,4 +1,5 @@
 #pragma once
+#include <U4generatorsRME.h>
 #include "test_helpers.h"
 namespace test
 {
@@ -120,6 +121,48 @@ namespace test
           require(v.zetaAmax() > 1 || v.zetaBmax() > 1 || v.zetaCmax() > 1,
                   "Tutorial branching multiplicity");
           // Complete values, including this block, are documented above.
+        });
+
+    suite.run(
+        "Physical generator RMEs (S, T, U) zero-based multiplicity reporting",
+        [&]
+        {
+          auto basis = u4::physicalBasis(u4::irrep(1, 2, 1));
+          auto it = std::find_if(basis.begin(), basis.end(),
+                                 [](const auto& p) { return p.zeta() > 1; });
+          require(it != basis.end(), "Found state with zeta > 1");
+          auto p = *it;
+          int z = p.zeta();
+
+          std::vector<int> bz_S, kz_S;
+          auto rme_S = u4::RME_S(p, p, bz_S, kz_S);
+          require(bz_S.size() == size_t(z) && kz_S.size() == size_t(z), "RME_S out-param size");
+          for (int i = 0; i < z; ++i)
+          {
+            require(bz_S[i] == i, "RME_S bra_zeta zero-based");
+            require(kz_S[i] == i, "RME_S ket_zeta zero-based");
+          }
+          require(rme_S.rows() == z && rme_S.cols() == z, "RME_S shape");
+
+          std::vector<int> bz_T, kz_T;
+          auto rme_T = u4::RME_T(p, p, bz_T, kz_T);
+          require(bz_T.size() == size_t(z) && kz_T.size() == size_t(z), "RME_T out-param size");
+          for (int i = 0; i < z; ++i)
+          {
+            require(bz_T[i] == i, "RME_T bra_zeta zero-based");
+            require(kz_T[i] == i, "RME_T ket_zeta zero-based");
+          }
+          require(rme_T.rows() == z && rme_T.cols() == z, "RME_T shape");
+
+          std::vector<int> bz_U, kz_U;
+          auto rme_U = u4::RME_U(p, p, bz_U, kz_U);
+          require(bz_U.size() == size_t(z) && kz_U.size() == size_t(z), "RME_U out-param size");
+          for (int i = 0; i < z; ++i)
+          {
+            require(bz_U[i] == i, "RME_U bra_zeta zero-based");
+            require(kz_U[i] == i, "RME_U ket_zeta zero-based");
+          }
+          require(rme_U.rows() == z && rme_U.cols() == z, "RME_U shape");
         });
   }
 } // namespace test

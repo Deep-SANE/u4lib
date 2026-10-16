@@ -1,6 +1,8 @@
 #ifndef U4LIB_GLOBAL_DEFINITIONS_H
 #define U4LIB_GLOBAL_DEFINITIONS_H
 
+#include <iostream>
+
 #include <Eigen/Dense>
 
 #include <ND.h>
@@ -133,6 +135,11 @@ namespace u4
           s << r << "\t" << e << "\t" << x(r, e) << "\n";
   	  return s;
   	}
+
+    void print(std::ostream& s = std::cout) const
+    {
+      s << *this;
+    }
   };
 
   template <typename T>
@@ -243,6 +250,11 @@ namespace u4
   	  }
 	  return s;
   	}
+
+    void print(std::ostream& s = std::cout) const
+    {
+      s << *this;
+    }
   };
 
   template <typename T>
@@ -323,6 +335,11 @@ namespace u4
   	  }
 	    return s;
   	}
+
+    void print(std::ostream& s = std::cout) const
+    {
+      s << *this;
+    }
   };
 
   template <typename T>
@@ -359,8 +376,8 @@ namespace u4
 
     size_t rhoABmax() const { return ndi_.dimension(0); }
     size_t rhoAB_Cmax() const { return ndi_.dimension(1); }
-    size_t rhoBCmax() const { return ndi_.dimension(2); }
-    size_t rhoA_BCmax() const { return ndi_.dimension(3); }
+    size_t rhoACmax() const { return ndi_.dimension(2); }
+    size_t rhoAC_Bmax() const { return ndi_.dimension(3); }
 
     double& operator[](size_t i)
     {
@@ -403,6 +420,11 @@ namespace u4
   	  }
 	    return s;
   	}
+
+    void print(std::ostream& s = std::cout) const
+    {
+      s << *this;
+    }
   };
 
   template <typename T>
@@ -490,6 +512,11 @@ namespace u4
   	  }
 	    return s;
   	}
+
+    void print(std::ostream& s = std::cout) const
+    {
+      s << *this;
+    }
   };
 
 } // namespace u3

@@ -2837,6 +2837,21 @@ namespace u4
       return result;
     }
 
+    U4U3<coeffs_t> get_U4U3(
+      int n14a, int n24a, int n34a, int n44a, int n13a, int n23a, int n33a,
+      int n14b, int n24b, int n34b, int n44b, int n13b, int n23b, int n33b,
+      int n14c, int n24c, int n34c, int n44c, int n13c, int n23c, int n33c)
+    {
+      Eigen::MatrixXd mat = get(n14a, n24a, n34a, n44a, n13a, n23a, n33a,
+                                n14b, n24b, n34b, n44b, n13b, n23b, n33b,
+                                n14c, n24c, n34c, n44c, n13c, n23c, n33c);
+      // cols() == etamax; keep >= 1 so an empty (forbidden) result does not
+      // divide by zero in U4U3::rhomax().
+      const size_t etamax =
+          mat.cols() > 0 ? static_cast<size_t>(mat.cols()) : size_t{1};
+      return U4U3<coeffs_t>(std::move(mat), etamax);
+    }
+
     friend WigU4U3_db& wigU4U3db();
 
 #ifdef U4LIB_ENABLE_WIGU4U3_CACHE

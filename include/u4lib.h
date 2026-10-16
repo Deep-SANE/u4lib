@@ -17,6 +17,9 @@ namespace u4
   inline bool& initialized_flag() { static bool f = false; return f; }
   inline bool& thread_initialized_flag() { static thread_local bool f = false; return f; }
 
+  // Read-only query of the process-global initialization state.
+  inline bool is_initialized() { return initialized_flag(); }
+
   inline void initialize(int* argc = nullptr, char*** argv = nullptr)
   {
     if (initialized_flag()) return;

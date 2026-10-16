@@ -67,7 +67,7 @@
 //                                          __call__(zetaA, zetaB, zetaC, eta)
 //    U4U6       etaABmax(), etaAB_Cmax(), etaBCmax(), etaA_BCmax();
 //                                          __call__(etaAB, etaAB_C, etaBC, etaA_BC)
-//    U4Z6       rhoABmax(), rhoAB_Cmax(), rhoBCmax(), rhoA_BCmax();
+//    U4Z6       rhoABmax(), rhoAB_Cmax(), rhoACmax(), rhoAC_Bmax();
 //                                          __call__(etaAB, etaAB_C, etaAC, etaAC_B)
 //    U4U9       etaACmax(), etaBDmax(), etaABCDmax(), etaABmax(), etaCDmax(),
 //               etaACBDmax();
@@ -159,7 +159,7 @@ PYBIND11_MODULE(u4lib, m)
   m.def("initialize_thread", []() { u4::initialize_thread(); });
   m.def("finalize_thread", []() { u4::finalize_thread(); });
   m.def("clear", &u4::clear, "Clear all cached coefficients (keep DBs alive).");
-  m.def("is_initialized", []() { return u4::initialized_flag(); },
+  m.def("is_initialized", []() { return u4::is_initialized(); },
         "True between initialize() and finalize(). The coefficient databases "
         "may only be used while this is True.");
 
@@ -395,7 +395,7 @@ PYBIND11_MODULE(u4lib, m)
   //  isospin (T) and Gamow-Teller-like (U) generators, bra and ket in the SAME
   //  irrep. Returns a tuple (RME, bra_zeta, ket_zeta): RME is a
   //  (bra.zeta() x ket.zeta()) matrix indexed by zero-based (S,T) multiplicity;
-  //  bra_zeta/ket_zeta are the 1-based zeta labels for the rows/columns.
+  //  bra_zeta/ket_zeta are the zero-based zeta labels (0..zeta-1) for the rows/columns.
   //  Requires an initialized session.
   m.def("RME_S",
         [](u4::physicalvector bra, u4::physicalvector ket) {
@@ -467,6 +467,7 @@ PYBIND11_MODULE(u4lib, m)
            "rho"_a, "eta"_a)
       .def("__getitem__", [](const U4U3_t& o, size_t i) { return o[i]; })
       .def("data", [](const U4U3_t& o) { return to_numpy(o.data()); })
+      .def("print", [](const U4U3_t& o) { o.print(); }, "Print formatted coefficients.")
       .def("__str__", &to_str<U4U3_t>);
 
   using U4SU2SU2_t = u4::U4SU2SU2<u4::coeffs_t>;
@@ -484,6 +485,7 @@ PYBIND11_MODULE(u4lib, m)
            "zetaA"_a, "zetaB"_a, "zetaC"_a, "eta"_a)
       .def("__getitem__", [](const U4SU2SU2_t& o, size_t i) { return o[i]; })
       .def("data", [](const U4SU2SU2_t& o) { return to_numpy(o.data()); })
+      .def("print", [](const U4SU2SU2_t& o) { o.print(); }, "Print formatted coefficients.")
       .def("__str__", &to_str<U4SU2SU2_t>);
 
   using U4U6_t = u4::U4U6<u4::coeffs_t>;
@@ -500,6 +502,7 @@ PYBIND11_MODULE(u4lib, m)
            "etaAB"_a, "etaAB_C"_a, "etaBC"_a, "etaA_BC"_a)
       .def("__getitem__", [](const U4U6_t& o, size_t i) { return o[i]; })
       .def("data", [](const U4U6_t& o) { return to_numpy(o.data()); })
+      .def("print", [](const U4U6_t& o) { o.print(); }, "Print formatted coefficients.")
       .def("__str__", &to_str<U4U6_t>);
 
   using U4Z6_t = u4::U4Z6<u4::coeffs_t>;
@@ -508,14 +511,15 @@ PYBIND11_MODULE(u4lib, m)
       .def("empty", &U4Z6_t::empty)
       .def("rhoABmax", &U4Z6_t::rhoABmax)
       .def("rhoAB_Cmax", &U4Z6_t::rhoAB_Cmax)
-      .def("rhoBCmax", &U4Z6_t::rhoBCmax)
-      .def("rhoA_BCmax", &U4Z6_t::rhoA_BCmax)
+      .def("rhoACmax", &U4Z6_t::rhoACmax)
+      .def("rhoAC_Bmax", &U4Z6_t::rhoAC_Bmax)
       .def("__call__",
            [](const U4Z6_t& o, size_t etaAB, size_t etaAB_C, size_t etaAC,
               size_t etaAC_B) { return o(etaAB, etaAB_C, etaAC, etaAC_B); },
            "etaAB"_a, "etaAB_C"_a, "etaAC"_a, "etaAC_B"_a)
       .def("__getitem__", [](const U4Z6_t& o, size_t i) { return o[i]; })
       .def("data", [](const U4Z6_t& o) { return to_numpy(o.data()); })
+      .def("print", [](const U4Z6_t& o) { o.print(); }, "Print formatted coefficients.")
       .def("__str__", &to_str<U4Z6_t>);
 
   using U4U9_t = u4::U4U9<u4::coeffs_t>;
@@ -536,6 +540,7 @@ PYBIND11_MODULE(u4lib, m)
            "etaAC"_a, "etaBD"_a, "etaABCD"_a, "etaAB"_a, "etaCD"_a, "etaACBD"_a)
       .def("__getitem__", [](const U4U9_t& o, size_t i) { return o[i]; })
       .def("data", [](const U4U9_t& o) { return to_numpy(o.data()); })
+      .def("print", [](const U4U9_t& o) { o.print(); }, "Print formatted coefficients.")
       .def("__str__", &to_str<U4U9_t>);
 
   // ==========================================================================
@@ -571,15 +576,9 @@ PYBIND11_MODULE(u4lib, m)
              int n44b, int n13b, int n23b, int n33b, int n14c, int n24c,
              int n34c, int n44c, int n13c, int n23c, int n33c) {
             require_init();
-            Eigen::MatrixXd mat =
-                db.get(n14a, n24a, n34a, n44a, n13a, n23a, n33a, n14b, n24b,
-                       n34b, n44b, n13b, n23b, n33b, n14c, n24c, n34c, n44c,
-                       n13c, n23c, n33c);
-            // cols() == etamax; keep >= 1 so an empty (forbidden) result does
-            // not divide by zero in U4U3::rhomax().
-            const size_t etamax =
-                mat.cols() > 0 ? static_cast<size_t>(mat.cols()) : size_t{1};
-            return u4::U4U3<u4::coeffs_t>(std::move(mat), etamax);
+            return db.get_U4U3(n14a, n24a, n34a, n44a, n13a, n23a, n33a, n14b,
+                               n24b, n34b, n44b, n13b, n23b, n33b, n14c, n24c,
+                               n34c, n44c, n13c, n23c, n33c);
           },
           "n14a"_a, "n24a"_a, "n34a"_a, "n44a"_a, "n13a"_a, "n23a"_a, "n33a"_a,
           "n14b"_a, "n24b"_a, "n34b"_a, "n44b"_a, "n13b"_a, "n23b"_a, "n33b"_a,
