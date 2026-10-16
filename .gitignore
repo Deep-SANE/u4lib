@@ -20,6 +20,8 @@ doc/*.bbl
 doc/*.blg
 doc/*.fls
 doc/*.fdb_latexmk
+doc/*.synctex.gz
+doc/*.toc
 
 # Benchmark reproduction artifacts (keep results.{csv,json} + runner scripts).
 # Per-run agent workspaces and frozen snapshots are large and machine-specific.
