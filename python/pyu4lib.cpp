@@ -509,10 +509,10 @@ PYBIND11_MODULE(u4lib, m)
   py::class_<U4Z6_t>(m, "U4Z6")
       .def("size", &U4Z6_t::size)
       .def("empty", &U4Z6_t::empty)
-      .def("rhoABmax", &U4Z6_t::rhoABmax)
-      .def("rhoAB_Cmax", &U4Z6_t::rhoAB_Cmax)
-      .def("rhoACmax", &U4Z6_t::rhoACmax)
-      .def("rhoAC_Bmax", &U4Z6_t::rhoAC_Bmax)
+      .def("etaABmax", &U4Z6_t::etaABmax)
+      .def("etaAB_Cmax", &U4Z6_t::etaAB_Cmax)
+      .def("etaACmax", &U4Z6_t::etaACmax)
+      .def("etaAC_Bmax", &U4Z6_t::etaAC_Bmax)
       .def("__call__",
            [](const U4Z6_t& o, size_t etaAB, size_t etaAB_C, size_t etaAC,
               size_t etaAC_B) { return o(etaAB, etaAB_C, etaAC, etaAC_B); },
