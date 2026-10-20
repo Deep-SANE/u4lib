@@ -9,6 +9,7 @@
 \usepackage{amsmath,bbold}
 \usepackage{float}
 \usepackage{physics}
+\usepackage{comment}
 %\usepackage{url}
 
 %Add colors
@@ -54,13 +55,13 @@
 
 \begin{document}
 
-\title{\texttt{u4lib}: An AI-Ready Computational Framework for U(4) Supermultiplet Symmetry,\\ Wigner Coupling, and Racah Recoupling Coefficients}
+\title{\texttt{u4lib}: An AI-Ready Computational Framework for U(4) Symmetry Algebra,\\ Wigner Coupling, and Racah Recoupling Coefficients}
 
 \author{Phong Dang}
 \affiliation{Department of Physics and Astronomy, Louisiana State University, Baton Rouge, LA 70803, USA}
 
 \author{Daniel Langr}
-\affiliation{Department of Computer Systems, Faculty of Information Technology, Czech Technical University in Prague, Prague, Czech Republic}
+\affiliation{Department of Computer Systems, Faculty of Information Technology, Czech Technical University in Prague, Prague 16000, Czech Republic}
 
 \author{Tomas Dytrych}
 \affiliation{Nuclear Physics Institute, Czech Academy of Sciences, 250 68 \v{R}e\v{z}, Czech Republic}
@@ -73,20 +74,22 @@
 Wigner's supermultiplet symmetry treats nucleon spin and isospin within a
 common U(4)/SU(4) description. The C++ library \texttt{u4lib} supplies the
 coupling coefficients and algebraic operations needed for calculations in this
-scheme. Its canonical Gelfand--Tsetlin basis and physical
-$\mathrm{SU(2)}\times\mathrm{SU(2)}$ basis support complementary descriptions
-of the same states, connected by an explicit basis transformation. Users can
-construct irreducible representations (irreps), obtain dimensions and Casimir
-invariants, conjugate states, enumerate bases and multiplicities, and decompose
+scheme. 
+%Its canonical Gelfand--Tsetlin basis and physical
+%$\mathrm{SU(2)}\times\mathrm{SU(2)}$ basis support complementary descriptions
+%of the same states, connected by an explicit basis transformation. 
+Users can construct irreducible representations (irreps), obtain dimensions and Casimir
+invariants, conjugate states, enumerate the canonical Gelfand-Tsetlin and physical 
+$\mathrm{SU_S(2)}\otimes\mathrm{SU_T(2)}$ bases with inner multiplicities, and decompose
 tensor products. Matrix-element routines cover the canonical U(4) generators
 and the physical spin $\mathbf{S}$, isospin $\mathbf{T}$, and
-Gamow--Teller-type tensor $\mathbf{U}$. Wigner coupling and Racah recoupling
-coefficients are evaluated by the procedure of Dang \textit{et al.}
-\cite{Dang2024EPJP2}. The implementation builds on \texttt{u3lib}, with a
+Gamow-Teller-type tensor $\mathbf{U}$. Wigner coupling and Racah recoupling
+coefficients are evaluated by the procedure of Dang \textit{et al.} 
+The implementation builds on \texttt{u3lib}, with a
 header-only C++ interface and corresponding Python bindings. A catalog of
-agent skills documents how an AI assistant can prepare, execute, and check
-these calculations through natural-language requests. This manual describes
-the public release and evaluates the use of those skills in coding tasks.
+agent skills assists an AI agent in preparing, executing, and checking
+calculations through natural-language requests. 
+%This manual describes the public release and evaluates the use of those skills in coding tasks.
 
 \end{abstract}
 
@@ -108,104 +111,112 @@ the public release and evaluates the use of those skills in coding tasks.
 \textit{Programming language}: C++ (C++20), with Python bindings via pybind11.
 
 \noindent
-\textit{External libraries}: \texttt{u3lib} (prerequisite, providing Eigen3, Boost
-headers, OpenMP, fmt, libwignernj, and core utilities); and a null-space solver
-backend --- dense Eigen3 QR (the default) or \texttt{sns}. The Python extension
-additionally uses pybind11.
+\textit{External libraries}: \texttt{u3lib} is a prerequisite, through which core utilities and other dependencies---namely 
+\texttt{Eigen3} for QR-based null space solver, \texttt{Boost} for hash tables, 
+\texttt{OpenMP} for multi-threading, \texttt{fmt} for formatting output, \texttt{libwignernj} for $\rm SU(2)$
+coupling and recoupling coefficients, \red{\texttt{sns} for sparse-matrix null space solver}, 
+and \texttt{pybind11} for Python binding---are inherited.
 
 \noindent
-\textit{Nature of problem}: Efficient, accurate, and reproducible computation of the
-Wigner coupling coefficients for the two group--subgroup chains
-$\mathrm{SU(4)}\supset\mathrm{U(3)}$ (canonical) and
-$\mathrm{SU(4)}\supset\mathrm{SU(2)}\times\mathrm{SU(2)}$ (physical,
-spin-isospin), the U(4) Racah recoupling coefficients ($U$-, $Z$-, and
-$9$-coefficients), and the associated representation-theoretic quantities
-(dimensions, Casimirs, multiplicities, basis enumeration, generator matrix
-elements, and basis transformations) needed by symmetry-adapted
-nuclear-structure calculations.
+\textit{Nature of problem}: Efficient, accurate, and reproducible computation of 
+Wigner reduced coupling coefficients for the two subgroup chains
+$\mathrm{U(4)}\supset\mathrm{U(3)}$ and
+$\mathrm{SU(4)}\supset\mathrm{SU_S(2)}\otimes\mathrm{SU_T(2)}$, 
+Racah recoupling coefficients (6-$\rm U(4)$ and 9-$\rm U(4)$ coefficients), 
+and the associated representation-theoretic quantities
+(dimensions, Casimir invariants, multiplicities, basis enumeration, generator matrix
+elements, and basis transformations) necessitated by symmetry-adapted
+nuclear-structure calculations and similar applications.
 
 \noindent
-\textit{Solution method}: The coupling and recoupling coefficients are built from
-the highest-weight canonical reduced coefficients, obtained as the orthonormal
-null space of the linear system enforced by the raising generators, and
-propagated by the recursion relations of Ref.~\cite{Dang2024EPJP2}; the physical
-$\mathrm{SU(2)}\times\mathrm{SU(2)}$-coupled coefficients follow from the
-physical$\,\to\,$canonical basis transformation.
+\textit{Solution method}: The reduced coupling and recoupling coefficients are built from
+the highest-weight canonical $\rm U(4) \supset U(3) \supset U(2) \supset U(1)$ full coupling coefficients, 
+obtained as the orthonormal null space of the canonical raising generators, and
+propagated by the lowering counterparts as shown in \cite{Dang2024EPJP2}; the physical
+$\rm SU(4) \supset \mathrm{SU_S(2)}\otimes\mathrm{SU_T(2)}$ coefficients follow from the
+physical-to-canonical basis transformation, which is also determined through the null space of the
+spin raising $S_+$ and isospin raising $T_+$ operators \cite{Dang2024EPJP2}.
 
 \section{Introduction}
 \label{sec:intro}
 
-Spin and isospin are the starting point for Wigner's supermultiplet theory
-\cite{Wigner1937PR}. Introduced in 1937, the theory combines them in a single
-$\rm SU(4)$ classification. For nuclear-structure calculations, this provides
-a complement to the spatial symmetry of Elliott's $\rm SU(3)$ model
-\cite{Elliott1958PRSA,Elliott1958PRSA-II} and the symmetry-adapted shell-model
-methods developed from it \cite{Dytrych2013PRL,Dytrych2020PRL}. Applications
-include charge-exchange and Gamow--Teller strength, as well as studies of
-$\rm SU(4)$ symmetry restoration in heavy and superheavy nuclei
-\cite{Lutostansky2016EPJ}.
+Wigner's supermultiplet symmetry was proposed in 1937 as the overarching scheme that
+unifies the spin and isospin degrees of freedom of atomic nuclei \cite{Wigner1937PR}.
+It is not an exact symmetry of the strong interaction, but rather emerges in the limit of many colors
+in QCD \cite{Kaplan1996PLB} and at a nuclear-force resolution of roughly 500~MeV \cite{Lee2021PRL,Timoteo2012PRC}.
+In spite of its broad range of applications, from nuclear masses \cite{Cauvin1981NPA,Isacker1997FoP,Dang2026_2},
+$\beta$-systematics \cite{Wigner1939PR,Fujita1965NP,Muli2026PRL}, 
+and Gamow-Teller resonances \cite{Lutostansky2016EPJ},
+to more recent lattice simulations \cite{Lee2025ARNPS} and algebraic models that
+mitigate symmetry breaking in heavy nuclei \cite{Isacker1999PRL,Kota2024PScr}, there has been 
+limited effort to probe and leverage the supermultiplet symmetry in first-principles shell-model
+calculations as compared to its spatial $\rm SU(3)$ \cite{Elliott1958PRSA,Elliott1958PRSA-II,Dytrych2013PRL}
+and symplectic $\rm Sp(3,R)$ \cite{Dytrych2020PRL,McCoy2020PRL} counterparts.
 
-Working in the physical spin-isospin basis requires U(4) coupling and
-recoupling coefficients. Their construction has been studied by Hecht and
-Pang \cite{Hecht1969JMP}, through Draayer's
-$\rm U(4) \supset SU(2)\otimes SU(2)$ projection techniques
-\cite{Draayer1970JMP}, and by Partensky and Maguin \cite{Partensky1978JMP}
-and Rowe and Repka \cite{Rowe1997FoP}. More recent work by Pan and
-collaborators develops the physical $\rm SU_S(2)\otimes SU_T(2)$ basis and
-its elementary Wigner coefficients \cite{Pan2023EPJP,Pan2023NPA,Pan2024CPC}.
-Other available tools include general $\rm SU(N)$ Clebsch--Gordan algorithms
-\cite{Alex2011JMP} and a program for the canonical $\rm SU(4)$ chain
-\cite{Kuhn2008CPC}.
+This underdevelopment stems from the fact that working in the physical spin-isospin 
+$\rm SU(4) \supset SU_S(2) \otimes SU_T(2)$ basis 
+requires $\rm U(4)$/$\rm SU(4)$ coupling and recoupling coefficients. 
+While the computation of these coefficients was studied earlier by Hecht and
+Pang \cite{Hecht1969JMP}, by Draayer \cite{Draayer1970JMP}, by Partensky and Maguin \cite{Partensky1978JMP}
+and by Rowe and Repka \cite{Rowe1997FoP}, no method produced scalable software
+for large-scale nuclear structure calculations. 
+Most recently, building on efforts by Pan \textit{et al.} to develop the physical basis and 
+elementary physical coupling coefficients \cite{Pan2023EPJP,Pan2023NPA,Pan2024CPC} 
+along with previous work on canonical coupling coefficients for $\rm SU(4)$ \cite{Kuhn2008CPC} 
+and the more general $\rm SU(N)$ \cite{Alex2011JMP}, Dang \textit{et al.} have developed
+a generic algorithm \cite{Dang2024EPJP2} that supplies any and all physical 
+$\rm SU(4) \supset SU_S(2) \otimes SU_T(2)$ coupling and recoupling coefficients,
+propelling the first \textit{ab initio} shell-model calculations using Wigner's symmetry \cite{Dang2026_1}.
 
-The numerical method used here connects this work to developments in U(3).
-SU(3) coefficients have been available through the Draayer--Akiyama Fortran
-programs \cite{Draayer1973JMP,Akiyama1973CPC} and subsequent refinements
-\cite{Bahri2004CPC,Dytrych2021CPC}. Following the U(3) procedure of
-Ref.~\cite{Dang2024EPJP1}, Dang \textit{et al.} developed the U(4) algorithm
-implemented in \texttt{u4lib} \cite{Dang2024EPJP2}. Raising-generator equations
-and numerical null-space solvers replace the evaluation of hypergeometric
-sums. Reference~\cite{Dang2024EPJP2} contains the derivation; the present
-manual focuses on the resulting library and its use.
+In a nutshell, the new algorithm leverages a property of the group generators:
+the highest-weight state of an irrep is annihilated by the raising operators,
+which impose a system of homogeneous linear equations that can be solved
+by a numerical null space solver \red{DL, please cite your student's thesis here}
+to yield the full coupling coefficients for the highest-weight state as an orthonormal set of  
+null space vectors. All other coefficients then naturally follow through the action
+of the lowering operators. The same strategy has also been employed to modernize
+the 1973 Draayer-Akiyama formalism \cite{Draayer1973JMP,Akiyama1973CPC}
+for computing $\rm SU(3)$ coupling coefficients \cite{Dang2024EPJP1},
+implemented in the modern library \texttt{u3lib} \red{we should put u3lib to arXiv first to get a reference here}.
 
-Several other fields also use $\rm SU(4)$ representations. In the strong
-interaction, a spin--isospin $\rm SU(4)$ emerges in the large-$N_c$ limit of QCD
-\cite{Kaplan1996PLB} and organizes the essential elements of nuclear binding seen
-in lattice calculations \cite{Lu2019PLB}. In quantum information, the two-qubit
+This paper presents \texttt{u4lib}---a header-only C++ library with Python wrappers 
+and a sibling of \texttt{u3lib}---which implements the algorithm demonstrated in
+Ref.~\cite{Dang2024EPJP2} and is part of a broader effort called \texttt{DeepSANE} 
+(\textbf{Deep}-learning and \textbf{S}ymmetry-adapted \textbf{A}b-initio \textbf{N}uclear 
+modeling: an AI-ready \textbf{E}cosystem\footnote{See the \texttt{DeepSANE} GitHub organization: 
+\url{https://github.com/Deep-SANE}}). To our knowledge, this is the first library capable of
+computing generic coupling and recoupling coefficients for the supermultiplet symmetry.
+A calculation herein can begin with  either a canonical state in the 
+$\rm U(4) \supset U(3) \supset U(2) \supset U(1)$ chain 
+or a physical state labeled by spin and isospin quantum numbers in the
+$\rm SU(4) \supset SU_S(2)\otimes SU_T(2)$ chain. The library supplies the
+transformation between these two bases, state conjugation, generator matrix elements,
+Kronecker (tensor-product) decompositions, and Casimir invariants alongside the
+coupling and recoupling routines. Its dependence on \texttt{u3lib} reflects the canonical
+subgroup chain and allows the two libraries to share numerical infrastructure.
+
+Following the broader effort to modernize scientific workflows in the agentic-AI era,
+we also provide agent-ready domain skills in \texttt{u4lib}. With an aim similar to that of
+the Genesis Mission's agent skill catalog\footnote{See the DOE Genesis
+Mission skill catalog: \url{https://gitlab.osti.gov/genesis/genesis-skills}.} of 
+the U.S. Department of Energy, these skills empower AI assistants to become
+specialists capable of writing programs, debugging, and facilitating adoption.
+To demonstrate their usefulness, we assess agents' performance through three coding tasks, 
+measuring whether access to the skill catalog changes correctness, token use, runtime, and API cost.
+
+Note that while our work lies primarily within nuclear physics, the same algebraic structure is also
+adopted in various fields. In quantum information, the two-qubit
 unitary group is $\rm SU(4)$, and the geometry of its nonlocal gates follows from
 a Cartan decomposition of the algebra \cite{Zhang2003PRA}. In ultracold-atom
 physics, alkaline-earth atoms realize $\rm SU(N)$-symmetric magnetism that
 includes $\rm SU(4)$ \cite{Gorshkov2010NP}, while in condensed matter the
-spin--valley degrees of freedom of graphene form an approximate $\rm SU(4)$
-quantum Hall ferromagnet \cite{Young2012NP}. These applications may use the representation data supplied by
-\texttt{u4lib}, although their physical models and basis conventions must be
-handled separately.
+spin-valley degrees of freedom of graphene form an approximate $\rm SU(4)$
+quantum Hall ferromagnet \cite{Young2012NP}. These applications may use the 
+representation data supplied by \texttt{u4lib}, though their physical models 
+and basis conventions must be handled separately---we cordially invite researchers
+from other fields to contribute to the library to support their respective applications.
 
-A calculation in \texttt{u4lib} can begin with either a canonical Gelfand--Tsetlin
-state in the $\rm U(4) \supset U(3) \supset U(2) \supset U(1)$ chain or a
-physical state labeled by spin and isospin in
-$\rm SU(4) \supset SU_S(2)\otimes SU_T(2)$. The library supplies the
-transformation between these descriptions, generator matrix elements,
-Kronecker (tensor-product) decompositions, and irrep invariants alongside the
-coupling routines. Its dependence on \texttt{u3lib} reflects the canonical
-subgroup chain and allows the two libraries to share numerical infrastructure.
-Both use header-only C++ interfaces with matching Python bindings.
-
-\texttt{u4lib} belongs to \texttt{DeepSANE}: \textbf{Deep}-learning and
-\textbf{S}ymmetry-adapted \textbf{A}b-initio \textbf{N}uclear modeling: an
-AI-ready \textbf{E}cosystem. Within this project, agent skills provide a
-practical entry point for users who want to describe a calculation in words.
-For U(4), such requests require care with representation labels, doubled spin
-and isospin, multiplicity indices, and phases. C++ programs must also respect
-buffer lifetimes and thread-local workspaces. The skills record these rules
-and attach numerical checks to the corresponding operations.
-
-Keeping such instructions with the code is also being explored in broader
-scientific-software efforts, including the U.S. Department of Energy (DOE)
-Genesis Mission's scientific agent skill catalog\footnote{See the DOE Genesis
-Mission skill catalog: \url{https://gitlab.osti.gov/genesis/genesis-skills}.}.
-Here we assess their usefulness through three coding tasks, measuring whether
-access to the catalog changes correctness, token use, runtime, and API cost.
-
+The rest of the paper is organized as follows.
 Sections~\ref{sec:structure} and \ref{sec:classes} describe the source layout
 and C++ reference interface. Section~\ref{sec:python} covers Python use, and
 Sec.~\ref{sec:agents} explains the skills and reports the coding experiments.
@@ -226,14 +237,14 @@ directories:
         \item \verb|U4basis.h|: basis enumeration (\verb|gelfandBasis|, \verb|physicalBasis|), the inner multiplicity \verb|Zeta|, the \verb|u4::physicalvector| class, and the generator-action predicates;
         \item \verb|U4decomposition.h|: the outer multiplicity \verb|Eta| and the tensor-product \verb|decomposition|;
         \item \verb|U4U3xU4U3.h|, \verb|U4SU2SU2xU4SU2SU2.h|: the canonical and physical coupling coefficients and their databases;
-        \item \verb|U4_U6Z6Coeffs.h|, \verb|U4_U9Coeffs.h|: the $U$-, $Z$-, and $9$-coefficient recoupling coefficients and their databases;
+        \item \verb|U4_U6Z6Coeffs.h|, \verb|U4_U9Coeffs.h|: the 6-$\rm U(4)$ and 9-$\rm U(4)$ recoupling coefficients and their databases;
         \item \verb|U4SU2SU2_to_U4U3U2U1.h|: the physical-to-canonical transformation;
         \item \verb|U4generatorsRME.h|: the physical-generator reduced matrix elements \verb|RME_S|, \verb|RME_T|, \verb|RME_U|;
         \item \verb|Definitions.h|: the structured coefficient containers;
         \item \verb|u4lib.h|: the umbrella header and the \verb|initialize|/\verb|finalize| lifecycle.
     \end{itemize}
     \item \verb|src/|: small example driver programs (one \verb|.cpp| per task) that call the headers and print results; compiled to \verb|bin/|.
-    \item \verb|python/|: the pybind11 extension (\verb|pyu4lib.cpp| $\to$ \verb|u4lib.so|), its build (\verb|make python|, \verb|build.sh|), build notes (\verb|BUILD_NOTES.md|), and a tutorial notebook (\verb|tutorial.ipynb|).
+    \item \verb|python/|: the pybind11 extension (\verb|pyu4lib.cpp| $\to$ \verb|u4lib.so|), its build (\verb|make python|, \verb|build.sh|), build notes (\verb|BUILD_NOTES.md|), and a tutorial Jupyter notebook (\verb|tutorial.ipynb|).
     \item \verb|agents/|: the AI-agent skill catalog: an index (\verb|AGENTS.md|), shared runtime instructions, and one skill per capability.
     \item \verb|test/|: the regression suite (\verb|test_*.cpp|, the \verb|*_cases.h| case sets, and \verb|reference/| documented values), run by \verb|make test|.
     \item \verb|doc/|: this manual (LaTeX source).
@@ -249,45 +260,45 @@ queries require the lifecycle calls below. U(4) types use the \verb|u4|
 namespace and inherit SU(4) functionality from \verb|su4|.
 Table~\ref{tab:main-funcs} identifies the relevant header for each operation.
 
-\begin{table*}[tp]
+\begin{table}[h!]
     \centering
-    \begin{tabular}{p{4.3cm}p{4.9cm}p{6.0cm}}
+    \begin{tabular}{p{4.3cm}p{5.9cm}p{6.5cm}}
     \hline\hline
          Header & Entry point & Task \\
         \hline
          \verb|U4irrep.h| & \verb|dim|, \verb|C1/C2/C3/C4|, \verb|conjugate| & irrep dimension, Casimirs, conjugation \\
-         \verb|U4basis.h| & \verb|Zeta|, \verb|gelfandBasis|, \verb|physicalBasis| & inner (spin-isospin) multiplicity; basis enumeration \\
-         \verb|U4decomposition.h| & \verb|Eta|, \verb|decomposition| & outer multiplicity; $A\otimes B$ series \\
-         \verb|U4U3xU4U3.h| & \verb|wigU4U3db| & $\mathrm{SU(4)}{\supset}\mathrm{U(3)}$ canonical reduced CG \\
-         \verb|U4SU2SU2xU4SU2SU2.h| & \verb|wigU4SU2SU2db| & $\mathrm{SU(2)}{\times}\mathrm{SU(2)}$ physical CG \\
-         \verb|U4_U6Z6Coeffs.h| & \verb|u4u6db|, \verb|u4z6db| & $U$- and $Z$-recoupling (three irreps) \\
-         \verb|U4_U9Coeffs.h| & \verb|u4u9db| & $9$-coefficient recoupling (four irreps) \\
+         \verb|U4basis.h| & \verb|Zeta|, \verb|gelfandBasis|, \verb|physicalBasis| & inner multiplicity; basis enumeration \\
+         \verb|U4decomposition.h| & \verb|Eta|, \verb|decomposition| & outer multiplicity; Kronecker products \\
+         \verb|U4U3xU4U3.h| & \verb|wigU4U3db| & $\mathrm{U(4)}{\supset}\mathrm{U(3)}$ canonical coupling coefficients \\
+         \verb|U4SU2SU2xU4SU2SU2.h| & \verb|wigU4SU2SU2db| & $\mathrm{SU_S(2)}{\times}\mathrm{SU_T(2)}$ physical coupling coefficients \\
+         \verb|U4_U6Z6Coeffs.h| & \verb|u4u6db|, \verb|u4z6db| & 6-$\rm U(4)$ recoupling coefficients \\
+         \verb|U4_U9Coeffs.h| & \verb|u4u9db| & 9-$\rm U(4)$ recoupling coefficients \\
          \verb|U4SU2SU2_to_U4U3U2U1.h| & \verb|phys_to_cano| & physical-to-canonical transformation \\
          \verb|U4generatorsRME.h| & \verb|RME_S|, \verb|RME_T|, \verb|RME_U| & reduced matrix elements of $\mathbf{S}$, $\mathbf{T}$, $\mathbf{U}$ \\
     \hline\hline
     \end{tabular}
     \caption{Main entry points of \texttt{u4lib}.}
     \label{tab:main-funcs}
-\end{table*}
+\end{table}
 
 \subsection{Lifecycle}
 In \verb|u4lib.h|:
 \begin{itemize}
-    \item \verb|initialize()| / \verb|initialize(&argc,&argv)|: set up the Wigner backend, the SO(3) caches, and the U(3) \emph{and} U(4) coefficient databases (the cascade descends into \texttt{u3lib});
+    \item \verb|initialize()| / \verb|initialize(&argc,&argv)|: set up the caches of SU(2) coupling and recoupling coefficients, and the U(3) and U(4) coefficient databases (the cascade descends into \texttt{u3lib});
     \item \verb|finalize()|: release these resources in reverse order;
     \item \verb|initialize_thread()| / \verb|finalize_thread()|: per-thread setup and teardown for multithreaded use;
     \item \verb|clear()|: discard cached coefficients while leaving the databases intact;
     \item \verb|is_initialized()|: report the current state.
 \end{itemize}
-\textit{Shared initialization:} \texttt{u4lib} initializes its \texttt{u3lib}
+Shared initialization: \texttt{u4lib} initializes its \texttt{u3lib}
 dependency automatically. If the application also calls \texttt{u3lib}
 directly, initialize both libraries at startup and defer finalization until
-all coefficient calculations have finished. Their Wigner backend is shared;
+all coefficient calculations have finished. Their \texttt{libwignernj} backend is shared;
 finalizing either library while the other still needs it causes runtime errors.
 
 \subsection{Irreps: \texttt{su4::irrep} and \texttt{u4::irrep}}
 (\verb|U4irrep.h|.) \verb|su4::irrep| stores an SU(4) irrep $(P_1,P_2,P_3)$;
-\verb|u4::irrep| derives from it and adds the fourth label $n_{44}$ (fixing the total quanta).
+\verb|u4::irrep| derives from it and adds the fourth label $n_{44}$ to fix the total quanta.
 
 \textbf{Constructors:}
 \begin{itemize}
@@ -309,7 +320,7 @@ finalizing either library while the other still needs it causes runtime errors.
 \begin{itemize}
     \item \verb|dim()|: the irrep dimension (both classes).
     \item \verb|C2()|, \verb|C3()|, \verb|C4()|: the SU(4) Casimirs of orders 2, 3, 4 (both classes, shift-invariant).
-    \item \verb|C1()|: the first-order (U(1)) Casimir $=n_{14}{+}n_{24}{+}n_{34}{+}n_{44}$ (total quanta), on \verb|u4::irrep| only (SU(4) is U(4) with the U(1) trace generator removed, so \verb|su4::irrep| has no \verb|C1()|).
+    \item \verb|C1()|: the first-order Casimir $=n_{14}{+}n_{24}{+}n_{34}{+}n_{44}$ (total quanta), on \verb|u4::irrep| only (SU(4) is U(4) with the U(1) trace generator removed, so \verb|su4::irrep| has no \verb|C1()|).
     \item \verb|quanta()|: synonym of \verb|C1()|.
 \end{itemize}
 
@@ -324,7 +335,7 @@ finalizing either library while the other still needs it causes runtime errors.
 \end{itemize}
 
 \subsection{Gelfand states: \texttt{u4::gelfand}}
-(\verb|U4gelfand.h|.) The canonical basis state with top U(4) labels
+(\verb|U4gelfand.h|.) The canonical basis state with U(4) labels
 $[n_{14},n_{24},n_{34},n_{44}]$ and U(3)$\supset$U(2)$\supset$U(1) sublabels
 $[n_{13},n_{23},n_{33}]$, $[n_{12},n_{22}]$, $n_{11}$.
 
@@ -336,7 +347,7 @@ $[n_{13},n_{23},n_{33}]$, $[n_{12},n_{22}]$, $n_{11}$.
 \textbf{Label getters and validity check:}
 \begin{itemize}
     \item \verb|n14()| \dots\ \verb|n11()|: the ten Gelfand-pattern labels.
-    \item \verb|check()|: test the betweenness condition.
+    \item \verb|check()|: test the betweenness (interlacing) condition.
     \item \verb|normalize()|: shift all quantum numbers by $n_{44}$.
 \end{itemize}
 
@@ -353,18 +364,38 @@ $[n_{13},n_{23},n_{33}]$, $[n_{12},n_{22}]$, $n_{11}$.
     \item \verb|conjugate_phase()|: the accompanying conjugation phase.
 \end{itemize}
 
-\textbf{Generator matrix elements:} The matrix elements of the U(4) canonical
-generators $E_{ij}$ acting on a Gelfand state, returned by the methods
-\verb|e11()| \dots\ \verb|e44()|, \verb|e12|/\verb|e21|, \verb|e23_*|,
-\verb|e13_*|, \verb|e34_*|, \verb|e24_*|, \verb|e14_*| (and their lowering
-partners), where a suffix selects the target branch. The raising-action
-predicates \verb|E12|, \verb|E23_12|, $\dots$, \verb|E14_33_22| (in
-\verb|U4basis.h|) identify the target state of each generator.
+\textbf{Generator matrix elements:} Each method returns the matrix element of a
+U(4) canonical generator $E_{ij}$ acting on a Gelfand state. The suffix identifies
+the target branch: \verb|_12|/\verb|_22| selects $n_{12}$ or $n_{22}$, while
+\verb|_13|/\verb|_23|/\verb|_33| selects $n_{13}$, $n_{23}$, or $n_{33}$.
+For generators that change both rows, the two suffixes specify the corresponding
+pair of labels (see Ref.~\cite{Dang2024EPJP2}).
+\begin{itemize}
+    \item \verb|e11()|, \verb|e22()|, \verb|e33()|, \verb|e44()|: the diagonal weight generators.
+    \item \verb|e12()|: the $E_{12}$ element.
+    \item \verb|e21()|: the $E_{21}$ element.
+    \item \verb|e23_12()|, \verb|e23_22()|: the $E_{23}$ element, per target branch.
+    \item \verb|e32_12()|, \verb|e32_22()|: the $E_{32}$ element, per target branch.
+    \item \verb|e13_12()|, \verb|e13_22()|: the $E_{13}$ element, per target branch.
+    \item \verb|e31_12()|, \verb|e31_22()|: the $E_{31}$ element, per target branch.
+    \item \verb|e34_13()|, \verb|e34_23()|, \verb|e34_33()|: the $E_{34}$ element, per target branch.
+    \item \verb|e43_13()|, \verb|e43_23()|, \verb|e43_33()|: the $E_{43}$ element, per target branch.
+    \item \verb|e24_13_12()|, \verb|e24_13_22()|, \verb|e24_23_12()|, \verb|e24_23_22()|, \verb|e24_33_12()|, \verb|e24_33_22()|: the $E_{24}$ element, per target branch.
+    \item \verb|e42_13_12()|, \verb|e42_13_22()|, \verb|e42_23_12()|, \verb|e42_23_22()|, \verb|e42_33_12()|, \verb|e42_33_22()|: the $E_{42}$ element, per target branch.
+    \item \verb|e14_13_12()|, \verb|e14_13_22()|, \verb|e14_23_12()|, \verb|e14_23_22()|, \verb|e14_33_12()|, \verb|e14_33_22()|: the $E_{14}$ element, per target branch.
+    \item \verb|e41_13_12()|, \verb|e41_13_22()|, \verb|e41_23_12()|, \verb|e41_23_22()|, \verb|e41_33_12()|, \verb|e41_33_22()|: the $E_{41}$ element, per target branch.
+\end{itemize}
+The raising-action predicates in \verb|U4basis.h| use the corresponding
+uppercase names: \verb|E12|, \verb|E23_12|, \verb|E23_22|,
+\verb|E13_12|, \verb|E13_22|, \verb|E34_13|, \verb|E34_23|,
+\verb|E34_33|, and the six branches each of \verb|E24| and \verb|E14|
+with the same paired suffixes listed above. They test whether a candidate final
+state has the label changes required by that raising-generator branch.
 
 \subsection{Physical states: \texttt{u4::physicalvector}}
-(\verb|U4basis.h|.) The $\mathrm{SU(2)}\times\mathrm{SU(2)}$ reduced spin-isospin
-state $\ket{(P_1 P_2 P_3)\,\zeta\,S\,T}$. Spin and isospin are stored
-\textbf{doubled}: $SS=2S$, $TT=2T$.
+(\verb|U4basis.h|.) The $\mathrm{SU_S(2)}\times\mathrm{SU_T(2)}$ reduced spin-isospin
+state $\ket{(P_1 P_2 P_3)\,\zeta\,S\,T}$, where spin and isospin are stored
+doubled as $SS=2S$, $TT=2T$, and $\zeta$ is the inner multiplicity.
 
 \textbf{Constructor:}
 \begin{itemize}
@@ -383,20 +414,20 @@ state $\ket{(P_1 P_2 P_3)\,\zeta\,S\,T}$. Spin and isospin are stored
 \subsection{Free functions}
 \textbf{Multiplicities:}
 \begin{itemize}
-    \item \verb|u4::Zeta(irrep,SS,TT)|: inner (spin-isospin) multiplicity $\zeta_{\max}$ of $(S,T)$, returns $0$ for labels outside the admissible grid.
+    \item \verb|u4::Zeta(irrep,SS,TT)|: inner multiplicity $\zeta_{\max}$ of $(S,T)$.%, returns $0$ for labels outside the admissible grid.
     \item \verb|u4::Eta(A,B,C)|: outer multiplicity $\eta_{\max}$ of irrep $C$ in the $A\otimes B$ product (\verb|U4decomposition.h|).
 \end{itemize}
 
 \textbf{Bases:}
 \begin{itemize}
-    \item \verb|u4::gelfandBasis(irrep)|: every Gelfand state of the irrep.
-    \item \verb|u4::physicalBasis(irrep)|: the physical states with nonzero $\zeta$.
-    \item \verb|u4::findGelfand(g,gArr)|: the position of a state inside the \verb|gArr| Gelfand basis.
+    \item \verb|u4::gelfandBasis(irrep)|: enumerate every Gelfand state of the irrep.
+    \item \verb|u4::physicalBasis(irrep)|: list all physical states with nonzero $\zeta$.
+    \item \verb|u4::findGelfand(g,gArr)|: find the position of a state inside the \verb|gArr| Gelfand basis.
 \end{itemize}
 
 \textbf{Decomposition:}
 \begin{itemize}
-    \item \verb|u4::decomposition(A,B)|: the complete Kronecker series, as a (list of $C$, list of $\eta_{\max}$) pair obeying $\sum_C\eta_{\max}(C)\dim C=\dim A\dim B$.
+    \item \verb|u4::decomposition(A,B)|: the complete Kronecker series, as a (list of $C$, list of $\eta_{\max}$) pair satisfying $\dim A\dim B=\sum_C\eta_{\max}(C)\dim C$.
 \end{itemize}
 
 \textbf{Physical generator reduced matrix elements:} Each takes two
@@ -409,7 +440,7 @@ $\zeta'_{\max}\times\zeta_{\max}$ (\verb|U4generatorsRME.h|).
 \end{itemize}
 
 \textbf{Transformation:} Each routine expands the physical state \verb|p| (at
-doubled projections $MMS,MMT$) over the Gelfand basis \verb|gArr|, returning the
+doubled projections \texttt{MMS} and \texttt{MMT}) over the Gelfand basis \verb|gArr|, returning the
 canonical-state indices together with an amplitude matrix whose columns are
 orthonormal, one per $\zeta$.
 \begin{itemize}
@@ -418,70 +449,201 @@ orthonormal, one per $\zeta$.
 \end{itemize}
 
 \subsection{Coefficient containers}
-(\verb|Definitions.h|.) The following containers hold coefficient blocks.
-Indices start at zero and must be smaller than the corresponding
-\verb|*max()| count. Use \verb|operator()| for coordinate access,
-\verb|operator[]| for flat indexing, \verb|data()| for the raw buffer, and
-\verb|print()| and \verb|operator<<|.
-
-\textbf{\texttt{U4U3}}: canonical $\mathrm{SU(4)}\supset\mathrm{U(3)}$ coupling of $A\otimes B\to C$.
+(\verb|Definitions.h|.) Coefficients are grouped into containers whose axes
+correspond to multiplicity labels. Each container provides coordinate access
+through \verb|operator()|, flat indexing through \verb|operator[]|, and
+formatted output through \verb|print()| or \verb|operator<<|:
 \begin{itemize}
-    \item \verb|rhomax()|, \verb|etamax()|: the multiplicity axes.
-    \item \verb|operator()(rho,eta)|.
-    \item \verb|data()|, \verb|size()|, \verb|empty()|.
-    \item \verb|print(s = std::cout)|.
+    \item \verb|block(i0,...,id)| selects a coefficient by its multiplicity indices,
+    in the order given below. Indices are zero-based and must be smaller than
+    their corresponding \verb|*max()| counts.
+    \item \verb|block[i]| accesses the same data with a single index,
+    $0\leq i<\verb|block.size()|$. Storage is row-major: the last axis varies
+    fastest. For axis sizes $d_0,\ldots,d_{m-1}$, the flat index is
+    $i=\sum_{j=0}^{m-1}i_j\prod_{k=j+1}^{m-1}d_k$, with an empty product equal
+    to one. For four axes, $i=((i_0d_1+i_1)d_2+i_2)d_3+i_3$.
+    \item \verb|data()| returns a const reference to the underlying storage
+    object; \verb|size()| gives the number of coefficients, and \verb|empty()|
+    indicates whether the block contains any coefficient.
+    \item \verb|print(s)| and \verb|s << block| print the multiplicity indices
+    and coefficient values to stream \verb|s|. With no argument,
+    \verb|print()| writes to \verb|std::cout|.
+\end{itemize}
+For containers with writable storage, non-const indexing returns a writable
+reference, while const indexing returns the coefficient by value. The cached
+\verb|U4U9| database result uses a read-only view; access it through a const
+container. Storage ownership is discussed at the end of this subsection.
+
+In the notation below, $A,B,C,D$ are U(4) irreps. Labels such as $AB,BC,AC,BD,CD$
+refer to selected intermediate irreps, not to the tensor products themselves.
+We use $R$ for the final irrep in recoupling.
+The outer multiplicity $\eta$ distinguishes occurrences of a U(4) irrep in a
+product; $\rho$ plays the corresponding role for the U(3) subgroup coupling.
+The inner multiplicity $\zeta$ distinguishes repeated spin-isospin pairs within
+an SU(4) irrep. All multiplicity indices below follow the library's zero-based
+convention.
+
+\textbf{\texttt{U4U3}}: canonical coupling of $A\otimes B\to C$, reduced with
+respect to U(3):
+$
+  \left\langle A a; B b \middle\| C c\right\rangle_{\rho,\eta},
+$
+where $a,b,c$ are fixed U(3) sublabels $[n_{13},n_{23},n_{33}]$.
+Unlike the $\rm U(3) \supset U(2)$ case, the subgroup coupling itself can have outer
+multiplicity. The block therefore has two axes, $(\rho,\eta)$.
+\begin{itemize}
+    \item \verb|rhomax()|: multiplicity of the U(3) coupling $a\otimes b\to c$.
+    \item \verb|etamax()|: multiplicity of the U(4) coupling $A\otimes B\to C$.
+    \item \verb|operator()(rho,eta)|: selects a coefficient with flat index
+    $\rho\,\eta_{\max}+\eta$.
+    \item \verb|print(s = std::cout)|: prints the coefficients over all $(\rho,\eta)$ pairs.
 \end{itemize}
 
-\textbf{\texttt{U4SU2SU2}}: physical $\mathrm{SU(2)}\times\mathrm{SU(2)}$ coupling of $A\otimes B\to C$.
+\textbf{\texttt{U4SU2SU2}}: physical coupling of $A\otimes B\to C$, reduced
+with respect to $\mathrm{SU_S(2)}\otimes\mathrm{SU_T(2)}$:
+$
+  \left\langle A\,\zeta_A S_A T_A;\,B\,\zeta_B S_B T_B
+  \middle\| C\,\zeta_C S_C T_C\right\rangle_{\eta}.
+$
+The spins and isospins are fixed for each block and supplied to the library in
+doubled form, $SS=2S$ and $TT=2T$. The three inner multiplicities and the U(4)
+outer multiplicity form the four axes.
 \begin{itemize}
-    \item \verb|zetaAmax()|, \verb|zetaBmax()|, \verb|zetaCmax()|, \verb|etamax()|: the multiplicity axes.
+    \item \verb|zetaAmax()|: multiplicity of $(S_A,T_A)$ in $A$.
+    \item \verb|zetaBmax()|: multiplicity of $(S_B,T_B)$ in $B$.
+    \item \verb|zetaCmax()|: multiplicity of $(S_C,T_C)$ in $C$.
+    \item \verb|etamax()|: multiplicity of $C$ in $A\otimes B$.
     \item \verb|operator()(zetaA,zetaB,zetaC,eta)|.
-    \item \verb|data()|.
-    \item \verb|print(s = std::cout)|.
+    \item \verb|print(s = std::cout)|: prints the coefficients over
+    $(\zeta_A,\zeta_B,\zeta_C,\eta)$.
 \end{itemize}
 
-\textbf{\texttt{U4U6}}: $U$-recoupling.
+\textbf{\texttt{U4U6}}: $U$-recoupling between $(AB)C$ and $A(BC)$:
+$
+ U\!\left(A,B,R,C;\,AB,\eta_{AB},\eta_{AB\_C};\,
+ BC,\eta_{BC},\eta_{A\_BC}\right).
+$
+The intermediate irreps $AB$ and $BC$ are fixed; the four axes resolve the
+multiplicities along the two coupling routes.
 \begin{itemize}
-    \item \verb|etaABmax()|, \verb|etaAB_Cmax()|, \verb|etaBCmax()|, \verb|etaA_BCmax()|: the multiplicity axes.
+    \item \verb|etaABmax()|: multiplicity of $A\otimes B\to AB$.
+    \item \verb|etaAB_Cmax()|: multiplicity of $AB\otimes C\to R$.
+    \item \verb|etaBCmax()|: multiplicity of $B\otimes C\to BC$.
+    \item \verb|etaA_BCmax()|: multiplicity of $A\otimes BC\to R$.
     \item \verb|operator()(etaAB,etaAB_C,etaBC,etaA_BC)|.
-    \item \verb|data()|.
-    \item \verb|print(s = std::cout)|.
+    \item \verb|print(s = std::cout)|: prints the coefficients over
+    $(\eta_{AB},\eta_{AB\_C},\eta_{BC},\eta_{A\_BC})$.
 \end{itemize}
 
-\textbf{\texttt{U4Z6}}: $Z$-recoupling.
+\textbf{\texttt{U4Z6}}: $Z$-recoupling between $(AB)C$ and $(AC)B$:
+$
+ Z\!\left(B,A,R,C;\,AB,\eta_{AB},\eta_{AB\_C};\,
+ AC,\eta_{AC},\eta_{AC\_B}\right).
+$
+The intermediate irreps $AB$ and $AC$ are fixed; the four axes resolve the
+multiplicities along the two coupling routes.
 \begin{itemize}
-    \item \verb|rhoABmax()|, \verb|rhoAB_Cmax()|, \verb|rhoACmax()| (the AC channel), \verb|rhoAC_Bmax()| (the AC\_B channel): the multiplicity axes.
+    \item \verb|etaABmax()|: multiplicity of $A\otimes B\to AB$.
+    \item \verb|etaAB_Cmax()|: multiplicity of $AB\otimes C\to R$.
+    \item \verb|etaACmax()|: multiplicity of $A\otimes C\to AC$.
+    \item \verb|etaAC_Bmax()|: multiplicity of $AC\otimes B\to R$.
     \item \verb|operator()(etaAB,etaAB_C,etaAC,etaAC_B)|.
-    \item \verb|data()|.
-    \item \verb|print(s = std::cout)|.
+    \item \verb|print(s = std::cout)|: prints the coefficients over
+    $(\eta_{AB},\eta_{AB\_C},\eta_{AC},\eta_{AC\_B})$.
 \end{itemize}
 
-\textbf{\texttt{U4U9}}: $9$-coefficient recoupling.
+\textbf{\texttt{U4U9}}: 9-U(4) recoupling between $(AB)(CD)$ and $(AC)(BD)$:
+\begin{equation}
+ \left[\begin{array}{cccc}
+ A & B & AB & \eta_{AB} \\
+ C & D & CD & \eta_{CD} \\
+ AC & BD & R & \eta_{AC\_BD} \\
+ \eta_{AC} & \eta_{BD} & \eta_{AB\_CD} &
+ \end{array}\right].
+\end{equation}
+The last column labels the row couplings, and the last row labels the column
+couplings. In the code, \verb|etaABCD| denotes $\eta_{AB\_CD}$ for
+$AB\otimes CD\to R$, whereas \verb|etaACBD| denotes $\eta_{AC\_BD}$ for
+$AC\otimes BD\to R$. The storage order is
+$(\eta_{AC},\eta_{BD},\eta_{AB\_CD},\eta_{AB},\eta_{CD},\eta_{AC\_BD})$.
 \begin{itemize}
-    \item \verb|etaACmax()|, \verb|etaBDmax()|, \verb|etaABCDmax()|, \verb|etaABmax()|, \verb|etaCDmax()|, \verb|etaACBDmax()|: the multiplicity axes.
+    \item \verb|etaACmax()|: multiplicity of $A\otimes C\to AC$.
+    \item \verb|etaBDmax()|: multiplicity of $B\otimes D\to BD$.
+    \item \verb|etaABCDmax()|: multiplicity of $AB\otimes CD\to R$.
+    \item \verb|etaABmax()|: multiplicity of $A\otimes B\to AB$.
+    \item \verb|etaCDmax()|: multiplicity of $C\otimes D\to CD$.
+    \item \verb|etaACBDmax()|: multiplicity of $AC\otimes BD\to R$.
     \item \verb|operator()(etaAC,etaBD,etaABCD,etaAB,etaCD,etaACBD)|.
-    \item \verb|data()|.
-    \item \verb|print(s = std::cout)|.
+    \item \verb|print(s = std::cout)|: prints all six multiplicity indices
+    and the corresponding coefficients.
 \end{itemize}
-Retain a copy of any C++ \verb|U4U9| block that must survive the next query.
-This container references a thread-local scratch buffer, whose contents are
-replaced by the next database call. The other container types own their data.
+
+The classes are templated on their storage type. The first four database
+containers own their coefficient vectors. With \verb|U4LIB_ENABLE_U4U9_CACHE| on,
+\verb|get_U4U9| instead returns a container holding a
+\verb|std::span<const double>| into a thread-private scratch buffer. A later
+query can overwrite that buffer, so copy the coefficients into owning storage
+before retaining results across calls; copying the view alone does not retain
+the data. Otherwise, the returned container owns a
+\verb|std::vector<double>|.
 
 \subsection{Coefficient databases}
-The singleton accessors below retrieve coefficient blocks in the container
-formats just described.
+Every coupling and recoupling coefficient is evaluated on first use and memoized
+inside a process-wide singleton database: \verb|u4::wigU4U3db()|,
+\verb|u4::wigU4SU2SU2db()|, \verb|u4::u4u6db()|, \verb|u4::u4z6db()|, and
+\verb|u4::u4u9db()|. Each database offers two complementary retrieval styles:
 \begin{itemize}
-    \item \verb|u4::wigU4U3db().get_U4U3(| $n_{14}^a,n_{24}^a,n_{34}^a,n_{44}^a,n_{13}^a,n_{23}^a,n_{33}^a,\ \dots^{b},\ \dots^{c}$ \verb|)| $\to$ \verb|U4U3|: $\mathrm{SU(4)}\supset\mathrm{U(3)}$ reduced coupling for $a\otimes b\to c$ (each state by its U(4) labels and U(3) sublabels), indexed by $(\rho,\eta)$.
-    \item \verb|u4::wigU4SU2SU2db().get_U4SU2SU2(| $P_1^a,P_2^a,P_3^a,SS^a,TT^a,\ \dots^{b},\ \dots^{c}$ \verb|)| $\to$ \verb|U4SU2SU2|: physical spin-isospin reduced coupling ($SS=2S$, $TT=2T$), indexed by $(\zeta_A,\zeta_B,\zeta_C,\eta)$.
-    \item \verb|u4::u4u6db().get_U4U6(| $A,B,ABC,C,AB,\ \eta_{AB},\eta_{AB\_C},\ BC,\eta_{BC},\eta_{A\_BC}$ \verb|)| $\to$ \verb|U4U6|: recouples $(AB)C\leftrightarrow A(BC)$ (note that $ABC$ precedes $C$).
-    \item \verb|u4::u4z6db().get_U4Z6(| $B,A,ABC,C,AB,\ \eta_{AB},\eta_{AB\_C},\ AC,\eta_{AC},\eta_{AC\_B}$ \verb|)| $\to$ \verb|U4Z6|: recouples $(AB)C\leftrightarrow(AC)B$ (note the leading $B,A$, exchanging the first pair).
-    \item \verb|u4::u4u9db().get_U4U9(| $A,B,C,D,$ $AB,CD,AC,BD,ABCD,$ $\eta_{AC},\eta_{BD},\eta_{ABCD},$ $\eta_{AB},\eta_{CD},\eta_{ACBD}$ \verb|)| $\to$ \verb|U4U9|.
+    \item \textbf{Structured container getters} (\verb|get_U4U3|, \verb|get_U4SU2SU2|, \verb|get_U4U6|, \verb|get_U4Z6|, \verb|get_U4U9|): hand back the typed containers described above (\verb|U4U3|, \verb|U4SU2SU2|, \verb|U4U6|, \verb|U4Z6|, \verb|U4U9|), with coordinate access through \verb|operator()|, flat access through \verb|operator[]|, the \verb|*max()| shape queries, and stream printing.
+    \item \textbf{Direct buffer getters} (\verb|get|): return the coefficients as a bare buffer, bypassing the container wrapper. The three recoupling databases add a raw-integer overload of \verb|get| that consumes the partition labels directly and derives the intermediate multiplicities on its own.
 \end{itemize}
-The multiplicity maxima are the \verb|Eta| values for the corresponding
-channels. Their positions are interleaved with the irrep arguments as shown
-above; an incorrect count triggers an internal assertion. In \verb|get_U4U9|, note that the 3rd multiplicity argument $\eta_{ABCD}$ corresponds to the $(AB)(CD)\to ABCD$ coupling route and the 6th ($\eta_{ACBD}$) to $(AC)(BD)\to ABCD$; exchanging these counts triggers an internal assertion. A forbidden or vanishing coupling yields an empty container,
-which is safe to inspect for its shape but not to index.
 
+Taking the databases in turn:
+\begin{itemize}
+    \item \textbf{Canonical coupling database} (\verb|u4::wigU4U3db()|):
+    \begin{itemize}
+        \item \verb|get_U4U3(| $n_{14}^a,n_{24}^a,n_{34}^a,n_{44}^a,n_{13}^a,n_{23}^a,n_{33}^a,\ \dots^{b},\ \dots^{c}$ \verb|)| $\to$ \verb|U4U3|: the $\mathrm{U(4)}\supset\mathrm{U(3)}$ reduced coupling indexed by $(\rho,\eta)$. %, with each state carried by its U(4) labels and U(3) sublabels.
+        \item \verb|get(| $n_{14}^a,n_{24}^a,n_{34}^a,n_{44}^a,n_{13}^a,n_{23}^a,n_{33}^a,\ \dots^{b},\ \dots^{c}$ \verb|)| $\to$ \verb|Eigen::MatrixXd|: the same block as a $\rho_{\max}\times\eta_{\max}$ matrix; an empty matrix marks a forbidden coupling.
+    \end{itemize}
+
+    \item \textbf{Physical coupling database} (\verb|u4::wigU4SU2SU2db()|):
+    \begin{itemize}
+        \item \verb|get_U4SU2SU2(| $P_1^a,P_2^a,P_3^a,SS^a,TT^a,\ \dots^{b},\ \dots^{c}$ \verb|)| $\to$ \verb|U4SU2SU2|: the physical spin-isospin reduced coupling ($SS=2S$, $TT=2T$), indexed by $(\zeta_A,\zeta_B,\zeta_C,\eta)$.
+        \item \verb|get(| $P_1^a,P_2^a,P_3^a,SS^a,TT^a,\ \dots^{b},\ \dots^{c}$ \verb|)| $\to$ \verb|std::vector<double>|: the same block flattened over the $(\zeta_A,\zeta_B,\zeta_C,\eta)$ axes.
+    \end{itemize}
+
+    \item \textbf{$U$-recoupling database} (\verb|u4::u4u6db()|):
+    \begin{itemize}
+        \item \verb|get_U4U6(| $A,B,ABC,C,AB,\ \eta_{AB},\eta_{AB\_C},\ BC,\eta_{BC},\eta_{A\_BC}$ \verb|)| $\to$ \verb|U4U6|: recouples $(AB)C\leftrightarrow A(BC)$, indexed by $(\eta_{AB},\eta_{AB\_C},\eta_{BC},\eta_{A\_BC})$.% (note that $ABC$ precedes $C$).
+        \item \verb|get(| $A,B,ABC,C,AB,\ \eta_{AB},\eta_{AB\_C},\ BC,\eta_{BC},\eta_{A\_BC}$ \verb|)| $\to$ \verb|std::vector<double>|: the flat form of length $\eta_{AB}\eta_{AB\_C}\eta_{BC}\eta_{A\_BC}$.
+        \item \verb|get(| 24 integers \verb|)| $\to$ \verb|std::vector<double>|: a raw-integer overload taking the partition labels of $A,B,ABC,C,AB,BC$ and resolving the $\eta$ maxima internally.
+    \end{itemize}
+
+    \item \textbf{$Z$-recoupling database} (\verb|u4::u4z6db()|):
+    \begin{itemize}
+        \item \verb|get_U4Z6(| $B,A,ABC,C,AB,\ \eta_{AB},\eta_{AB\_C},\ AC,\eta_{AC},\eta_{AC\_B}$ \verb|)| $\to$ \verb|U4Z6|: recouples $(AB)C\leftrightarrow(AC)B$, indexed by $(\eta_{AB},\eta_{AB\_C},\eta_{AC},\eta_{AC\_B})$ (note the leading $B,A$ exchanges the first pair).
+        \item \verb|get(| $B,A,ABC,C,AB,\ \eta_{AB},\eta_{AB\_C},\ AC,\eta_{AC},\eta_{AC\_B}$ \verb|)| $\to$ \verb|std::vector<double>|: the flat form of length $\eta_{AB}\eta_{AB\_C}\eta_{AC}\eta_{AC\_B}$.
+        \item \verb|get(| 24 integers \verb|)| $\to$ \verb|std::vector<double>|: a raw-integer overload for the partition labels of $B,A,ABC,C,AB,AC$ and resolving the multiplicities internally.
+    \end{itemize}
+
+    \item \textbf{9-$\rm U(4)$ recoupling database} (\verb|u4::u4u9db()|):
+    \begin{itemize}
+        \item \verb|get_U4U9(| $A,B,C,D,AB,CD,AC,BD,ABCD,$ $\eta_{AC},\eta_{BD},\eta_{ABCD},\eta_{AB},\eta_{CD},\eta_{ACBD}$ \verb|)| $\to$ \verb|U4U9|: the coefficient container; its multiplicity arguments follow the container's axis order, the column channels $(\eta_{AC},\eta_{BD},\eta_{ABCD})$ ahead of the row channels $(\eta_{AB},\eta_{CD},\eta_{ACBD})$.
+        \item \verb|get(| $A,B,C,D,AB,CD,AC,BD,ABCD,$ $\eta_{AB},\eta_{CD},\eta_{ABCD},\eta_{AC},\eta_{BD},\eta_{ACBD}$ \verb|)| $\to$ \verb|std::span<const double>| (or \verb|std::vector<double>|): the flat buffer, where the row channels $(\eta_{AB},\eta_{CD},\eta_{ABCD})$ instead come first, the reverse of \verb|get_U4U9|, matching the internal stride order.
+        \item \verb|get(| 36 integers \verb|)| $\to$ \verb|std::vector<double>|: a raw-integer overload taking the partition labels of all nine participating irreps, where multiplicities are evaluated internally.
+    \end{itemize}
+\end{itemize}
+
+The multiplicity counts passed to the recoupling getters must equal the
+\verb|Eta| values of the matching channels, or an internal assertion fires. In
+\verb|get_U4U9| the third count $\eta_{ABCD}$ belongs to the
+$(AB)(CD)\to ABCD$ route and the sixth $\eta_{ACBD}$ to the
+$(AC)(BD)\to ABCD$ route; interchanging them raises the same assertion. A
+forbidden or vanishing coupling returns an empty container or buffer, which may
+be queried for its shape but not indexed. Each database exposes a \verb|clear()|
+method---and \verb|u4::clear()| empties all five at once---that drops the cached
+blocks while keeping the allocated thread workspaces.
+
+\begin{comment}
 A minimal C++ session:
 \begin{lstlisting}[language=C++]
 u4::initialize(&argc, &argv);
@@ -490,17 +652,25 @@ auto blk = u4::wigU4SU2SU2db().get_U4SU2SU2(1,0,0,1,1, 1,0,0,1,1, 2,0,0,2,2);
 double x = blk(0, 0, 0, 0);     // = 1
 u4::finalize();
 \end{lstlisting}
+\end{comment}
 
 \subsection{Conventions and normalization}
 \label{sub:conv}
 Phase and normalization conventions follow Ref.~\cite{Dang2024EPJP2}; documented
 values and the generation procedure are in \verb|test/reference/|.
 \begin{itemize}
-    \item \textbf{Doubled spin-isospin:} All spin and isospin labels are doubled: $SS=2S$, $TT=2T$ (and $MMS=2M_S$, $MMT=2M_T$). \verb|Zeta| returns $0$ off the parity-correct $(S,T)$ grid; enumerate valid states with \verb|physicalBasis| rather than scanning it.
-    \item \textbf{Multiplicity indexing:} the \verb|Zeta| and \verb|Eta| routines report the counts, and every container accessor is indexed from zero up to the corresponding maximum ($0,\dots,\text{max}{-}1$).
-    \item \textbf{Canonical-coupling phase:} within each $\eta$ block the highest-weight reduced coefficients set both phase and normalization; they span the orthonormal null space left once the raising generators annihilate the highest-weight coupled state. When $\eta_{\max}>1$ (and for self-conjugate irreps) the solver returns one admissible orthonormal $\eta$ basis, and all coefficients carrying $\eta$ must use the same basis choice. Under conjugation a Gelfand state obeys $C\ket{g} = (-1)^{n_{14}+n_{34}-n_{13}-n_{23}-n_{33}-n_{12}-n_{22}-n_{11}}\ket{g.\mathrm{conjugate}()}$ (\verb|gelfand::conjugate_phase()|).
-    \item \textbf{Physical-to-canonical transformation:} A physical state $\ket{R\,\zeta\,S\,M_S\,T\,M_T}$ ($R=(P_1,P_2,P_3)$) is expanded in canonical Gelfand states. The highest-weight state $\ket{R\,\zeta\,S\,S\,T\,T}$ is the null space of $S_+=E_{13}{+}E_{24}$ and $T_+=E_{12}{+}E_{34}$; $S_-$ and $T_-$ fix the lower-$M$ phases within a $\zeta$ multiplet. For $P_1\neq P_3$ the construction preserves $\zeta$; for a self-conjugate irrep ($P_1=P_3$), conjugation acts as a projection-independent symmetric matrix $D$ ($D^2=\mathbb{1}$) that may mix $\zeta$ (e.g. $(P_1,P_2,P_3)=(1,1,1)$, $S=T=1$).
-    \item \textbf{Generator reduced matrix element factor:} \verb|RME_S|/\verb|RME_T|/\verb|RME_U| carry an extra $\sqrt{(2S'{+}1)(2T'{+}1)}$ relative to the Wigner--Eckart reduced element.
+    \item \textbf{Doubled spin-isospin:} All spin and isospin labels are doubled: $SS=2S$, $TT=2T$ (and $MMS=2M_S$, $MMT=2M_T$). %\verb|Zeta| returns $0$ off the parity-correct $(S,T)$ grid; enumerate valid states with \verb|physicalBasis| rather than scanning it.
+    \item \textbf{Multiplicity indexing:} The \verb|Zeta| and \verb|Eta| routines report the counts, and every container accessor is indexed from zero up to the corresponding maximum ($0,\dots,\text{max}{-}1$).
+    \item \textbf{Canonical-coupling phase:} Within each $\eta$ block the highest-weight reduced coefficients set both phase and normalization. %; they span the orthonormal null space left once the raising generators annihilate the highest-weight coupled state. 
+    When $\eta_{\max}>1$ the solver returns one admissible orthonormal null-space basis, and all coefficients carrying $\eta$ must use the same basis choice. Under conjugation a Gelfand state obeys $C\ket{g} = (-)^{n_{14}+n_{34}-n_{13}-n_{23}-n_{33}-n_{12}-n_{22}-n_{11}}\ket{g.\mathrm{conjugate}()}$ (\verb|gelfand::conjugate_phase()|).
+    \item \textbf{Physical-to-canonical transformation:} A physical state $\ket{(P_1 P_2 P_3)\,\zeta\,S\,M_S\,T\,M_T}$ is expanded in canonical Gelfand states. The highest-weight state $\ket{(P_1 P_2 P_3)\,\zeta\,S\,S\,T\,T}$ is the null space of $S_+$ and $T_+$ \cite{Dang2024EPJP2}; $S_-$ and $T_-$ fix the lower-$M$ phases within a $\zeta$ multiplet. For $P_1\neq P_3$ the conjugation preserves $\zeta$,
+    \begin{equation*}
+      C\ket{(P_1 P_2 P_3)\,\zeta\,S\,M_S\,T\,M_T}=\epsilon\,(-)^{S-M_S+T-M_T}\,\ket{(P_3 P_2 P_1)\,\zeta\,S\,{-}M_S\,T\,{-}M_T},
+      \quad
+      \epsilon=\begin{cases}(-)^{P_1+P_2+P_3}, & P_1>P_3,\\[2pt] (-)^{P_2}, & P_1<P_3.\end{cases}
+    \end{equation*}
+For a self-conjugate irrep ($P_1=P_3$), conjugation instead acts as a projection-independent symmetric matrix $D$ ($D^2=\mathbb{1}$) that may mix $\zeta$. The direction-dependent $\epsilon$ reflects $C_{(P_3 P_2 P_1)}C_{(P_1 P_2 P_3)}=(-)^{P_1+P_3}\mathbb{1}$, which is $+1$ whenever $P_1+P_3$ is even and $-1$ otherwise; one may find an analogy in the $\mathrm{SU(2)}$ conjugation factor $C_j C_j = (-)^{2j}$.
+    \item \textbf{Generator reduced matrix element factor:} \verb|RME_S|/\verb|RME_T|/\verb|RME_U| carry an extra $\sqrt{(2S'{+}1)(2T'{+}1)}$ factor.
     \item \textbf{Assertion checks.} Invalid labels or out-of-range indices abort via assertion.
 \end{itemize}
 
@@ -513,14 +683,18 @@ and keep \texttt{u3lib}'s \verb|python/| on the import path, since \verb|u4lib|
 depends on it. The irreps (\verb|su4.irrep|, \verb|irrep|), \verb|gelfand|,
 \verb|physicalvector|, the free functions \verb|Eta|, \verb|Zeta|,
 \verb|decomposition|, \verb|gelfandBasis|, \verb|physicalBasis|, the generator
-RMEs \verb|RME_S|/\verb|RME_T|/\verb|RME_U|, the transformations
+reduced matrix elements \verb|RME_S|/\verb|RME_T|/\verb|RME_U|, the transformations
 \verb|phys_to_cano|/\verb|phys_to_cano_allM|, and the five database accessors all
 carry the names and semantics of Sec.~\ref{sec:classes}. Each structured
 container supports \verb|__call__| for multiplicity-indexed access, exposes its
 flat \verb|data()| as a NumPy array, and prints itself; querying a database
-before \verb|initialize()| or after \verb|finalize()| raises \verb|RuntimeError|
-instead of aborting. The \verb|U4U9| container, only a scratch-buffer view in
+before \verb|initialize()| or after \verb|finalize()| raises \verb|RuntimeError|. 
+The \verb|U4U9| container, only a scratch-buffer view in
 C++, is copied automatically so that the Python object owns its data.
+The examples in the Jupyter notebook \verb|python/tutorial.ipynb| cover irreps, bases, coupling, and recoupling.
+Consult \verb|python/BUILD_NOTES.md| for ABI and toolchain requirements.
+
+\begin{comment}
 \begin{lstlisting}[language=Python]
 import u4lib as u4
 u4.initialize()
@@ -530,34 +704,42 @@ try:
 finally:
     u4.finalize()
 \end{lstlisting}
-The examples in the Jupyter notebook \verb|python/tutorial.ipynb| cover irreps, bases, coupling, and recoupling.
-Consult \verb|python/BUILD_NOTES.md| for ABI and toolchain requirements.
+\end{comment}
+
 
 \section{AI-ready interface}
 \label{sec:agents}
 
 \subsection{Skill catalog and orchestration}
 
-A request such as ``couple these spin-isospin states'' leaves several details
-for a program to resolve: the representation convention, doubled quantum
-numbers, multiplicity order, and the appropriate database. The skills in
-\verb|agents/| make those choices explicit. The index
-\verb|agents/AGENTS.md| points to shared runtime instructions and individual
-skills, each with an input specification, a library call, convention notes,
-and a numerical check.
+The \verb|agents/| directory holds a catalog of skills that steer an AI
+assistant through \texttt{u4lib} calculations. An index (\verb|agents/AGENTS.md|)
+points to shared runtime instructions and one skill per capability, each documenting
+the inputs, the exact library call, the relevant conventions, and a numerical
+check. An assistant with code-execution access follows these to drive the
+locally built library, and no network service is involved.
 
-An assistant uses the catalog to assemble and execute a calculation on the
-local installation. It reports the library's output with enough labels to
-identify the states and coupling channels, together with the check performed.
-The coefficient evaluation remains in the compiled C++ or Python routines;
-the assistant is not a substitute for their numerical algorithms. It must
-resolve an ambiguous request or explain an undefined quantity before proceeding.
-One example is a request for a first-order Casimir of an SU(4) irrep.
-The numerical library runs locally and needs no network service.
+Setup is handled by the \verb|install| skill
+(\verb|agents/install/SKILL.md|). It first checks whether the library is already
+built, and otherwise runs \verb|make config|---which resolves every dependency
+by inheriting \texttt{u3lib}'s toolchain and needs no manual environment
+variables---followed by \verb|make| and \verb|make test| (a clean run prints
+\verb|PASS: all test executables|); \verb|make python| adds the Python extension
+when required. Once the build passes, the calculation skills become usable.
 
-The requests in Table~\ref{tab:prompts} illustrate the catalog's coverage.
-Their expected values were verified using the library. Spin and isospin inputs
-use the doubled labels $SS=2S$ and $TT=2T$.
+For a calculation, an AI assistant maps the request onto a skill, prepares the
+inputs in the library's conventions, invokes the C++ or Python routine,
+and returns the results. 
+% with the labels that identify the states and coupling channels, together with the check that was run. 
+The numerical work stays inside
+the library---the assistant neither derives nor approximates coefficients,
+Casimirs, or matrix elements---and when a request is ambiguous or asks for an
+undefined quantity it seeks clarification or explains the problem, e.g., the
+first-order Casimir of an $\mathrm{SU(4)}$ irrep, which is not defined.
+
+Table~\ref{tab:prompts} pairs each skill with a representative prompt whose
+parenthetical answer was verified against the library. 
+Spin and isospin inputs use the doubled labels $SS=2S$ and $TT=2T$.
 
 \begin{table*}[tp]
     \centering
@@ -588,11 +770,11 @@ use the doubled labels $SS=2S$ and $TT=2T$.
     \label{tab:prompts}
 \end{table*}
 
-\subsection{Evaluation objectives}
+\subsection{Benchmark objectives}
 \label{app:benchmarking}
-The benchmark tests whether the catalog helps an agent turn a U(4) calculation
+The benchmark tests whether the catalog helps an agent turn a U(4) calculation request
 into a working program. Correctness is assessed separately from the resources
-spent reaching a solution. We examine two expectations:
+spent reaching a solution. We evaluate two hypotheses:
 \begin{enumerate}
     \item {Resource efficiency:} Ready access to argument conventions and
     usage examples should reduce source-code searches and unsuccessful
@@ -602,30 +784,28 @@ spent reaching a solution. We examine two expectations:
     Python bindings to C++ storage management and parallel execution.
 \end{enumerate}
 
-\subsection{Experimental methodology}
+\subsection{Experimental strategy}
 
 \subsubsection{Benchmark Tasks}
-The three tasks exercise different parts of the interface and place progressively greater demands on storage and concurrency:
+The three tasks exercise different parts of the library's interface and place progressively greater demands on storage and concurrency:
 \begin{itemize}
     \item {Task 1: Python Racah Recoupling Engine (\texttt{consumer/recouple.py}).}
-    Write a Python utility using the pybind11 bindings to evaluate $U(4)$ 6-$(\lambda_1,\lambda_2,\lambda_3)$ Racah recoupling coefficients $U(p_1, p_2, p, p_3; p_{12}, p_{23})$ and $Z$-recoupling coefficients via \verb|u4lib.u6recoupling| and \verb|u4lib.z6recoupling|. The implementation must check the unitary symmetry relations among fundamental representations (for instance, $(1,0,0) \otimes (1,0,0) \otimes (1,0,0) \to (3,0,0)$) and export structured numerical outputs. \emph{Architectural complexity: Low} (declarative Python bindings, automatic garbage collection, single-threaded execution).
+    Write a Python utility using the pybind11 bindings to evaluate 6-$\rm U(4)$ recoupling coefficients via \verb|u4lib.u6recoupling| and \verb|u4lib.z6recoupling|. The implementation must check the unitary symmetry relations among fundamental representations (for instance, $(1,0,0) \otimes (1,0,0) \otimes (1,0,0) \to (3,0,0)$) and export structured numerical outputs. \emph{Architectural complexity: Low} (declarative Python bindings, automatic garbage collection, single-threaded execution).
 
-    \item {Task 2: C++ 9-Coefficient Batch Exporter (\texttt{consumer/u9\_batch.cpp}).}
-    Build a C++ batch exporter for four-irrep $\mathrm{U}(4)$ 9-recoupling blocks via \verb|u4::u4u9db()|. The program must parse 27-integer input specifications (Dynkin triples for 9 participating irreps), compute intermediate outer multiplicities $\eta$, retain coefficient buffers across requests without aliasing, configure build dependencies, and serialize block and entry records. \emph{Architectural complexity: Medium} (C++ typing, header inclusion, manual workspace lifecycle management, Dynkin and partition label handling).
+    \item {Task 2: C++ 9-$\rm U(4)$ Batch Exporter (\texttt{consumer/u9\_batch.cpp}).}
+    Build a C++ batch exporter for 9-$\mathrm{U}(4)$ recoupling blocks via \verb|u4::u4u9db()|. The program must parse integer input specifications for nine participating irreps, compute intermediate outer multiplicities $\eta$, retain coefficient buffers across requests without aliasing, configure build dependencies, and serialize block and entry records. \emph{Architectural complexity: Medium} (C++ typing, header inclusion, manual workspace lifecycle management, and partition label handling).
 
     \item {Task 3: C++ OpenMP Multi-threaded Concurrency (\texttt{consumer/coupling\_batch.cpp}).}
-    Implement parallel canonical and physical coupling evaluations with OpenMP directives (\verb|#pragma omp parallel for|). The implementation needs thread-private workspaces for the null-space solver, the required compiler flags (\verb|-fopenmp|), and scalable multi-core execution. \emph{Architectural complexity: High} (shared-memory concurrency, thread-private state isolation, race-hazard avoidance).
+    Implement parallel canonical and physical coupling evaluations with OpenMP directives (\verb|#pragma omp parallel for|). The implementation must give each thread its own database cache and scratch state through per-thread initialization, guard shared output, set the required compiler flags (\verb|-fopenmp|), and scale across cores. \emph{Architectural complexity: High} (shared-memory concurrency, thread-private state isolation, race-hazard avoidance).
 \end{itemize}
 
-\subsubsection{Workspace preparation}
-Runs started in independent temporary directories
-(\texttt{/tmp/u4lib-bench-...}), each with its own consumer build environment.
+\subsubsection{Isolated workspace preparation}
+Runs started in independent temporary directories, each with its own consumer build environment.
 Files and build products from earlier trials were not reused. The workspace
-snapshot determined which documentation the agent could consult:
+snapshot determined what the agent could consult:
 \begin{itemize}
     \item {Control (standard prompts, zero skills):} Source files, C++
-    headers, and build scripts were available, but the \verb|agents/| and
-    \verb|.gemini/| skill directories were removed.
+    headers, and build scripts were available, but the \verb|agents/| directory was removed.
     \item {Treatment (domain skills):} The workspace also contained the
     repository's skill catalog (\verb|agents/skills/|), indexed by
     \verb|agents/AGENTS.md|. The prompt instructed the agent to consult it
@@ -636,29 +816,26 @@ snapshot determined which documentation the agent could consult:
 Agents could read and edit files, inspect directories, and run shell commands
 without intervention. A run ended when the agent declared completion or used
 50 steps. The workspace was then frozen for evaluation against the hidden
-tests in \texttt{fixtures-main.json}.
-
-The grader compared numerical output with exact analytic coupling and
+tests. % in \texttt{fixtures-main.json}.
+The grader compared numerical output with exact coupling and
 recoupling values for several irreps, allowing a tolerance of $10^{-12}$.
-We checked the grader itself with \texttt{validate\_grader.py} before the
-experiment. Reference implementations were modified to include phase
-inversions, memory leaks, uninitialized reads, and race conditions. All such
+We checked the grader itself 
+%with \texttt{validate\_grader.py} before the experiment. Reference implementations were modified to 
+including phase inversions, memory leaks, uninitialized reads, and race conditions. All such
 validation cases were classified correctly: sensitivity and specificity were
 100\%, with no false positives or negatives.
 
 \subsubsection{Model and Statistical Protocol}
-Every trial used Anthropic's Claude 3.5 Sonnet (\texttt{claude-3-5-sonnet-20241022}) in the same autonomous test environment. Each of the three tasks contributed $N = 10$ matched Control/Treatment pairs, giving 60 runs overall.
-
-For every run, four primary metrics were recorded:
+Every trial used Anthropic's Claude 3.5 Sonnet in the same autonomous test environment. Each of the three tasks contributed $N = 10$ matched Control/Treatment pairs, giving 60 runs overall. For every run, four primary metrics were recorded:
 \begin{enumerate}
-    \item {Functional Pass Rate (\%):} Percentage of runs passing all hidden unit tests.
-    \item {Total Token Consumption:} Cumulative sum of prompt tokens, cache-read tokens, and completion tokens consumed across all agent steps.
-    \item {Wall-Clock Latency (s):} Total elapsed real time from task dispatch to final agent termination, measured externally by the evaluation harness.
-    \item {Monetary Cost (USD):} Total API billing incurred, computed from official token pricing.
+    \item {Functional pass rate (\%):} Percentage of runs passing all hidden unit tests.
+    \item {Total token consumption:} Cumulative sum of prompt tokens, cache-read tokens, and completion tokens consumed across all agent steps.
+    \item {Wall-clock latency (s):} Total elapsed real time from task dispatch to final agent termination, measured externally by the evaluation harness.
+    \item {Monetary cost (USD):} Total API billing incurred, computed from official token pricing.
 \end{enumerate}
 Differences were assessed using two-tailed Welch's $t$-tests (unequal variance assumption), reporting $t$-statistics, degrees of freedom, and $p$-values.
 
-\begin{table*}[tp]
+\begin{table}[tp]
     \centering
     \footnotesize
     \setlength{\tabcolsep}{2.8pt}
@@ -690,7 +867,7 @@ Differences were assessed using two-tailed Welch's $t$-tests (unequal variance a
     \multicolumn{8}{l}{\scriptsize $^{***}p < 0.001$ (Task 2 tok: $t{=}-4.99, p{=}4.2\times10^{-4}$; Task 3 tok: $t{=}-6.76, p{=}3.7\times10^{-5}$);} \\
     \multicolumn{8}{l}{\scriptsize Grand Aggregate: $t_{\text{tok}}{=}-8.28, t_{\text{time}}{=}-4.85$; Welch's two-tailed $t$-test.}
     \end{tabular}
-\end{table*}
+\end{table}
 
 \begin{figure*}[tp]
     \centering
@@ -703,13 +880,13 @@ Differences were assessed using two-tailed Welch's $t$-tests (unequal variance a
 
 \subsubsection{Accuracy and resource use}
 All Treatment programs passed the hidden tests; Control programs failed in
-four runs. Resource use was also lower with the catalog. The totals for the
-30 matched pairs are reported below, with task-level results in
+four runs. Resource use was also lower with the skill catalog. The totals for the
+30 matched pairs are reported below, with results in
 Table~\ref{tab:benchmark_results} and Fig.~\ref{fig:benchmark_summary}:
 \begin{itemize}
-    \item {Token Consumption:} with the skill catalog, mean token consumption dropped from $717,199 \pm 257,789$ to $307,305 \pm 84,146$ tokens, a {57.1\%} aggregate reduction ($t = -8.28$, $df = 35.11$, $p = 9.05 \times 10^{-10}$, Welch's $t$-test).
-    \item {Execution Latency:} mean wall-clock time shortened from $124.21 \pm 53.90$\,s to $69.83 \pm 29.41$\,s, a {43.8\%} aggregate speedup ($t = -4.85$, $df = 44.86$, $p = 1.52 \times 10^{-5}$).
-    \item {API Cost:} average per-task inference cost went from \$0.4212 to \$0.2422 ({$-$42.5\%}, $t = -9.52$, $df = 35.64$, $p = 2.49 \times 10^{-11}$).
+    \item {Token Consumption:} with the skill catalog, mean token consumption dropped from $717,199 \pm 257,789$ to $307,305 \pm 84,146$ tokens, a {57.1\%} aggregate reduction ($t = -8.28$, $p = 9.05 \times 10^{-10}$).
+    \item {Execution Latency:} mean wall-clock time shortened from $124.21 \pm 53.90$\,s to $69.83 \pm 29.41$\,s, a {43.8\%} aggregate speedup ($t = -4.85$, $p = 1.52 \times 10^{-5}$).
+    \item {API Cost:} average per-task inference cost went from \$0.4212 to \$0.2422 ({$-$42.5\%}, $t = -9.52$, $p = 2.49 \times 10^{-11}$).
     \item {Reliability:} all 30 Treatment runs passed (10/10 on each of the three tasks), whereas Control runs failed four times across the suite (9/10, 9/10, and 8/10 on Tasks 1--3), an aggregate pass rate of 86.7\%.
 \end{itemize}
 
@@ -723,99 +900,100 @@ Across the three tasks, the relative token savings grow with the intended rise i
 Token savings increased from the Python task to the parallel C++ task. Runtime
 savings did not increase at every step, although Task 3 had the largest
 reduction in both measures. This is consistent with a benefit from documenting
-implementation constraints, but three tasks are too few to establish how that
-benefit scales. The run logs help explain the differences observed here.
-
-\subsubsection{Errors observed in the coding runs}
-The logs identify three recurring sources of difficulty:
+implementation constraints. %but three tasks are too few to establish how that benefit scales. 
+The run logs help identify sources of challenges the agents faced:
 \begin{enumerate}
-    \item {Task 1 (argument and channel order):} Control agents searched headers and tried different signatures to determine how the Python interface represents $U(4)$ labels and distinguishes $U$- from $Z$-recoupling. In one Control run (\texttt{task1-control-8}), the agent inverted intermediate coupling channels, producing sign errors that failed validation. Treatment agents used the skill catalog's canonical argument order and usage patterns, completing the task in an average of $318,884$ tokens (a {51.0\%} reduction, $p = 0.0077$) with zero failures.
+    \item {Task 1 (argument and channel order):} Control agents searched headers and tried different signatures to determine how the Python interface represents $\rm U(4)$ labels and distinguishes $U$- from $Z$-recoupling. In one Control run, %(\texttt{task1-control-8}), 
+the agent inverted intermediate coupling channels, producing sign errors that failed validation. Treatment agents used the skill catalog's argument order and usage patterns, completing the task in an average of $318,884$ tokens (a {51.0\%} reduction, $p = 0.0077$) with zero failures.
 
-    \item {Task 2 (representation labels and retained buffers):} In Task 2, C++ 9-coefficient recoupling requires evaluating four-irrep blocks via \verb|u4::u4u9db()| and retaining all blocks in memory before serialization. Control agents had difficulty distinguishing 3-component $\mathrm{SU}(4)$ Dynkin highest-weight labels $(P_1, P_2, P_3)$ and 4-component $\mathrm{U}(4)$ partition labels $(n_{14}, n_{24}, n_{34}, n_{44})$. In \texttt{task2-control-2}, the unguided agent mistakenly passed Dynkin triples into the 4-label partition constructor with $n_{44}=0$, violating internal partition betweenness invariants and triggering a fatal assertion failure (\texttt{Assertion failed: to\_uint8\_t, file Int.h, line 57}). The logs also show repeated scratch-buffer aliasing errors. Treatment agents used the catalog's constructor examples and storage instructions, with a {55.1\%} token reduction ($p = 4.2 \times 10^{-4}$) and a 100\% pass rate.
+    \item {Task 2 (representation labels and retained buffers):} Task 2 requires evaluating recoupling coefficients via \verb|u4::u4u9db()| and retaining all blocks in memory before serialization. Control agents had difficulty distinguishing $\mathrm{SU}(4)$ labels $(P_1 P_2 P_3)$ and $\mathrm{U}(4)$ partition labels $(n_{14}, n_{24}, n_{34}, n_{44})$. In the second Control run, the unguided agent mistakenly passed $\mathrm{SU}(4)$ labels into the \verb|u4::irrep| constructor with $n_{44}=0$, violating the betweenness condition and triggering a fatal assertion failure. % (\texttt{Assertion failed: to\_uint8\_t, file Int.h, line 57}). 
+The logs also show repeated scratch-buffer aliasing errors. Meanwhile, Treatment agents used the catalog's constructor examples and storage instructions, with a {55.1\%} token reduction ($p = 4.2 \times 10^{-4}$) and a 100\% pass rate.
 
-    \item {Task 3 (shared solver state):} Parallel $U(4)$ coupling requires care because the null-space solver modifies scratch memory during factorization. Control implementations shared database or solver instances across threads in \verb|#pragma omp parallel for| blocks. This produced race conditions, memory corruption, and non-deterministic crashes, causing two runs to fail (\texttt{task3-control-2} and \texttt{task3-control-5}). Even successful Control runs required repeated debugging (averaging $157.59$\,s and $807,737$ tokens). Treatment implementations followed the catalog's OpenMP rules and allocated thread-private workspaces. They produced deterministic output in $70.20$\,s and $291,843$ tokens---a {63.9\%} token reduction ($p = 3.7 \times 10^{-5}$) and {55.4\%} speedup ($p = 0.0032$).
+    \item {Task 3 (shared database state):} Parallel $\rm U(4)$ coupling requires care because the coefficient databases keep per-thread cache and scratch state. Control implementations must share a single database across threads in \verb|#pragma omp parallel for| blocks; hence, not initializing each thread's state or guarding shared output produced race conditions, memory corruption, and non-deterministic crashes, causing two runs to fail. % (\texttt{task3-control-2} and \texttt{task3-control-5}). 
+Even successful Control runs required repeated debugging (averaging $157.59$\,s and $807,737$ tokens). Treatment implementations followed the catalog's OpenMP rules---initializing each thread's state and guarding shared I/O. They produced deterministic output in $70.20$\,s and $291,843$ tokens, representing a {63.9\%} token reduction ($p = 3.7 \times 10^{-5}$) and {55.4\%} speedup ($p = 0.0032$).
 \end{enumerate}
 
+\begin{comment}
 \subsubsection{Implications for scientific software}
 For this U(4) benchmark, the most useful guidance concerned the boundary
 between mathematical notation and executable code: choosing the right irrep
 constructor, ordering coupling channels, and preserving coefficient storage.
 Parallel execution added a separate requirement to isolate solver state.
-Documenting these details in the skills was associated with 57.1\% lower
+Documenting these details in the skill files was associated with 57.1\% lower
 aggregate token use and 43.8\% shorter runtime. All 30 Treatment runs passed,
 compared with 26 Control runs; two Control failures occurred in the parallel
 C++ task. These results describe one model and three tasks. Testing other
 models and calculation types is necessary before drawing broader conclusions
 about reliability or resource savings.
+\end{comment}
 
 \section{Build and installation}
 \label{sec:build}
 
-Install \texttt{u3lib} before configuring \texttt{u4lib}. The U(4) headers in
+One must install \texttt{u3lib} before configuring \texttt{u4lib}. The U(4) headers in
 \verb|include/| can then be included directly in user programs. Source code is
 available at \url{https://github.com/Deep-SANE/u4lib}.
 
 Run \verb|make config| or \verb|./config/configure.sh| to locate
 \texttt{u3lib} and resolve compiler flags and dependency paths. Configuration
 is written to \verb|config/config.generated.mk|; no manual environment
-variables are required. Use \verb|make| for the example CLI programs in
+variables are required. Use \verb|make| to compile the example programs to
 \verb|bin/|, \verb|make test| to rebuild and execute the regression suite,
 and \verb|make python| for the pybind11 extension \verb|python/u4lib.so|.
-
 The tests cover irrep dimensions, Gelfand structure,
-$\mathrm{SU(2)}\times\mathrm{SU(2)}$ branching, coupling orthonormality in
-$\zeta$ and $\eta$, conjugation identities, and analytic reference values.
+$\mathrm{SU_S(2)}\times\mathrm{SU_T(2)}$ branching, coupling orthonormality in
+$\zeta$ and $\eta$, conjugation identities, and reference values.
 Numerical results are compared within tolerances.
+All core external dependencies are provided by \texttt{u3lib}, see Ref. \red{cite u3lib paper here}.
 
-All core external dependencies are provided by \texttt{u3lib}:
-\begin{itemize}
-    \item \texttt{u3lib} (prerequisite): provides the base group-theoretic infrastructure, shared utilities, and the libwignernj SU(2) Wigner backend.
-    \item Null-space solver (selected via \verb|NULLSPACE_SOLVER=qr|$\mid$\verb|sns|, default \verb|qr|):
-    \begin{itemize}
-        \item Dense QR (default): dense QR null-space solver via Eigen3; requires no external sparse solver.
-        \item \texttt{sns} (\url{https://gitlab.fit.cvut.cz/krastale/dp-sparse-nullspace}): sparse null-space solver enabled via \verb|USE_SNS=1|.
-    \end{itemize}
-    \item Eigen3, Boost (headers), OpenMP, and fmt: inherited from \texttt{u3lib}.
-    \item pybind11 (Python bindings): \url{https://github.com/pybind/pybind11}.
-\end{itemize}
-
-\texttt{u4lib} ships as an independent, self-contained repository with a uniform
-\verb|make config|/\verb|make|/\verb|make test|/\verb|make install| interface and no
-required environment variables.
 
 \begin{acknowledgments}
-This work is dedicated to the memory of J. P. Draayer, who passed on September 13, 2026 and whose pioneering work in algebraic computational nuclear physics --- from Elliott's $\rm SU(3)$ model and the Symplectic $\rm Sp(3,R)$ model to the \textit{ab initio} Symmetry-Adapted No-Core Shell Model and, most recently, Wigner's $\rm SU(4)$ supermultiplet model --- inspired this framework.
-This library implements the U(4) coupling and recoupling procedure of
-Ref.~\cite{Dang2024EPJP2}. The authors also gratefully acknowledge F. Pan and D. Kekejian for valuable discussions. PD was supported by the Institute of International Education through the Quad Fellowship, Louisiana State University, and Quantum CodeX. DL and TD were funded by Quantum CodeX.
+This work is dedicated to the memory of J. P. Draayer, who passed away on September 13, 2026 and whose pioneering work in algebraic computational nuclear physics---from Elliott's $\rm SU(3)$ model and the Symplectic $\rm Sp(3,R)$ model to the \textit{ab initio} Symmetry-Adapted No-Core Shell Model and, most recently, Wigner's $\rm SU(4)$ supermultiplet model---inspired this framework.
+The authors also gratefully acknowledge F. Pan and D. Kekejian for valuable discussions. PD was supported by the Institute of International Education through the Quad Fellowship, Louisiana State University, and Quantum CodeX. DL and TD were funded by Quantum CodeX.
 \end{acknowledgments}
 
 \begin{thebibliography}{99}
-\bibitem{Dang2024EPJP2} P. Dang, J. P. Draayer, F. Pan, T. Dytrych, D. Langr, D. Kekejian, K. S. Becker, and N. Thompson, ``Coupling and Recoupling Coefficients for Wigner's $\rm U(4)$ Supermultiplet Symmetry,'' Eur. Phys. J. Plus \textbf{139}, 933 (2024), \href{https://doi.org/10.1140/epjp/s13360-024-05581-6}{doi:10.1140/epjp/s13360-024-05581-6}.
+\bibitem{Dang2024EPJP2} P. Dang, J. P. Draayer, F. Pan, T. Dytrych, D. Langr, \textit{et al.}, ``Coupling and Recoupling Coefficients for Wigner's $\rm U(4)$ Supermultiplet Symmetry,'' Eur. Phys. J. Plus \textbf{139}, 933 (2024), \href{https://doi.org/10.1140/epjp/s13360-024-05581-6}{doi:10.1140/epjp/s13360-024-05581-6}.
 \bibitem{Wigner1937PR} E. P. Wigner, ``On the Consequences of the Symmetry of the Nuclear Hamiltonian on the Spectroscopy of Nuclei,'' Phys. Rev. \textbf{51}, 106 (1937), \href{https://doi.org/10.1103/PhysRev.51.106}{doi:10.1103/PhysRev.51.106}.
+\bibitem{Kaplan1996PLB} D. B. Kaplan and M. J. Savage, ``The spin-flavor dependence of nuclear forces from large-$N$ QCD,'' Phys. Lett. B \textbf{365}, 244 (1996), \href{https://doi.org/10.1016/0370-2693(95)01277-X}{doi:10.1016/0370-2693(95)01277-X}.
+\bibitem{Lee2021PRL} D. Lee \textit{et al.}, ``Hidden Spin-Isospin Exchange Symmetry,"  Phys. Rev. Lett. \textbf{127}, 062501 (2021),  \href{https://doi.org/10.1103/PhysRevLett.127.062501}{doi:10.1103/PhysRevLett.127.062501}.
+\bibitem{Timoteo2012PRC} V. S. Timóteo, S. Szpigel and E. Ruiz Arriola, ``Symmetries of the similarity renormalization group for nuclear forces," Phys. Rev. C \textbf{86}, 034002 (2012), \href{http://dx.doi.org/10.1103/PhysRevC.86.034002}{doi:10.1103/PhysRevC.86.034002}.
+\bibitem{Cauvin1981NPA} M. Cauvin, V. Gillet, F. Soulmagnon and M. Danos, ``Mass formula based on SU(4)," Nucl. Phys. A \textbf{361}, 192 (1981), \href{https://doi.org/10.1016/0375-9474(81)90476-0}{doi:10.1016/0375-9474(81)90476-0}.
+\bibitem{Isacker1997FoP} P. Van Isacker, O. Juillet and B. K. Gjelsten, ``A nuclear mass formula based on SU(4) symmetry," Foundations of Physics \textbf{27}, 1047 (1997), \href{https://doi.org/10.1007/BF02551152}{doi:10.1007/BF02551152}.
+\bibitem{Dang2026_2} P. Dang, E. Espinoza, X. Wan, M. Negro et al., ``Bridging Ab Initio Symmetries and Global Nuclear Masses with Interpretable Neural Networks," arXiv:2606.28287.
+\bibitem{Wigner1939PR} E. P. Wigner, ``On Coupling Conditions in Light Nuclei and the Lifetimes of $\beta$-Radioactivities," Phys. Rev. \textbf{56}, 519 (1939), \href{https://doi.org/10.1103/PhysRev.56.519}{doi:10.1103/PhysRev.56.519}.
+\bibitem{Fujita1965NP} J.-I. Fujita and K. Ikeda, ``Existence of Isobaric States and Beta Decay of Heavier Nuclei," Nucl. Phys. \textbf{67}, 145 (1965), \href{https://doi.org/10.1016/0029-5582(65)90119-7}{doi:10.1016/0029-5582(65)90119-7}.
+\bibitem{Muli2026PRL} S. S. Li Muli, T. R. Dj\"arv, C. Forss\'en and D. R. Phillips, ``Role of Spin-Isospin Symmetries in Nuclear $\ensuremath{\beta}$-Decays," Phys. Rev. Lett. \textbf{136}, 242501 (2026), \href{https://doi.org/10.1103/vk51-b476}{doi:10.1103/vk51-b476}.
+\bibitem{Lutostansky2016EPJ} Yu. S. Lutostansky and V. N. Tikhonov, ``Charge-exchange resonances and restoration of the Wigner $\rm SU(4)$-symmetry in heavy and superheavy nuclei,'' EPJ Web Conf. \textbf{107}, 06004 (2016), \href{https://doi.org/10.1051/epjconf/201610706004}{doi:10.1051/epjconf/201610706004}.
+\bibitem{Lee2025ARNPS} D. Lee, ``Lattice Effective Field Theory Simulations of Nuclei,"  Ann. Rev. Nucl. Part. Sci. \textbf{75}, 109 (2025), \href{https://doi.org/10.1146/annurev-nucl-101918-023343}{doi:10.1146/annurev-nucl-101918-023343}.
+\bibitem{Isacker1999PRL} P. Van Isacker, O. Juillet, and F. Nowacki, ``Pseudo-SU(4) Symmetry in $\mathit{pf}$-Shell Nuclei," Phys. Rev. Lett. \textbf{82}, 2060 (1999), \href{https://doi.org/10.1103/PhysRevLett.82.2060}{doi:10.1103/PhysRevLett.82.2060}.
+\bibitem{Kota2024PScr} V. K. B. Kota and R. Sahu, ``Proxy-$\rm SU(4)$ symmetry in A = 60–90 region," Phys. Scr. \textbf{99}, 065306 (2024), \href{https://doi.org/10.1088/1402-4896/ad46ca}{doi:10.1088/1402-4896/ad46ca}.
 \bibitem{Elliott1958PRSA} J. P. Elliott, ``Collective motion in the nuclear shell model. I. Classification schemes for states of mixed configurations,'' Proc. R. Soc. A \textbf{245}, 128 (1958), \href{https://doi.org/10.1098/rspa.1958.0072}{doi:10.1098/rspa.1958.0072}.
 \bibitem{Elliott1958PRSA-II} J. P. Elliott, ``Collective Motion in the Nuclear Shell Model. II. The Introduction of Intrinsic Wave-Functions,'' Proc. R. Soc. A \textbf{245}, 562 (1958), \href{https://doi.org/10.1098/rspa.1958.0101}{doi:10.1098/rspa.1958.0101}.
 \bibitem{Dytrych2013PRL} T. Dytrych \textit{et al.}, ``Collective Modes in Light Nuclei from First Principles,'' Phys. Rev. Lett. \textbf{111}, 252501 (2013), \href{https://doi.org/10.1103/PhysRevLett.111.252501}{doi:10.1103/PhysRevLett.111.252501}.
 \bibitem{Dytrych2020PRL} T. Dytrych \textit{et al.}, ``Physics of Nuclei: Key Role of an Emergent Symmetry,'' Phys. Rev. Lett. \textbf{124}, 042501 (2020), \href{https://doi.org/10.1103/PhysRevLett.124.042501}{doi:10.1103/PhysRevLett.124.042501}.
-\bibitem{Lutostansky2016EPJ} Yu. S. Lutostansky and V. N. Tikhonov, ``Charge-exchange resonances and restoration of the Wigner $\rm SU(4)$-symmetry in heavy and superheavy nuclei,'' EPJ Web Conf. \textbf{107}, 06004 (2016), \href{https://doi.org/10.1051/epjconf/201610706004}{doi:10.1051/epjconf/201610706004}.
+\bibitem{McCoy2020PRL} A. E. McCoy, M. A. Caprio, T. Dytrych, and P. J. Fasano, ``Emergent $\mathrm{Sp}(3,\mathbb{R})$ Dynamical Symmetry in the Nuclear Many-Body System from an Ab Initio Description,'' Phys. Rev. Lett. \textbf{125}, 102505 (2020), \href{https://doi.org/10.1103/PhysRevLett.125.102505}{doi:10.1103/PhysRevLett.125.102505}.
 \bibitem{Hecht1969JMP} K. T. Hecht and S. P. Pang, ``On the Wigner Supermultiplet Scheme,'' J. Math. Phys. \textbf{10}, 1571 (1969), \href{https://doi.org/10.1063/1.1665007}{doi:10.1063/1.1665007}.
 \bibitem{Draayer1970JMP} J. P. Draayer, ``$\rm U(4)\supset SU(2) \otimes SU(2)$ Projection Techniques,'' J. Math. Phys. \textbf{11}, 3225 (1970), \href{https://doi.org/10.1063/1.1665119}{doi:10.1063/1.1665119}.
 \bibitem{Partensky1978JMP} A. Partensky and C. Maguin, ``The $\rm SU(4) \supset SU(2) \otimes SU(2)$ chain,'' J. Math. Phys. \textbf{19}, 511 (1978), \href{https://doi.org/10.1063/1.523687}{doi:10.1063/1.523687}.
 \bibitem{Rowe1997FoP} D. J. Rowe and J. Repka, ``The Representations and Coupling Coefficients of ${\rm su}(n)$; Application to $\rm su(4)$,'' Found. Phys. \textbf{27}, 1179 (1997), \href{https://doi.org/10.1007/bf02551440}{doi:10.1007/bf02551440}.
-\bibitem{Pan2023EPJP} F. Pan, Y. Wu, A. Li, Y. Zhang, L. Dai, and J. P. Draayer, ``An algebraic projection procedure for construction of the basis vectors of irreducible representations of $\rm U(4)$ in the $\rm SU_S(2) \otimes SU_T(2)$ basis,'' Eur. Phys. J. Plus \textbf{138}, 662 (2023), \href{https://doi.org/10.1140/epjp/s13360-023-04261-1}{doi:10.1140/epjp/s13360-023-04261-1}.
+\bibitem{Pan2023EPJP} F. Pan, Y. Wu, A. Li, Y. Zhang, L. Dai, \textit{et al.}, ``An algebraic projection procedure for construction of the basis vectors of irreducible representations of $\rm U(4)$ in the $\rm SU_S(2) \otimes SU_T(2)$ basis,'' Eur. Phys. J. Plus \textbf{138}, 662 (2023), \href{https://doi.org/10.1140/epjp/s13360-023-04261-1}{doi:10.1140/epjp/s13360-023-04261-1}.
 \bibitem{Pan2023NPA} F. Pan, L. Dai, and J. P. Draayer, ``Wigner coefficients of $\rm U(4) \supset SU_S(2) \otimes SU_T(2)$,'' Nucl. Phys. A \textbf{1040}, 122746 (2023), \href{https://doi.org/10.1016/j.nuclphysa.2023.122746}{doi:10.1016/j.nuclphysa.2023.122746}.
 \bibitem{Pan2024CPC} F. Pan, L. Dai, and J. P. Draayer, ``Elementary coupling coefficients for the Wigner supermultiplet symmetry,'' Comput. Phys. Commun. \textbf{296}, 109025 (2024), \href{https://doi.org/10.1016/j.cpc.2023.109025}{doi:10.1016/j.cpc.2023.109025}.
-\bibitem{Alex2011JMP} A. Alex, M. Kalus, A. Huckleberry, and J. von Delft, ``A numerical algorithm for the explicit calculation of $\rm SU(N)$ and $\rm SL(N,\mathbb{C})$ Clebsch--Gordan coefficients,'' J. Math. Phys. \textbf{52}, 023507 (2011), \href{https://doi.org/10.1063/1.3521562}{doi:10.1063/1.3521562}.
 \bibitem{Kuhn2008CPC} M. Kuhn and H. Walliser, ``Program for calculating $\rm SU(4)$ Clebsch--Gordan coefficients,'' Comput. Phys. Commun. \textbf{179}, 733 (2008), \href{https://doi.org/10.1016/j.cpc.2008.06.009}{doi:10.1016/j.cpc.2008.06.009}.
+\bibitem{Alex2011JMP} A. Alex, M. Kalus, A. Huckleberry, and J. von Delft, ``A numerical algorithm for the explicit calculation of $\rm SU(N)$ and $\rm SL(N,\mathbb{C})$ Clebsch--Gordan coefficients,'' J. Math. Phys. \textbf{52}, 023507 (2011), \href{https://doi.org/10.1063/1.3521562}{doi:10.1063/1.3521562}.
+\bibitem{Dang2026_1} P. Dang, D. Langr, T. Dytrych, J.P. Draayer, D. Kekejian, ``Unmasking Hidden Wigner’s Symmetry from First Principles," arXiv:2604.27144.
 \bibitem{Draayer1973JMP} J. P. Draayer and Y. Akiyama, ``Wigner and Racah coefficients for $\rm SU_3$,'' J. Math. Phys. \textbf{14}, 1904 (1973), \href{https://doi.org/10.1063/1.1666267}{doi:10.1063/1.1666267}.
 \bibitem{Akiyama1973CPC} Y. Akiyama and J. P. Draayer, ``A User's Guide to Fortran Programs for Wigner and Racah Coefficients of $\rm SU_3$,'' Comput. Phys. Commun. \textbf{5}, 405 (1973), \href{https://doi.org/10.1016/0010-4655(73)90077-5}{doi:10.1016/0010-4655(73)90077-5}.
-\bibitem{Bahri2004CPC} C. Bahri, D. J. Rowe, and J. P. Draayer, ``Programs for generating Clebsch--Gordan coefficients of SU(3) in SU(2) and SO(3) bases,'' Comput. Phys. Commun. \textbf{159}, 121 (2004), \href{https://doi.org/10.1016/j.cpc.2004.01.005}{doi:10.1016/j.cpc.2004.01.005}.
-\bibitem{Dytrych2021CPC} T. Dytrych, D. Langr, J. P. Draayer, K. D. Launey, and D. Gazda, ``SU3lib: A C++ library for accurate computation of Wigner and Racah coefficients of SU(3),'' Comput. Phys. Commun. \textbf{269}, 108137 (2021), \href{https://doi.org/10.1016/j.cpc.2021.108137}{doi:10.1016/j.cpc.2021.108137}.
 \bibitem{Dang2024EPJP1} P. Dang, J. P. Draayer, F. Pan, and K. S. Becker, ``New Procedure for Evaluation of $\rm U(3)$ Coupling and Recoupling Coefficients,'' Eur. Phys. J. Plus \textbf{139}, 704 (2024), \href{https://doi.org/10.1140/epjp/s13360-024-05501-8}{doi:10.1140/epjp/s13360-024-05501-8}.
-\bibitem{Kaplan1996PLB} D. B. Kaplan and M. J. Savage, ``The spin-flavor dependence of nuclear forces from large-$N$ QCD,'' Phys. Lett. B \textbf{365}, 244 (1996), \href{https://doi.org/10.1016/0370-2693(95)01277-X}{doi:10.1016/0370-2693(95)01277-X}.
-\bibitem{Lu2019PLB} B.-N. Lu \textit{et al.}, ``Essential elements for nuclear binding,'' Phys. Lett. B \textbf{797}, 134863 (2019), \href{https://doi.org/10.1016/j.physletb.2019.134863}{doi:10.1016/j.physletb.2019.134863}.
 \bibitem{Zhang2003PRA} J. Zhang, J. Vala, S. Sastry, and K. B. Whaley, ``Geometric theory of nonlocal two-qubit operations,'' Phys. Rev. A \textbf{67}, 042313 (2003), \href{https://doi.org/10.1103/PhysRevA.67.042313}{doi:10.1103/PhysRevA.67.042313}.
-\bibitem{Gorshkov2010NP} A. V. Gorshkov, M. Hermele, V. Gurarie, C. Xu, P. S. Julienne, J. Ye, P. Zoller, E. Demler, M. D. Lukin, and A. M. Rey, ``Two-orbital $\rm SU(N)$ magnetism with ultracold alkaline-earth atoms,'' Nat. Phys. \textbf{6}, 289 (2010), \href{https://doi.org/10.1038/nphys1535}{doi:10.1038/nphys1535}.
+\bibitem{Gorshkov2010NP} A. V. Gorshkov, M. Hermele, V. Gurarie, C. Xu, P. S. Julienne, \textit{et al.}, ``Two-orbital $\rm SU(N)$ magnetism with ultracold alkaline-earth atoms,'' Nat. Phys. \textbf{6}, 289 (2010), \href{https://doi.org/10.1038/nphys1535}{doi:10.1038/nphys1535}.
 \bibitem{Young2012NP} A. F. Young \textit{et al.}, ``Spin and valley quantum Hall ferromagnetism in graphene,'' Nat. Phys. \textbf{8}, 550 (2012), \href{https://doi.org/10.1038/nphys2307}{doi:10.1038/nphys2307}.
+
+% Uncited references retained for future use.
+% \bibitem{Bahri2004CPC} C. Bahri, D. J. Rowe, and J. P. Draayer, ``Programs for generating Clebsch--Gordan coefficients of SU(3) in SU(2) and SO(3) bases,'' Comput. Phys. Commun. \textbf{159}, 121 (2004), \href{https://doi.org/10.1016/j.cpc.2004.01.005}{doi:10.1016/j.cpc.2004.01.005}.
+% \bibitem{Dytrych2021CPC} T. Dytrych, D. Langr, J. P. Draayer, K. D. Launey, and D. Gazda, ``SU3lib: A C++ library for accurate computation of Wigner and Racah coefficients of SU(3),'' Comput. Phys. Commun. \textbf{269}, 108137 (2021), \href{https://doi.org/10.1016/j.cpc.2021.108137}{doi:10.1016/j.cpc.2021.108137}.
+% \bibitem{Lu2019PLB} B.-N. Lu \textit{et al.}, ``Essential elements for nuclear binding,'' Phys. Lett. B \textbf{797}, 134863 (2019), \href{https://doi.org/10.1016/j.physletb.2019.134863}{doi:10.1016/j.physletb.2019.134863}.
 \end{thebibliography}
 
 \end{document}
