@@ -374,10 +374,10 @@ namespace u4
   	bool empty() const { return coeffs_.empty(); }
   	const auto& data() const { return coeffs_; }
 
-    size_t rhoABmax() const { return ndi_.dimension(0); }
-    size_t rhoAB_Cmax() const { return ndi_.dimension(1); }
-    size_t rhoACmax() const { return ndi_.dimension(2); }
-    size_t rhoAC_Bmax() const { return ndi_.dimension(3); }
+    size_t etaABmax() const { return ndi_.dimension(0); }
+    size_t etaAB_Cmax() const { return ndi_.dimension(1); }
+    size_t etaACmax() const { return ndi_.dimension(2); }
+    size_t etaAC_Bmax() const { return ndi_.dimension(3); }
 
     double& operator[](size_t i)
     {
