@@ -114,7 +114,7 @@ calculations through natural-language requests.
 \textit{External libraries}: \texttt{u3lib} is a prerequisite, through which core utilities and other dependencies---namely 
 \texttt{Eigen3} for QR-based null space solver, \texttt{Boost} for hash tables, 
 \texttt{OpenMP} for multi-threading, \texttt{fmt} for formatting output, \texttt{libwignernj} for $\rm SU(2)$
-coupling and recoupling coefficients, \red{\texttt{sns} for sparse-matrix null space solver}, 
+coupling and recoupling coefficients, \texttt{KraNS} for sparse null-space solvers on large matrices (with a dense-QR fallback), 
 and \texttt{pybind11} for Python binding---are inherited.
 
 \noindent

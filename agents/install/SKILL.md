@@ -17,7 +17,8 @@ resolves every dependency (inheriting from `u3lib`) and records the result in
 
 - A C++20 compiler with OpenMP (real GCC, or Clang with libomp).
 - `u3lib` built and configured (e.g. in `../u3lib` or specified via `U3LIB_DIR`).
-- For the Python extension only: a Python interpreter with `pybind11` installed.
+- For the Python extension only: a Python interpreter with `pybind11` (and `ipykernel`
+  for the tutorial). `make python` auto-detects a suitable one, or pass `PYTHON=`.
 
 ## 1. Configure
 
@@ -39,8 +40,10 @@ The null-space solver defaults to dense Eigen QR (`qr`), which requires no exter
 
 ## 3. Python extension (only for a Python calculation)
 
-- `make python PYTHON=/path/to/python` — build `python/u4lib.so` with an
-  interpreter that has `pybind11`. Verify the import and a known value:
+- `make python` — build `python/u4lib.so`. The interpreter is auto-detected (one
+  with `pybind11`, preferring one that also has `ipykernel` for the Jupyter
+  tutorial); override with `make python PYTHON=/path/to/python`. Verify the import
+  and a known value:
 
   ```sh
   cd python && python3 -c "import u4lib as u; u.initialize(); print(u.irrep(1,1,1).dim()); u.finalize()"

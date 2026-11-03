@@ -36,7 +36,7 @@ u4lib layers on `u3lib` and needs no manual environment variables. Configure onc
 make config   # resolve dependencies and u3lib, writing config/config.generated.mk
 make          # build C++ driver programs in src/ (-> bin/)
 make test     # recompile and run regression test suite (test/, -> bin/test/)
-make python   # build the pybind11 extension -> python/u4lib.so (PYTHON=/path/to/python)
+make python   # build pybind11 extension -> python/u4lib.so (auto-detects a pybind11+Jupyter python; override PYTHON=...)
 make clean
 ```
 
@@ -49,8 +49,8 @@ make clean
 The agent resolves the steps through the repository-local [install skill](agents/install/SKILL.md).
 
 - **Regression Tests (`make test`):** Tests dimensions, Gelfand structure, $\mathrm{SU(2)}\times\mathrm{SU(2)}$ branching, coupling orthonormality across $\zeta$ and $\eta$, and conjugation identities. Checks remain enabled in release builds (`-UNDEBUG`).
-- **Python Extension (`make python`):** Builds `python/u4lib.so`. See `python/tutorial.ipynb` for interpreter requirements and interactive usage.
-- **Dependencies:** a C++20 compiler and OpenMP are required on the system; `u3lib` is the prerequisite and supplies Eigen3, Boost (headers), fmt, and the SU(2) Wigner backend. The null-space solver defaults to Eigen dense QR (`NULLSPACE_SOLVER=qr`). Full configuration options are detailed in [doc/Manual.pdf](doc/Manual.pdf).
+- **Python Extension (`make python`):** Builds `python/u4lib.so`. The interpreter is auto-detected (one with `pybind11`, preferring one that also has `ipykernel` for the tutorial); override with `make python PYTHON=/path/to/python`. See `python/tutorial.ipynb` for interactive usage.
+- **Dependencies:** a C++20 compiler and OpenMP are required on the system; `u3lib` is the prerequisite and supplies Eigen3, Boost, fmt, and libwignernj. The null-space solver defaults to **KraNS** (`NULLSPACE_SOLVER=krans`), inherited from u3lib, with an automatic dense-QR fallback for small systems. Full configuration options are detailed in [doc/Manual.pdf](doc/Manual.pdf).
 
 ---
 
