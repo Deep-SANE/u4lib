@@ -15,8 +15,8 @@
 
 #include <nullspace_solver_qr.h>
 #if defined(NULLSPACE_SOLVER_SLEPC)
-#elif defined(NULLSPACE_SOLVER_SNS)
-#include <nullspace_solver_sns.h>
+#elif defined(NULLSPACE_SOLVER_KRANS)
+#include <nullspace_solver_krans.h>
 #endif
  
 namespace u4
@@ -544,8 +544,8 @@ namespace u4
       auto STproj = u4::STprojection(gArr, canoBasis);
       //std::cout << STproj << std::endl;
       // and solve its null space
-#if defined(NULLSPACE_SOLVER_SNS)
-      Eigen::MatrixXd transformation = utils::null_space_sns(STproj, p.zeta());
+#if defined(NULLSPACE_SOLVER_KRANS)
+      Eigen::MatrixXd transformation = utils::null_space_krans(STproj, p.zeta());
 #else
       Eigen::MatrixXd transformation = utils::null_space(STproj);
 #endif

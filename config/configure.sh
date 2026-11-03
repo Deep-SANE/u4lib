@@ -23,7 +23,7 @@ for arg in "$@"; do
     --u3lib=*) OPT_u3lib="${arg#*=}" ;;
     --solver=*) OPT_solver="${arg#*=}" ;;
     --help|-h)
-      echo "Usage: ./configure.sh [--u3lib=PATH] [--solver=qr|sns] [--yes]"
+      echo "Usage: ./configure.sh [--u3lib=PATH] [--solver=qr|krans] [--yes]"
       exit 0 ;;
     *) echo "unknown option: $arg" >&2; exit 2 ;;
   esac
@@ -99,9 +99,9 @@ CXXFLAGS="$(get_var CXXFLAGS)"
 LDFLAGS="$(get_var LDFLAGS)"
 USE_WIGNERNJ="$(get_var USE_WIGNERNJ)"
 WIGNERNJ_DIR="$(get_var WIGNERNJ_DIR)"
-USE_SNS="$(get_var USE_SNS)"
-SNS_DIR="$(get_var SNS_DIR)"
-NULLSPACE_SOLVER="${OPT_solver:-qr}"
+USE_KRANS="$(get_var USE_KRANS)"
+KRANS_DIR="$(get_var KRANS_DIR)"
+NULLSPACE_SOLVER="${OPT_solver:-krans}"
 BOOST_ROOT="$(get_var BOOST_ROOT)"
 EIGEN_DIR="$(get_var EIGEN_DIR)"
 HAVE_FMT="$(get_var HAVE_FMT)"
@@ -120,8 +120,8 @@ CXXFLAGS := $CXXFLAGS
 LDFLAGS := $LDFLAGS
 USE_WIGNERNJ := $USE_WIGNERNJ
 WIGNERNJ_DIR := $WIGNERNJ_DIR
-USE_SNS := $USE_SNS
-SNS_DIR := $SNS_DIR
+USE_KRANS := $USE_KRANS
+KRANS_DIR := $KRANS_DIR
 NULLSPACE_SOLVER := $NULLSPACE_SOLVER
 BOOST_ROOT := $BOOST_ROOT
 EIGEN_DIR := $EIGEN_DIR

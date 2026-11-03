@@ -23,6 +23,6 @@ include $(CONFIG_DIR)/make.d/eigen.mk
 include $(CONFIG_DIR)/make.d/fmt.mk
 include $(CONFIG_DIR)/make.d/openmp.mk
 include $(CONFIG_DIR)/make.d/wignernj.mk
-include $(CONFIG_DIR)/make.d/sns.mk
+include $(CONFIG_DIR)/make.d/krans.mk
 include $(CONFIG_DIR)/make.d/nullspace.mk
 include $(CONFIG_DIR)/make.d/pretty.mk

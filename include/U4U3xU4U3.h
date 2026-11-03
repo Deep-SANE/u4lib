@@ -36,8 +36,8 @@
 
 #include <nullspace_solver_qr.h>
 #if defined(NULLSPACE_SOLVER_SLEPC)
-#elif defined(NULLSPACE_SOLVER_SNS)
-#include <nullspace_solver_sns.h>
+#elif defined(NULLSPACE_SOLVER_KRANS)
+#include <nullspace_solver_krans.h>
 #endif
 
 #include "U4basis.h"
@@ -659,8 +659,8 @@ namespace u4
     std::cout << "\tnonzero elements: " << nnz << std::endl;
 #endif
 
-#if defined(NULLSPACE_SOLVER_SNS)
-    Eigen::MatrixXd nullspace = utils::null_space_sns(mat, etamax);
+#if defined(NULLSPACE_SOLVER_KRANS)
+    Eigen::MatrixXd nullspace = utils::null_space_krans(mat, etamax);
 #else
     Eigen::MatrixXd nullspace = utils::null_space(mat);
 #endif
