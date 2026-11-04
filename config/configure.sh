@@ -44,7 +44,7 @@ if [[ -z "$U3LIB_DIR" ]]; then
     die "u3lib was not found!
 u4lib requires u3lib as a prerequisite for group-theoretic utilities and numerical backends.
 Please clone and configure u3lib first:
-  git clone git@github.com:Deep-SANE/u3lib.git ../u3lib
+  git clone https://github.com/Deep-SANE/u3lib.git ../u3lib
   cd ../u3lib && make config && make"
   fi
 
