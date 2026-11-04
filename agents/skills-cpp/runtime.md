@@ -17,7 +17,7 @@ mathematical formulas are reference notation, not standalone programs.
   `.cpp`) against the library's configured flags: the include paths for
   `u4lib/include`, `u4lib/include/internal`, `u4lib/utils`, `u3lib/include`,
   `u3lib/include/internal`, `u3lib/utils`, Eigen, Boost, and libwignernj, plus its
-  link flags. The null-space solver defaults to dense Eigen QR (`qr`); do not
+  link flags. The null-space solver defaults to `krans` (iterative sparse, with a dense-QR fallback); do not
   silently change the selected solver.
 - For a standalone calculation, use this lifecycle around coefficient work:
 

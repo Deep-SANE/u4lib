@@ -17,8 +17,8 @@ EVALUATOR = BENCH / 'evaluator'
 SNAPSHOTS = BENCH / 'snapshots'
 DEFAULT_FIXTURES = EVALUATOR / 'fixtures.json'
 GRADER = EVALUATOR / 'grade.py'
-U3LIB_PATH = Path('/Users/phongdang/Desktop/DeepSANE/u3lib')
-PY_EXEC = '/Users/phongdang/miniforge3/bin/python3'
+U3LIB_PATH = Path(os.environ.get('U3LIB_DIR', str(HERE.parents[3] / 'u3lib')))
+PY_EXEC = os.environ.get('BENCH_PYTHON', sys.executable)
 TIMEOUT = 1800
 
 TASK_NAMES = {
@@ -31,7 +31,7 @@ TASK_NAMES = {
 def build_env(workspace: Path) -> dict:
     env = os.environ.copy()
     py_lib = workspace / 'u4lib/python'
-    env['PATH'] = f"/Users/phongdang/miniforge3/bin:/opt/homebrew/bin:{env.get('PATH', '')}"
+    env['PATH'] = f"{os.path.dirname(PY_EXEC)}:{env.get('PATH', '')}"
     env['PYTHONPATH'] = f"{py_lib}:{U3LIB_PATH}/python:{env.get('PYTHONPATH', '')}"
     env['U4LIB_DIR'] = str(workspace / 'u4lib')
     env['U3LIB_DIR'] = str(U3LIB_PATH)

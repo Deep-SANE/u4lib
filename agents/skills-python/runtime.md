@@ -16,7 +16,7 @@ mathematical formulas are reference notation, not standalone programs.
 - Use the Python interpreter matching the extension ABI. If the extension is
   missing or stale, run `make python PYTHON=/path/to/interpreter` from the
   repository root with the intended interpreter. u4lib imports u3lib internally,
-  so u3lib's `python/` must also be importable. The null-space solve uses sns
+  so u3lib's `python/` must also be importable. The null-space solve uses krans
   (dense-QR fallback).
 - Use the module path supplied by the environment and inspect `u4lib.__file__`.
   For a repository-local build, add its `python/` directory to the import path.

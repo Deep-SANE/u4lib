@@ -226,7 +226,7 @@
     "grader": {
       "success": false,
       "error": "",
-      "traceback": "Traceback (most recent call last):\n  File \"/Users/phongdang/Desktop/DeepSANE/u4lib/agents/benchmarks/evaluator/grade.py\", line 84, in <module>\n    n=grade(int(sys.argv[1]),Path(sys.argv[2]).resolve(),json.loads(Path(sys.argv[3]).read_text()))\n  File \"/Users/phongdang/Desktop/DeepSANE/u4lib/agents/benchmarks/evaluator/grade.py\", line 47, in grade\n    assert [list(x) for x in left]==c['left']; assert [list(x) for x in right]==c['right']\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n"
+      "traceback": "Traceback (most recent call last):\n  File \"agents/benchmarks/evaluator/grade.py\", line 84, in <module>\n    n=grade(int(sys.argv[1]),Path(sys.argv[2]).resolve(),json.loads(Path(sys.argv[3]).read_text()))\n  File \"agents/benchmarks/evaluator/grade.py\", line 47, in grade\n    assert [list(x) for x in left]==c['left']; assert [list(x) for x in right]==c['right']\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError\n"
     },
     "token_usage": {
       "input_tokens": 20,
@@ -1181,7 +1181,7 @@
     "grader": {
       "success": false,
       "error": "('process failure', -6, 'Assertion failed: ((as_int64_t(i) >= lbi64<uint8_t>) && (as_int64_t(i) <= ubi64<uint8_t>)), function to_uint8_t, file Int.h, line 57.\\n')",
-      "traceback": "Traceback (most recent call last):\n  File \"/Users/phongdang/Desktop/DeepSANE/u4lib/agents/benchmarks/evaluator/grade.py\", line 84, in <module>\n    n=grade(int(sys.argv[1]),Path(sys.argv[2]).resolve(),json.loads(Path(sys.argv[3]).read_text()))\n  File \"/Users/phongdang/Desktop/DeepSANE/u4lib/agents/benchmarks/evaluator/grade.py\", line 56, in grade\n    lines=iter(cli(exe,stdin=stdin))\n               ~~~^^^^^^^^^^^^^^^^^\n  File \"/Users/phongdang/Desktop/DeepSANE/u4lib/agents/benchmarks/evaluator/grade.py\", line 25, in cli\n    assert q.returncode==0,('process failure',q.returncode,q.stderr[-1000:])\n           ^^^^^^^^^^^^^^^\nAssertionError: ('process failure', -6, 'Assertion failed: ((as_int64_t(i) >= lbi64<uint8_t>) && (as_int64_t(i) <= ubi64<uint8_t>)), function to_uint8_t, file Int.h, line 57.\\n')\n"
+      "traceback": "Traceback (most recent call last):\n  File \"agents/benchmarks/evaluator/grade.py\", line 84, in <module>\n    n=grade(int(sys.argv[1]),Path(sys.argv[2]).resolve(),json.loads(Path(sys.argv[3]).read_text()))\n  File \"agents/benchmarks/evaluator/grade.py\", line 56, in grade\n    lines=iter(cli(exe,stdin=stdin))\n               ~~~^^^^^^^^^^^^^^^^^\n  File \"agents/benchmarks/evaluator/grade.py\", line 25, in cli\n    assert q.returncode==0,('process failure',q.returncode,q.stderr[-1000:])\n           ^^^^^^^^^^^^^^^\nAssertionError: ('process failure', -6, 'Assertion failed: ((as_int64_t(i) >= lbi64<uint8_t>) && (as_int64_t(i) <= ubi64<uint8_t>)), function to_uint8_t, file Int.h, line 57.\\n')\n"
     },
     "token_usage": {
       "input_tokens": 22,
@@ -2136,7 +2136,7 @@
     "grader": {
       "success": false,
       "error": "('header mismatch', 2, ['canon', '2', '2', '0'], ['canon', '2', '2', '4'])",
-      "traceback": "Traceback (most recent call last):\n  File \"/Users/phongdang/Desktop/DeepSANE/u4lib/agents/benchmarks/evaluator/grade.py\", line 84, in <module>\n    n=grade(int(sys.argv[1]),Path(sys.argv[2]).resolve(),json.loads(Path(sys.argv[3]).read_text()))\n  File \"/Users/phongdang/Desktop/DeepSANE/u4lib/agents/benchmarks/evaluator/grade.py\", line 70, in grade\n    assert actual_header==expected_header,('header mismatch',q,actual_header,expected_header)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ('header mismatch', 2, ['canon', '2', '2', '0'], ['canon', '2', '2', '4'])\n"
+      "traceback": "Traceback (most recent call last):\n  File \"agents/benchmarks/evaluator/grade.py\", line 84, in <module>\n    n=grade(int(sys.argv[1]),Path(sys.argv[2]).resolve(),json.loads(Path(sys.argv[3]).read_text()))\n  File \"agents/benchmarks/evaluator/grade.py\", line 70, in grade\n    assert actual_header==expected_header,('header mismatch',q,actual_header,expected_header)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ('header mismatch', 2, ['canon', '2', '2', '0'], ['canon', '2', '2', '4'])\n"
     },
     "token_usage": {
       "input_tokens": 22,
@@ -2508,7 +2508,7 @@
     "grader": {
       "success": false,
       "error": "('header mismatch', 2, ['canon', '2', '2', '0'], ['canon', '2', '2', '4'])",
-      "traceback": "Traceback (most recent call last):\n  File \"/Users/phongdang/Desktop/DeepSANE/u4lib/agents/benchmarks/evaluator/grade.py\", line 84, in <module>\n    n=grade(int(sys.argv[1]),Path(sys.argv[2]).resolve(),json.loads(Path(sys.argv[3]).read_text()))\n  File \"/Users/phongdang/Desktop/DeepSANE/u4lib/agents/benchmarks/evaluator/grade.py\", line 70, in grade\n    assert actual_header==expected_header,('header mismatch',q,actual_header,expected_header)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ('header mismatch', 2, ['canon', '2', '2', '0'], ['canon', '2', '2', '4'])\n"
+      "traceback": "Traceback (most recent call last):\n  File \"agents/benchmarks/evaluator/grade.py\", line 84, in <module>\n    n=grade(int(sys.argv[1]),Path(sys.argv[2]).resolve(),json.loads(Path(sys.argv[3]).read_text()))\n  File \"agents/benchmarks/evaluator/grade.py\", line 70, in grade\n    assert actual_header==expected_header,('header mismatch',q,actual_header,expected_header)\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ('header mismatch', 2, ['canon', '2', '2', '0'], ['canon', '2', '2', '4'])\n"
     },
     "token_usage": {
       "input_tokens": 28,
