@@ -12,7 +12,8 @@ python/u4lib.d
 !config/make.d/
 !config/make.d/**
 
-# TeX build artifacts (keep doc/Manual.pdf)
+# TeX build artifacts. Manual.pdf is built by CI and published on GitHub Pages.
+doc/Manual.pdf
 doc/*.aux
 doc/*.log
 doc/*.out

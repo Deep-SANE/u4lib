@@ -8,7 +8,7 @@ recoupling** coefficients — exposed through a C++ API, Python bindings, and an
 agent-driven skill layer over all of it.
 
 - **Paper:** [Eur. Phys. J. Plus **139**, 933 (2024)](https://doi.org/10.1140/epjp/s13360-024-05581-6)
-- **Manual:** [Manual (PDF)](doc/Manual.pdf); LaTeX source in `doc/Manual.tex`.
+- **Manual:** [Manual (PDF)](https://deep-sane.github.io/u4lib/Manual.pdf), built automatically from the LaTeX source in `doc/Manual.tex`.
 - **Prerequisite / sibling library:** `u3lib` (SU(3)); **SAM** is the main consumer.
 
 > **Note for AI Agents:** Do not parse this human documentation. Refer directly to [agents/AGENTS.md](agents/AGENTS.md) for repository guidance, first-time build/installation, runtime lifecycle, and task-specific skills.
@@ -50,7 +50,7 @@ The agent resolves the steps through the repository-local [install skill](agents
 
 - **Regression Tests (`make test`):** Tests dimensions, Gelfand structure, $\mathrm{SU(2)}\times\mathrm{SU(2)}$ branching, coupling orthonormality across $\zeta$ and $\eta$, and conjugation identities. Checks remain enabled in release builds (`-UNDEBUG`).
 - **Python Extension (`make python`):** Builds `python/u4lib.so`. The interpreter is auto-detected (one with `pybind11`, preferring one that also has `ipykernel` for the tutorial); override with `make python PYTHON=/path/to/python`. See `python/tutorial.ipynb` for interactive usage.
-- **Dependencies:** a C++20 compiler and OpenMP are required on the system; `u3lib` is the prerequisite and supplies Eigen3, Boost, fmt, and libwignernj. The null-space solver defaults to **KraNS** (`NULLSPACE_SOLVER=krans`), inherited from u3lib, with an automatic dense-QR fallback for small systems. Full configuration options are detailed in [doc/Manual.pdf](doc/Manual.pdf).
+- **Dependencies:** a C++20 compiler and OpenMP are required on the system; `u3lib` is the prerequisite and supplies Eigen3, Boost, fmt, and libwignernj. The null-space solver defaults to **KraNS** (`NULLSPACE_SOLVER=krans`), inherited from u3lib, with an automatic dense-QR fallback for small systems. Full configuration options are detailed in the [Manual (PDF)](https://deep-sane.github.io/u4lib/Manual.pdf).
 
 ---
 
@@ -61,7 +61,7 @@ The agent resolves the steps through the repository-local [install skill](agents
 - `src/` — C++ example driver programs; compiled into `bin/`.
 - `python/` — pybind11 bindings (`pyu4lib.cpp`) and tutorial notebook (`tutorial.ipynb`).
 - `test/` — regression suite (`test_*.cpp`, `*_cases.h`, and reference tables under `reference/`).
-- `doc/` — full reference manual (`Manual.pdf` and LaTeX source).
+- `doc/` — LaTeX source of the full reference manual (`Manual.tex`); the PDF is built on every change and published on [GitHub Pages](https://deep-sane.github.io/u4lib/Manual.pdf).
 - `agents/` — AI-agent skill catalog (`AGENTS.md`), runtime instructions, and task skills.
 - `bin/` — compiled binary output (not source; git-ignored).
 
@@ -69,5 +69,5 @@ The agent resolves the steps through the repository-local [install skill](agents
 
 ## Documentation & AI Agent Skills
 
-- **Full Reference Manual:** For exhaustive mathematical derivations, phase conventions, getter signatures, and solver backends, consult [doc/Manual.pdf](doc/Manual.pdf).
-- **AI-Ready Calculations:** `u4lib` provides a repository-local skill package under [`agents/`](agents/AGENTS.md) that enables code-executing AI assistants to plan and drive calculations through natural-language prompts. A complete table of representative prompts with checked reference values is provided in **Table II of the [Manual](doc/Manual.pdf)** as well as in [`agents/AGENTS.md`](agents/AGENTS.md).
+- **Full Reference Manual:** For exhaustive mathematical derivations, phase conventions, getter signatures, and solver backends, consult the [Manual (PDF)](https://deep-sane.github.io/u4lib/Manual.pdf).
+- **AI-Ready Calculations:** `u4lib` provides a repository-local skill package under [`agents/`](agents/AGENTS.md) that enables code-executing AI assistants to plan and drive calculations through natural-language prompts. A complete table of representative prompts with checked reference values is provided in **Table II of the [Manual](https://deep-sane.github.io/u4lib/Manual.pdf)** as well as in [`agents/AGENTS.md`](agents/AGENTS.md).
