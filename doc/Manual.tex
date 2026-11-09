@@ -173,9 +173,12 @@ propelling the first \textit{ab initio} shell-model calculations using Wigner's 
 In a nutshell, the new algorithm leverages a property of the group generators:
 the highest-weight state of an irrep is annihilated by the raising operators,
 which impose a system of homogeneous linear equations that can be solved
-by a numerical null space solver \red{DL, please cite your student's thesis here}
-to yield the full coupling coefficients for the highest-weight state as an orthonormal set of  
-null space vectors. All other coefficients then naturally follow through the action
+by a numerical null space solver
+to yield the full coupling coefficients for the highest-weight state as an orthonormal set of
+null space vectors. For the large sparse matrices arising in this approach,
+a dedicated iterative null-space solver, now known as
+\texttt{KraNS}, was developed \cite{Krastenov2026MSc}.
+All other coefficients then naturally follow through the action
 of the lowering operators. The same strategy has also been employed to modernize
 the 1973 Draayer-Akiyama formalism \cite{Draayer1973JMP,Akiyama1973CPC}
 for computing $\rm SU(3)$ coupling coefficients \cite{Dang2024EPJP1},
@@ -986,6 +989,7 @@ The authors also gratefully acknowledge F. Pan and D. Kekejian for valuable disc
 \bibitem{Kuhn2008CPC} M. Kuhn and H. Walliser, ``Program for calculating $\rm SU(4)$ Clebsch--Gordan coefficients,'' Comput. Phys. Commun. \textbf{179}, 733 (2008), \href{https://doi.org/10.1016/j.cpc.2008.06.009}{doi:10.1016/j.cpc.2008.06.009}.
 \bibitem{Alex2011JMP} A. Alex, M. Kalus, A. Huckleberry, and J. von Delft, ``A numerical algorithm for the explicit calculation of $\rm SU(N)$ and $\rm SL(N,\mathbb{C})$ Clebsch--Gordan coefficients,'' J. Math. Phys. \textbf{52}, 023507 (2011), \href{https://doi.org/10.1063/1.3521562}{doi:10.1063/1.3521562}.
 \bibitem{Dang2026_1} P. Dang, D. Langr, T. Dytrych, J.P. Draayer, D. Kekejian, ``Unmasking Hidden Wigner’s Symmetry from First Principles," arXiv:2604.27144.
+\bibitem{Krastenov2026MSc} A. Krastenov, ``Sparse Null Space Solver in C++,'' Master's thesis, Faculty of Information Technology, Czech Technical University in Prague (2026).
 \bibitem{Draayer1973JMP} J. P. Draayer and Y. Akiyama, ``Wigner and Racah coefficients for $\rm SU_3$,'' J. Math. Phys. \textbf{14}, 1904 (1973), \href{https://doi.org/10.1063/1.1666267}{doi:10.1063/1.1666267}.
 \bibitem{Akiyama1973CPC} Y. Akiyama and J. P. Draayer, ``A User's Guide to Fortran Programs for Wigner and Racah Coefficients of $\rm SU_3$,'' Comput. Phys. Commun. \textbf{5}, 405 (1973), \href{https://doi.org/10.1016/0010-4655(73)90077-5}{doi:10.1016/0010-4655(73)90077-5}.
 \bibitem{Dang2024EPJP1} P. Dang, J. P. Draayer, F. Pan, and K. S. Becker, ``New Procedure for Evaluation of $\rm U(3)$ Coupling and Recoupling Coefficients,'' Eur. Phys. J. Plus \textbf{139}, 704 (2024), \href{https://doi.org/10.1140/epjp/s13360-024-05501-8}{doi:10.1140/epjp/s13360-024-05501-8}.
