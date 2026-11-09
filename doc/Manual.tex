@@ -831,7 +831,7 @@ validation cases were classified correctly: sensitivity and specificity were
 100\%, with no false positives or negatives.
 
 \subsubsection{Model and Statistical Protocol}
-Every trial used Anthropic's Claude 3.5 Sonnet in the same autonomous test environment. Each of the three tasks contributed $N = 10$ matched Control/Treatment pairs, giving 60 runs overall. For every run, four primary metrics were recorded:
+Every trial used Anthropic's Claude Sonnet 5.5 (\texttt{claude-sonnet-5-5}) in the same autonomous test environment. Each of the three tasks contributed $N = 10$ matched Control/Treatment pairs, giving 60 runs overall. For every run, four primary metrics were recorded:
 \begin{enumerate}
     \item {Functional pass rate (\%):} Percentage of runs passing all hidden unit tests.
     \item {Total token consumption:} Cumulative sum of prompt tokens, cache-read tokens, and completion tokens consumed across all agent steps.
@@ -845,7 +845,7 @@ Differences were assessed using two-tailed Welch's $t$-tests (unequal variance a
     \footnotesize
     \setlength{\tabcolsep}{2.8pt}
     \renewcommand{\arraystretch}{1.3}
-    \caption{Performance of Control (standard prompts, zero skills) versus Treatment (repository-local domain skills) on \texttt{u4lib} with Claude 3.5 Sonnet, over $N=10$ matched pairs per task (60 runs in total). Token counts, runtimes, and costs are given as $\text{Mean} \pm \text{Standard Deviation}$, and significance follows from two-tailed Welch's $t$-tests.}
+    \caption{Performance of Control (standard prompts, zero skills) versus Treatment (repository-local domain skills) on \texttt{u4lib} with Claude Sonnet 5.5, over $N=10$ matched pairs per task (60 runs in total). Token counts, runtimes, and costs are given as $\text{Mean} \pm \text{Standard Deviation}$, and significance follows from two-tailed Welch's $t$-tests.}
     \label{tab:benchmark_results}
     \vspace{0.2cm}
     \begin{tabular}{llcccccc}

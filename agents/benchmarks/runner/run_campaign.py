@@ -212,8 +212,8 @@ def update_summary(results_dir: Path):
 
 def main():
     parser = argparse.ArgumentParser(description="u4lib Sandbox Campaign Runner")
-    parser.add_argument('--model', type=str, default='claude-sonnet-3.5',
-                        choices=['claude-sonnet-3.5'],
+    parser.add_argument('--model', type=str, default='claude-sonnet-5.5',
+                        choices=['claude-sonnet-5.5'],
                         help="Model to run")
     parser.add_argument('--task', type=int, default=1, choices=[1, 2, 3],
                         help="Task number (default: 1)")
