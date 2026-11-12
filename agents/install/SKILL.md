@@ -15,7 +15,7 @@ resolves every dependency (inheriting from `u3lib`) and records the result in
 
 ## Prerequisites (system tools; the library does not install these)
 
-- A C++20 compiler with OpenMP (real GCC, or Clang with libomp).
+- A C++20 compiler with OpenMP (real GCC, or Clang with libomp; **macOS note**: default Apple Clang `/usr/bin/clang++` lacks native OpenMP, install GCC via `brew install gcc` and export `CXX=g++-14`, or use Homebrew LLVM with `libomp`).
 - `u3lib` built and configured (e.g. in `../u3lib` or specified via `U3LIB_DIR`).
 - For the Python extension only: a Python interpreter with `pybind11` (and `ipykernel`
   for the tutorial). `make python` auto-detects a suitable one, or pass `PYTHON=`.
@@ -29,11 +29,11 @@ resolves every dependency (inheriting from `u3lib`) and records the result in
 - Non-interactive: `make config CONFIG_ARGS="--yes"` — detect, or pass an explicit
   path: `make config CONFIG_ARGS="--u3lib=/path/to/u3lib --yes"`.
 
-The null-space solver defaults to dense Eigen QR (`qr`), which requires no external sparse solver.
+The null-space solver defaults to **KraNS** (`krans`), inherited from `u3lib`, with an automatic dense-QR fallback for small systems (override with `--solver=qr` if an external sparse solver is not desired).
 
 ## 2. Build and verify
 
-- `make` — build the C++ driver programs into `bin/`.
+- `make -j` — build the C++ driver programs in parallel into `bin/`.
 - `make test` — build and run the regression suite. Success prints
   `PASS: all test executables`. Treat any `FAIL` as a blocking error: report it
   and do not proceed to calculations.
