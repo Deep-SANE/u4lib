@@ -34,8 +34,8 @@ u4lib layers on `u3lib` and needs no manual environment variables. Configure onc
 
 ```bash
 make config   # resolve dependencies and u3lib, writing config/config.generated.mk
-make          # build C++ driver programs in src/ (-> bin/)
-make test     # recompile and run regression test suite (test/, -> bin/test/)
+make -j       # build C++ driver programs in parallel (src/ -> bin/)
+make -j test  # recompile and run regression test suite in parallel (test/, -> bin/test/)
 make python   # build pybind11 extension -> python/u4lib.so (auto-detects a pybind11+Jupyter python; override PYTHON=...)
 make clean
 ```
