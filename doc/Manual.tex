@@ -84,7 +84,7 @@ $\mathrm{SU_S(2)}\otimes\mathrm{SU_T(2)}$ bases with inner multiplicities, and d
 tensor products. Matrix-element routines cover the canonical U(4) generators
 and the physical spin $\mathbf{S}$, isospin $\mathbf{T}$, and
 Gamow-Teller-type tensor $\mathbf{U}$. Wigner coupling and Racah recoupling
-coefficients are evaluated by the procedure of Dang \textit{et al.} 
+coefficients are evaluated by the 2024 procedure of Dang \textit{et al.} 
 The implementation builds on \texttt{u3lib}, with a
 header-only C++ interface and corresponding Python bindings. A catalog of
 agent skills assists an AI agent in preparing, executing, and checking
@@ -717,12 +717,13 @@ finally:
 
 \subsection{Skill catalog and orchestration}
 
-The \verb|agents/| directory holds a catalog of skills that steer an AI
+When an user deploys an AI assistant with code-execution capability to use the library,
+the top-level \texttt{README.md} instructs it to ignore the rest of the file and immediately
+open the \verb|agents/| directory, which holds a catalog of skills that steer the
 assistant through \texttt{u4lib} calculations. An index (\verb|agents/AGENTS.md|)
 points to shared runtime instructions and one skill per capability, each documenting
 the inputs, the exact library call, the relevant conventions, and a numerical
-check. An assistant with code-execution access follows these to drive the
-locally built library, and no network service is involved.
+example. The agent follows these to drive the locally built library, and no network service is involved.
 
 Setup is handled by the \verb|install| skill
 (\verb|agents/install/SKILL.md|). It first checks whether the library is already
