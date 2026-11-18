@@ -23,6 +23,9 @@
 
 \usepackage{hyperref}
 \hypersetup{colorlinks=true,linkcolor=red, citecolor=blue,  urlcolor=blue}
+\makeatletter
+\def\@yfootnote{\stepcounter\@mpfn\protected@xdef\@thefnmark{\thempfn}\@footnotemark}
+\makeatother
 
 \usepackage{listings}
 \usepackage{xcolor}
@@ -225,7 +228,8 @@ The rest of the paper is organized as follows.
 Sections~\ref{sec:structure} and \ref{sec:classes} describe the source layout
 and C++ reference interface. Section~\ref{sec:python} covers Python use, and
 Sec.~\ref{sec:agents} explains the skills and reports the coding experiments.
-Build instructions appear in Sec.~\ref{sec:build}.
+Build instructions appear in Sec.~\ref{sec:build}. Section~\ref{sec:summary}
+summarizes the article.
 
 \section{Library structure}
 \label{sec:structure}
@@ -952,10 +956,15 @@ $\zeta$ and $\eta$, conjugation identities, and reference values.
 Numerical results are compared within tolerances.
 All core external dependencies are provided by \texttt{u3lib}, see Ref. \red{cite u3lib paper here}.
 
+\section{Summary}
+\label{sec:summary}
+
+To summarize, we report \texttt{u4lib}, the first open-source computational framework capable of evaluating general coupling and recoupling coefficients for Wigner's $\rm U(4)$/$\rm SU(4)$ supermultiplet symmetry~\cite{Dang2024EPJP2}. Layered atop \texttt{u3lib} to leverage the canonical $\mathrm{U(4)}\supset\mathrm{U(3)}\supset\mathrm{U(2)}\supset\mathrm{U(1)}$ group-subgroup chain and share the \texttt{KraNS} sparse null-space infrastructure~\cite{Krastenov2026MSc}, the header-only C++20 library and its Python bindings connect the canonical Gelfand--Tsetlin basis with the physical spin-isospin $\mathrm{SU(4)}\supset\mathrm{SU_S(2)}\otimes\mathrm{SU_T(2)}$ basis. Alongside canonical and physical coupling coefficients and 6- and 9-$\rm U(4)$ recoupling blocks, the package supplies irrep dimensions, Casimir invariants up to fourth order, inner and outer multiplicities, state conjugation, physical-to-canonical transformations, and reduced matrix elements of the spin $\mathbf{S}$, isospin $\mathbf{T}$, and Gamow--Teller $\mathbf{U}$ operators. Since $\rm U(4)$ calculations require careful distinction between $\rm U(4)$ and $\rm SU(4)$ irrep labels as well as explicit management of per-thread database caches, we pair the code with a repository-local skill catalog for autonomous coding agents. In our 60-run benchmark, unguided agents failed four trials due to channel-ordering errors, irrep-constructor mismatches, scratch-buffer aliasing, and OpenMP race conditions, whereas skill-guided agents passed all evaluations while cutting aggregate token use by 57.1\%, wall-clock runtime by 43.8\%, and API cost by 42.5\%, peaking at 63.9\% token savings and a 55.4\% speedup on the multi-threaded C++ workload. Although testing across additional language models and broader workflows remains necessary to characterize how these gains scale, the benchmark demonstrates that codifying algebraic conventions and memory contracts next to the source substantially improves agent reliability. Within the \texttt{DeepSANE} ecosystem, \texttt{u4lib} supplies the spin-isospin engine for first-principles shell-model calculations in \texttt{SAM}~\cite{Dang2026_1} and symmetry-informed nuclear-systematics studies~\cite{Dang2026_2}, while providing ready-to-use $\rm SU(4)$ representation tools for two-qubit quantum circuits, ultracold alkaline-earth gases,  spin-valley systems in condensed matter, and other relevant systems.
+
 
 \begin{acknowledgments}
 This work is dedicated to the memory of J. P. Draayer, who passed away on September 13, 2026 and whose pioneering work in algebraic computational nuclear physics---from Elliott's $\rm SU(3)$ model and the Symplectic $\rm Sp(3,R)$ model to the \textit{ab initio} Symmetry-Adapted No-Core Shell Model and, most recently, Wigner's $\rm SU(4)$ supermultiplet model---inspired this framework.
-The authors also gratefully acknowledge F. Pan and D. Kekejian for valuable discussions. PD was supported by the Institute of International Education through the Quad Fellowship, Louisiana State University, and Quantum CodeX. DL and TD were funded by Quantum CodeX.
+The authors also gratefully acknowledge F. Pan and D. Kekejian for valuable discussions. PD was supported by the Institute of International Education through the Quad Fellowship, Louisiana State University, and Quantum CodeX. DL and TD were funded by Quantum CodeX. This work also benefits from granted access to \href{https://antigravity.google/use-cases/science}{Google Antigravity} and Gemini 4 Argon to accelerate scientific workflows.
 \end{acknowledgments}
 
 \begin{thebibliography}{99}
