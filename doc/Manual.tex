@@ -186,7 +186,7 @@ All other coefficients then naturally follow through the action
 of the lowering operators. The same strategy has also been employed to modernize
 the 1973 Draayer-Akiyama formalism \cite{Draayer1973JMP,Akiyama1973CPC}
 for computing $\rm SU(3)$ coupling coefficients \cite{Dang2024EPJP1},
-implemented in the modern library \texttt{u3lib} \red{we should put u3lib to arXiv first to get a reference here}.
+implemented in the modern library \texttt{u3lib}~\cite{Langr2026u3lib}.
 
 This paper presents \texttt{u4lib}---a header-only C++ library with Python wrappers 
 and a sibling of \texttt{u3lib}---which implements the algorithm demonstrated in
@@ -955,7 +955,7 @@ The tests cover irrep dimensions, Gelfand structure,
 $\mathrm{SU_S(2)}\times\mathrm{SU_T(2)}$ branching, coupling orthonormality in
 $\zeta$ and $\eta$, conjugation identities, and reference values.
 Numerical results are compared within tolerances.
-All core external dependencies are provided by \texttt{u3lib}, see Ref. \red{cite u3lib paper here}.
+All core external dependencies are provided by \texttt{u3lib}~\cite{Langr2026u3lib}.
 
 \section{Summary}
 \label{sec:summary}
@@ -1004,6 +1004,7 @@ The authors also gratefully acknowledge F. Pan and D. Kekejian for valuable disc
 \bibitem{Draayer1973JMP} J. P. Draayer and Y. Akiyama, ``Wigner and Racah coefficients for $\rm SU_3$,'' J. Math. Phys. \textbf{14}, 1904 (1973), \href{https://doi.org/10.1063/1.1666267}{doi:10.1063/1.1666267}.
 \bibitem{Akiyama1973CPC} Y. Akiyama and J. P. Draayer, ``A User's Guide to Fortran Programs for Wigner and Racah Coefficients of $\rm SU_3$,'' Comput. Phys. Commun. \textbf{5}, 405 (1973), \href{https://doi.org/10.1016/0010-4655(73)90077-5}{doi:10.1016/0010-4655(73)90077-5}.
 \bibitem{Dang2024EPJP1} P. Dang, J. P. Draayer, F. Pan, and K. S. Becker, ``New Procedure for Evaluation of $\rm U(3)$ Coupling and Recoupling Coefficients,'' Eur. Phys. J. Plus \textbf{139}, 704 (2024), \href{https://doi.org/10.1140/epjp/s13360-024-05501-8}{doi:10.1140/epjp/s13360-024-05501-8}.
+\bibitem{Langr2026u3lib} D. Langr, P. Dang, T. Dytrych, M. Negro, ``u3lib: An AI-Ready Computational Framework for $\rm U(3)$ Symmetry Algebra, Wigner Coupling, and Racah Recoupling Coefficients," arXiv:2611.26558.
 \bibitem{Zhang2003PRA} J. Zhang, J. Vala, S. Sastry, and K. B. Whaley, ``Geometric theory of nonlocal two-qubit operations,'' Phys. Rev. A \textbf{67}, 042313 (2003), \href{https://doi.org/10.1103/PhysRevA.67.042313}{doi:10.1103/PhysRevA.67.042313}.
 \bibitem{Gorshkov2010NP} A. V. Gorshkov, M. Hermele, V. Gurarie, C. Xu, P. S. Julienne, \textit{et al.}, ``Two-orbital $\rm SU(N)$ magnetism with ultracold alkaline-earth atoms,'' Nat. Phys. \textbf{6}, 289 (2010), \href{https://doi.org/10.1038/nphys1535}{doi:10.1038/nphys1535}.
 \bibitem{Young2012NP} A. F. Young \textit{et al.}, ``Spin and valley quantum Hall ferromagnetism in graphene,'' Nat. Phys. \textbf{8}, 550 (2012), \href{https://doi.org/10.1038/nphys2307}{doi:10.1038/nphys2307}.

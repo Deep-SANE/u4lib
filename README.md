@@ -7,7 +7,8 @@ tensor-product decompositions, and the **Wigner coupling** and **Racah
 recoupling** coefficients — exposed through a C++ API, Python bindings, and an
 agent-driven skill layer over all of it.
 
-- **Paper:** [Eur. Phys. J. Plus **139**, 933 (2024)](https://doi.org/10.1140/epjp/s13360-024-05581-6)
+- **Preprint:** [arXiv:2611.27235](https://arxiv.org/abs/2611.27235) — describes u4lib; see [Citing](#citing).
+- **Method paper:** [Eur. Phys. J. Plus **139**, 933 (2024)](https://doi.org/10.1140/epjp/s13360-024-05581-6) — the procedure u4lib uses for the coupling and recoupling coefficients.
 - **Manual:** [Manual (PDF)](https://deep-sane.github.io/u4lib/Manual.pdf), built automatically from the LaTeX source in `doc/Manual.tex`.
 - **Prerequisite / sibling library:** `u3lib` (SU(3)); **SAM** is the main consumer.
 
@@ -71,3 +72,65 @@ The agent resolves the steps through the repository-local [install skill](agents
 
 - **Full Reference Manual:** For exhaustive mathematical derivations, phase conventions, getter signatures, and solver backends, consult the [Manual (PDF)](https://deep-sane.github.io/u4lib/Manual.pdf).
 - **AI-Ready Calculations:** `u4lib` provides a repository-local skill package under [`agents/`](agents/AGENTS.md) that enables code-executing AI assistants to plan and drive calculations through natural-language prompts. A complete table of representative prompts with checked reference values is provided in **Table II of the [Manual](https://deep-sane.github.io/u4lib/Manual.pdf)** as well as in [`agents/AGENTS.md`](agents/AGENTS.md).
+
+---
+
+## Citing
+
+If you use u4lib in your work, please cite the u4lib preprint and, because u4lib builds on u3lib,
+the u3lib preprint as well:
+
+> P. Dang, D. Langr, T. Dytrych, M. Negro: **u4lib: An AI-Ready Computational Framework for U(4)
+> Symmetry Algebra, Wigner Coupling, and Racah Recoupling Coefficients.** arXiv:2611.27235
+> [nucl-th], 2026.
+> [doi:10.48550/arXiv.2611.27235](https://doi.org/10.48550/arXiv.2611.27235)
+
+> D. Langr, P. Dang, T. Dytrych, M. Negro: **u3lib: An AI-Ready Computational Framework for
+> U(3) Symmetry Algebra, Wigner Coupling, and Racah Recoupling Coefficients.** arXiv:2611.26558
+> [nucl-th], 2026.
+> [doi:10.48550/arXiv.2611.26558](https://doi.org/10.48550/arXiv.2611.26558)
+
+If your results use the Wigner coupling or Racah recoupling coefficients, please also cite the
+paper that describes the procedure u4lib implements:
+
+> P. Dang, J. P. Draayer, F. Pan, T. Dytrych, D. Langr, D. Kekejian, K. S. Becker, N. Thompson:
+> **Coupling and recoupling coefficients for Wigner's U(4) supermultiplet symmetry.**
+> Eur. Phys. J. Plus **139**, 933 (2024).
+> [doi:10.1140/epjp/s13360-024-05581-6](https://doi.org/10.1140/epjp/s13360-024-05581-6)
+
+```bibtex
+@misc{Dang2026u4lib,
+  author        = {Dang, Phong and Langr, Daniel and Dytrych, Tom{\'a}{\v{s}} and Negro, Michela},
+  title         = {u4lib: An {AI}-Ready Computational Framework for {U(4)} Symmetry Algebra,
+                   {Wigner} Coupling, and {Racah} Recoupling Coefficients},
+  year          = {2026},
+  eprint        = {2611.27235},
+  archivePrefix = {arXiv},
+  primaryClass  = {nucl-th},
+  doi           = {10.48550/arXiv.2611.27235},
+  url           = {https://arxiv.org/abs/2611.27235}
+}
+
+@misc{Langr2026u3lib,
+  author        = {Langr, Daniel and Dang, Phong and Dytrych, Tom{\'a}{\v{s}} and Negro, Michela},
+  title         = {u3lib: An {AI}-Ready Computational Framework for {U(3)} Symmetry Algebra,
+                   {Wigner} Coupling, and {Racah} Recoupling Coefficients},
+  year          = {2026},
+  eprint        = {2611.26558},
+  archivePrefix = {arXiv},
+  primaryClass  = {nucl-th},
+  doi           = {10.48550/arXiv.2611.26558},
+  url           = {https://arxiv.org/abs/2611.26558}
+}
+
+@article{Dang2024U4,
+  author  = {Dang, Phong and Draayer, Jerry P. and Pan, Feng and Dytrych, Tom{\'a}{\v{s}} and
+             Langr, Daniel and Kekejian, David and Becker, Kevin S. and Thompson, Noah},
+  title   = {Coupling and recoupling coefficients for {Wigner's} {U(4)} supermultiplet symmetry},
+  journal = {Eur. Phys. J. Plus},
+  volume  = {139},
+  pages   = {933},
+  year    = {2024},
+  doi     = {10.1140/epjp/s13360-024-05581-6}
+}
+```
